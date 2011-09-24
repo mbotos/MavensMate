@@ -14,10 +14,10 @@ In order to use MavensMate, you will need the Force.com Migration Tool. To obtai
 <P>You will need the following to run MavensMate:
 </P>
 <UL>
-	<LI>Apache Ant --> http://ant.apache.org/
-	<LI>TextMate --> http://macromates.com/
-	<LI>Subversion TextMate bundle (highly recommended) --> http://manual.macromates.com/en/bundles
-	<LI>A Salesforce.com org --> http://developer.force.com/
+	<LI>Apache Ant --> <A HREF="http://ant.apache.org/">http://ant.apache.org/<A>
+	<LI>TextMate --> <A HREF="http://macromates.com/">http://macromates.com/</A>
+	<LI>Subversion TextMate bundle (highly recommended) --> <A HREF="http://manual.macromates.com/en/bundles">http://manual.macromates.com/en/bundles</A>
+	<LI>A Salesforce.com org --> <A HREF="http://developer.force.com/">http://developer.force.com/</A>
 </UL>
 <P>
 
