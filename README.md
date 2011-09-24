@@ -2,7 +2,7 @@
 MavensMate is a TextMate bundle that aims to replicate the functionality of the Eclipse-based Force.com IDE. In its current state, it allows one to create Salesforce.com projects, connect them to SVN, create certain types of metadata, and compile and retrieve metadata. 
 
 <P>
-	<IMG SRC="http://joe-ferraro.com/images/mavensmate1.png"/>
+	<img src="http://joe-ferraro.com/images/mavensmate1.png"/>
 </P>
 
 <P>
@@ -30,7 +30,9 @@ In order to use MavensMate, you will need the Force.com Migration Tool. To obtai
 	<LI>Double click the "MavensMate.tmbundle". TextMate will automatically install the bundle
 	<LI>Open TextMate, go to Preferences --> Advanced --> Shell Variables and add a Shell Variable called "FM_PROJECT_FOLDER" with the value being the location where you'd like your Salesforce.com projects to reside (for example: '/Users/joeferraro/Development/Projects/') [notice the absolute path & trailing slash. the quotations are unnecessary as well, unless you have a space in your path name] 
 </OL>
-	<IMG SRC="http://joe-ferraro.com/images/mavensmate2.png"/>
+</P>
+<P>
+		<img src="http://joe-ferraro.com/images/mavensmate2.png"/>
 </P>
 
 <P>
