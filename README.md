@@ -14,7 +14,7 @@ In order to use MavensMate, you will need the Force.com Migration Tool. To obtai
 <P>You will need the following to run MavensMate:
 </P>
 <UL>
-	<LI>Apache Ant --> <A HREF="http://ant.apache.org/">http://ant.apache.org/<A>
+	<LI>Apache Ant --> <A HREF="http://ant.apache.org/">http://ant.apache.org/</A>
 	<LI>TextMate --> <A HREF="http://macromates.com/">http://macromates.com/</A>
 	<LI>Subversion TextMate bundle (highly recommended) --> <A HREF="http://manual.macromates.com/en/bundles">http://manual.macromates.com/en/bundles</A>
 	<LI>A Salesforce.com org --> <A HREF="http://developer.force.com/">http://developer.force.com/</A>
@@ -25,12 +25,12 @@ In order to use MavensMate, you will need the Force.com Migration Tool. To obtai
 <h2>Installation</h2>
 <P>How To Install MavensMate</P>
 <OL>
-	<LI>Download this project
+	<LI><A HREF="https://github.com/joeferraro/MavensMate/tarball/master">Download this project</A>
 	<LI>Rename the parent directory to "MavensMate.tmbundle"
 	<LI>Double click the "MavensMate.tmbundle". TextMate will automatically install the bundle
 	<LI>Open TextMate, go to Preferences --> Advanced --> Shell Variables and add a Shell Variable called "FM_PROJECT_FOLDER" with the value being the location where you'd like your Salesforce.com projects to reside (for example: '/Users/joeferraro/Development/Projects/') [notice the absolute path & trailing slash. the quotations are unnecessary as well, unless you have a space in your path name] 
-	<LI>OK, you're ready to roll
 </OL>
+	<IMG SRC="http://joe-ferraro.com/images/mavensmate2.png"/>
 </P>
 
 <P>
