@@ -2,6 +2,10 @@
 MavensMate is a TextMate bundle that aims to replicate the functionality of the Eclipse-based Force.com IDE. In its current state, it allows one to create Salesforce.com projects, create certain types of metadata, and compile and retrieve metadata. 
 
 <P>
+	<IMG SRC="http://joe-ferraro.com/images/mavensmate1.png"/>
+</P>
+
+<P>
 In order to use MavensMate, you will need the Force.com Migration Tool. To obtain the Force.com Migration Tool, go to "Setup -> Develop -> Tools" in your Salesforce.com org, download the zip and follow the instructions.
 </P>
 
