@@ -1,12 +1,12 @@
 <h1>MavensMate</h1>
-MavensMate is a TextMate bundle that aims to replicate the functionality of the Eclipse-based Force.com IDE. In its current state, it allows one to create Salesforce.com projects, create certain types of metadata, and compile and retrieve metadata. 
+MavensMate is a TextMate bundle that aims to replicate the functionality of the Eclipse-based Force.com IDE. In its current state, it allows one to create Salesforce.com projects, connect them to SVN, create certain types of metadata, and compile and retrieve metadata. 
 
 <P>
 	<IMG SRC="http://joe-ferraro.com/images/mavensmate1.png"/>
 </P>
 
 <P>
-In order to use MavensMate, you will need the Force.com Migration Tool. To obtain the Force.com Migration Tool, go to "Setup -> Develop -> Tools" in your Salesforce.com org, download the zip and follow the instructions.
+In order to use MavensMate, you will need the Force.com Migration Tool. To obtain the Force.com Migration Tool, go to "Setup -> Develop -> Tools" in your Salesforce.com org, download the zip and follow the instructions. It's also important to ensure your system environmental variables are set up correctly.
 </P>
 
 <P>
@@ -14,10 +14,10 @@ In order to use MavensMate, you will need the Force.com Migration Tool. To obtai
 <P>You will need the following to run MavensMate:
 </P>
 <UL>
-	<LI>Apache Ant
-	<LI>TextMate
-	<LI>Subversion TextMate bundle (highly recommended)
-	<LI>A Salesforce.com org
+	<LI>Apache Ant --> http://ant.apache.org/
+	<LI>TextMate --> http://macromates.com/
+	<LI>Subversion TextMate bundle (highly recommended) --> http://manual.macromates.com/en/bundles
+	<LI>A Salesforce.com org --> http://developer.force.com/
 </UL>
 <P>
 
