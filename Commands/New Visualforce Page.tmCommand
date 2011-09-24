@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>beforeRunningCommand</key>
+	<string>nop</string>
+	<key>command</key>
+	<string>#!/usr/bin/env ruby
+
+SUPPORT = ENV['TM_SUPPORT_PATH']
+BUNDLESUPPORT = ENV['TM_BUNDLE_SUPPORT']
+
+require SUPPORT + '/lib/exit_codes'
+require SUPPORT + '/lib/escape'
+require SUPPORT + '/lib/textmate'
+require SUPPORT + '/lib/ui'
+require SUPPORT + '/lib/tm/process'
+require SUPPORT + '/lib/web_preview'
+require 'rexml/document'
+
+STDOUT.sync = true
+
+page_name = TextMate::UI.request_string(
+  :title =&gt; "ForceMate | New Visualforce Page",
+  :prompt =&gt; "Page Name:")  
+
+pages_directory = ENV['TM_PROJECT_DIRECTORY'] + "/pages"
+if ! File.directory?(pages_directory)
+	Dir.mkdir(pages_directory)
+end
+Dir.chdir(pages_directory)
+
+page = File.new("#{page_name}.page", "w")
+page.puts("&lt;apex:page showHeader=\"true\" sidebar=\"true\"&gt;")
+page.puts("")
+page.puts("&lt;/apex:page&gt;")
+page.close
+
+page_meta = File.new("#{page_name}.page-meta.xml", "w")
+page_meta.puts("&lt;?xml version=\"1.0\" encoding=\"UTF-8\"?&gt;")
+page_meta.puts("&lt;ApexPage xmlns=\"http://soap.sforce.com/2006/04/metadata\"&gt;")
+page_meta.puts("&lt;description&gt;&lt;/description&gt;")
+page_meta.puts("&lt;label&gt;#{page_name}&lt;/label&gt;")
+page_meta.puts("&lt;apiVersion&gt;22.0&lt;/apiVersion&gt;")
+page_meta.puts("&lt;/ApexPage&gt;")
+page_meta.close
+
+tm_ant = 'ant' 
+tm_ant = (ENV['TM_ANT'] == nil) ? 'ant' : ENV['TM_ANT']
+
+ant_build_file = ENV['TM_PROJECT_DIRECTORY'] + '/build.xml'
+
+TextMate::Process.run("ant -buildfile '#{ant_build_file}' deploy", :interactive_input =&gt; false) do |str|
+  STDOUT &lt;&lt; htmlize(str, :no_newline_after_br =&gt; true)
+end
+
+TextMate.rescan_project 
+TextMate.go_to :file =&gt; ENV['TM_PROJECT_DIRECTORY'] + "/pages/#{page_name}.page"
+</string>
+	<key>input</key>
+	<string>none</string>
+	<key>name</key>
+	<string>New Visualforce Page</string>
+	<key>output</key>
+	<string>showAsHTML</string>
+	<key>tabTrigger</key>
+	<string>vfpage</string>
+	<key>uuid</key>
+	<string>EED0E578-644B-4E24-B707-B56D1CED6780</string>
+</dict>
+</plist>

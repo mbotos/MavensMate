@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>content</key>
+	<string>&lt;apex:dataTable value="$TM_SELECTED_TEXT" var="pitem" rowClasses="odd,even"&gt;
+    &lt;apex:column headerValue="$1"&gt;
+         &lt;apex:outputText value="{!pitem.$2}"/&gt;
+    &lt;/apex:column&gt;
+	&lt;apex:column headerValue="$3"&gt;
+         &lt;apex:outputText value="{!pitem.$4}"/&gt;
+     &lt;/apex:column&gt;
+$5
+&lt;/apex:dataTable&gt;</string>
+	<key>keyEquivalent</key>
+	<string>~d</string>
+	<key>name</key>
+	<string>datatable</string>
+	<key>tabTrigger</key>
+	<string>datatable</string>
+	<key>uuid</key>
+	<string>48116119-1CDB-4539-87A4-46A138E310B3</string>
+</dict>
+</plist>

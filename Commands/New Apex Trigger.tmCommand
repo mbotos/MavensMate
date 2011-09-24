@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>beforeRunningCommand</key>
+	<string>nop</string>
+	<key>command</key>
+	<string>#!/usr/bin/env ruby
+
+SUPPORT = ENV['TM_SUPPORT_PATH']
+BUNDLESUPPORT = ENV['TM_BUNDLE_SUPPORT']
+
+require SUPPORT + '/lib/exit_codes'
+require SUPPORT + '/lib/escape'
+require SUPPORT + '/lib/textmate'
+require SUPPORT + '/lib/ui'
+require SUPPORT + '/lib/tm/process'
+require SUPPORT + '/lib/web_preview'
+require 'rexml/document'
+
+STDOUT.sync = true
+
+object_name = TextMate::UI.request_string(
+  :title =&gt; "ForceMate | New Apex Trigger",
+  :prompt =&gt; "Object Name:")  
+
+trigger_name = TextMate::UI.request_string(
+  :title =&gt; "ForceMate | New Apex Trigger",
+  :prompt =&gt; "Trigger Name:")  
+
+trigger_directory = ENV['TM_PROJECT_DIRECTORY'] + "/triggers"
+if ! File.directory?(trigger_directory)
+	Dir.mkdir(trigger_directory)
+end
+Dir.chdir(trigger_directory)
+
+tgr = File.new("#{trigger_name}.trigger", "w")
+tgr.puts("trigger #{trigger_name} on #{object_name} (before insert) {")
+tgr.puts("")
+tgr.puts("}")
+tgr.close
+
+tgr_meta = File.new("#{trigger_name}.trigger-meta.xml", "w")
+tgr_meta.puts("&lt;?xml version=\"1.0\" encoding=\"UTF-8\"?&gt;")
+tgr_meta.puts("&lt;ApexTrigger xmlns=\"http://soap.sforce.com/2006/04/metadata\"&gt;")
+tgr_meta.puts("&lt;apiVersion&gt;22.0&lt;/apiVersion&gt;")
+tgr_meta.puts("&lt;status&gt;Active&lt;/status&gt;")
+tgr_meta.puts("&lt;/ApexTrigger&gt;")
+tgr_meta.close
+
+tm_ant = 'ant' 
+tm_ant = (ENV['TM_ANT'] == nil) ? 'ant' : ENV['TM_ANT']
+
+ant_build_file = ENV['TM_PROJECT_DIRECTORY'] + '/build.xml'
+
+TextMate::Process.run("ant -buildfile '#{ant_build_file}' deploy", :interactive_input =&gt; false) do |str|
+  STDOUT &lt;&lt; htmlize(str, :no_newline_after_br =&gt; true)
+end
+
+TextMate.rescan_project
+TextMate.go_to :file =&gt; ENV['TM_PROJECT_DIRECTORY'] + "/triggers/#{trigger_name}.trigger"
+</string>
+	<key>input</key>
+	<string>none</string>
+	<key>name</key>
+	<string>New Apex Trigger</string>
+	<key>output</key>
+	<string>showAsHTML</string>
+	<key>tabTrigger</key>
+	<string>trigger</string>
+	<key>uuid</key>
+	<string>A229D4BE-532F-4278-914D-1207941E533D</string>
+</dict>
+</plist>

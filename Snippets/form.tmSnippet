@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>content</key>
+	<string>&lt;apex:form&gt;
+$0
+
+&lt;/apex:form&gt;</string>
+	<key>name</key>
+	<string>form</string>
+	<key>tabTrigger</key>
+	<string>form</string>
+	<key>uuid</key>
+	<string>0679155B-EA6E-40B3-AC20-38C84814AA2D</string>
+</dict>
+</plist>

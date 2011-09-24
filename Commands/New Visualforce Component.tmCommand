@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>beforeRunningCommand</key>
+	<string>nop</string>
+	<key>command</key>
+	<string>#!/usr/bin/env ruby
+
+SUPPORT = ENV['TM_SUPPORT_PATH']
+BUNDLESUPPORT = ENV['TM_BUNDLE_SUPPORT']
+
+require SUPPORT + '/lib/exit_codes'
+require SUPPORT + '/lib/escape'
+require SUPPORT + '/lib/textmate'
+require SUPPORT + '/lib/ui'
+require SUPPORT + '/lib/tm/process'
+require SUPPORT + '/lib/web_preview'
+require 'rexml/document'
+
+STDOUT.sync = true
+
+comp_name = TextMate::UI.request_string(
+  :title =&gt; "ForceMate | New Visualforce Component",
+  :prompt =&gt; "Component Name:")  
+
+comps_directory = ENV['TM_PROJECT_DIRECTORY'] + "/components"
+if ! File.directory?(comps_directory)
+	Dir.mkdir(comps_directory)
+end
+Dir.chdir(comps_directory)
+
+comp = File.new("#{comp_name}.component", "w")
+comp.puts("&lt;apex:component&gt;")
+comp.puts("")
+comp.puts("&lt;/apex:component&gt;")
+comp.close
+
+comp_meta = File.new("#{comp_name}.page-meta.xml", "w")
+comp_meta.puts("&lt;?xml version=\"1.0\" encoding=\"UTF-8\"?&gt;")
+comp_meta.puts("&lt;ApexComponent xmlns=\"http://soap.sforce.com/2006/04/metadata\"&gt;")
+comp_meta.puts("&lt;description&gt;A Visualforce Component&lt;/description&gt;")
+comp_meta.puts("&lt;label&gt;#{comp_name}&lt;/label&gt;")
+comp_meta.puts("&lt;apiVersion&gt;22.0&lt;/apiVersion&gt;")
+comp_meta.puts("&lt;/ApexComponent&gt;")
+comp_meta.close
+
+tm_ant = 'ant' 
+tm_ant = (ENV['TM_ANT'] == nil) ? 'ant' : ENV['TM_ANT']
+
+ant_build_file = ENV['TM_PROJECT_DIRECTORY'] + '/build.xml'
+
+TextMate::Process.run("ant -buildfile '#{ant_build_file}' deploy", :interactive_input =&gt; false) do |str|
+  STDOUT &lt;&lt; htmlize(str, :no_newline_after_br =&gt; true)
+end
+
+TextMate.rescan_project 
+TextMate.go_to :file =&gt; ENV['TM_PROJECT_DIRECTORY'] + "/components/#{comp_name}.component"
+</string>
+	<key>input</key>
+	<string>none</string>
+	<key>name</key>
+	<string>New Visualforce Component</string>
+	<key>output</key>
+	<string>showAsHTML</string>
+	<key>tabTrigger</key>
+	<string>vfcomp</string>
+	<key>uuid</key>
+	<string>0292BB0E-6EC5-4421-97F6-001C846A6A1A</string>
+</dict>
+</plist>
