@@ -26,6 +26,7 @@ STDOUT.sync = true
 tm_ant = 'ant' 
 tm_ant = (ENV['TM_ANT'] == nil) ? 'ant' : ENV['TM_ANT']
 project_folder = ENV['FM_PROJECT_FOLDER']
+project_folder +='/' unless project_folder.end_with?("/")
 
 TextMate.require_cmd "#{tm_ant}"
 TextMate.min_support 10895
@@ -46,10 +47,7 @@ if un.length == 0
 	abort
 end
 
-if ! File.directory?(project_folder)
-	Dir.mkdir(project_folder)
-end
-
+Dir.mkdir(project_folder) unless File.exists?(project_folder)
 
 base_dir = ""
 ant_build_file = "" 
@@ -60,7 +58,7 @@ if File.exists?( ant_build_file )
 end
 
 TextMate.call_with_progress( :title =&gt; 'New Project', :message =&gt; 'Retrieving Metadata' ) do
-	TextMate::Process.run("ant -buildfile '#{ant_build_file}' -Dpd=#{project_folder} -Dun=#{un} -Dpw=#{pw} -Dpn=#{projectName} -Dserverurl=#{server_url} createProject", :interactive_input =&gt; false) do |str|
+	TextMate::Process.run("ant -buildfile '#{ant_build_file}' -Dpd=#{project_folder} -Dun=#{un} -Dpw=#{pw} -Dpn='#{projectName}' -Dserverurl=#{server_url} createProject", :interactive_input =&gt; false) do |str|
   		STDOUT &lt;&lt; htmlize(str, :no_newline_after_br =&gt; true)
 	end
 end
