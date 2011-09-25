@@ -6,86 +6,8 @@
 	<string>nop</string>
 	<key>command</key>
 	<string>#!/usr/bin/env ruby
-
-SUPPORT = ENV['TM_SUPPORT_PATH']
-BUNDLESUPPORT = ENV['TM_BUNDLE_SUPPORT']
-
-require SUPPORT + '/lib/exit_codes'
-require SUPPORT + '/lib/escape'
-require SUPPORT + '/lib/textmate'
-require SUPPORT + '/lib/ui'
-require SUPPORT + '/lib/tm/process'
-require SUPPORT + '/lib/web_preview'
-require SUPPORT + '/lib/progress'
-require 'rexml/document'
-
-require BUNDLESUPPORT + '/lib/ui'
-
-STDOUT.sync = true
-
-tm_ant = 'ant' 
-tm_ant = (ENV['TM_ANT'] == nil) ? 'ant' : ENV['TM_ANT']
-project_folder = ENV['FM_PROJECT_FOLDER']
-project_folder +='/' unless project_folder.end_with?("/")
-
-TextMate.require_cmd "#{tm_ant}"
-TextMate.min_support 10895
-
-puts html_head( :window_title =&gt; "New Salesforce Project", :page_title =&gt; "Salesforce.com Project Wizard" );
-
-d = MavensMate::UI.new_project_dialog
-un = d['sfdc_un'];
-pw = d['sfdc_pw'];
-projectName = d['project_name']
-svn_un = d['svn_un']
-svn_pw = d['svn_pw']
-svn_url = d['svn_url']
-server_url = d['sfdc_server_url']
-
-if un.length == 0
-	puts "invalid input"
-	abort
-end
-
-Dir.mkdir(project_folder) unless File.exists?(project_folder)
-
-base_dir = ""
-ant_build_file = "" 
-ant_build_file = BUNDLESUPPORT + '/build.xml'
-
-if File.exists?( ant_build_file )
-  source = REXML::Document.new( File.open( ant_build_file, "r"))
-end
-
-TextMate.call_with_progress( :title =&gt; 'New Project', :message =&gt; 'Retrieving Metadata' ) do
-	TextMate::Process.run("ant -buildfile '#{ant_build_file}' -Dpd=#{project_folder} -Dun=#{un} -Dpw=#{pw} -Dpn='#{projectName}' -Dserverurl=#{server_url} createProject", :interactive_input =&gt; false) do |str|
-  		STDOUT &lt;&lt; htmlize(str, :no_newline_after_br =&gt; true)
-	end
-end
-
-if svn_url.length &gt; 0 &amp;&amp; svn_un.length &gt; 0 &amp;&amp; svn_pw.length &gt; 0
-	TextMate.call_with_progress( :title =&gt; 'SVN Connection', :message =&gt; 'Importing to Repository' ) do
-		Dir.chdir("#{project_folder}#{projectName}")	
-		TextMate::Process.run("svn import #{svn_url} --username #{svn_un} --password #{svn_pw} -m \"initial import\"", :interactive_input =&gt; false) do |str|
-  			STDOUT &lt;&lt; htmlize(str, :no_newline_after_br =&gt; true)
-		end
-	end
-	TextMate.call_with_progress( :title =&gt; 'SVN Connection', :message =&gt; 'Checking out from Repository' ) do
-		Dir.chdir("#{project_folder}")	
-		TextMate::Process.run("svn checkout --force #{svn_url}", :interactive_input =&gt; false) do |str|
-  			STDOUT &lt;&lt; htmlize(str, :no_newline_after_br =&gt; true)
-		end
-	end
-end
-
-Dir.chdir("#{project_folder}")
-
-TextMate::Process.run("find . -type d -name '#{projectName}' -exec mate {} \\;", :interactive_input =&gt; false) do |str|
-  STDOUT &lt;&lt; htmlize(str, :no_newline_after_br =&gt; true)
-end
-puts "&lt;/pre&gt;"
-puts "&lt;script type\"text/javascript\"&gt;close();&lt;/script&gt;"            
-TextMate.exit_show_html</string>
+require "#{ENV['TM_BUNDLE_SUPPORT']}/lib/mavensmate"
+MavensMate.new_project</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>

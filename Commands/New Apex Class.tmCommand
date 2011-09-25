@@ -6,58 +6,8 @@
 	<string>nop</string>
 	<key>command</key>
 	<string>#!/usr/bin/env ruby
-
-SUPPORT = ENV['TM_SUPPORT_PATH']
-BUNDLESUPPORT = ENV['TM_BUNDLE_SUPPORT']
-
-require SUPPORT + '/lib/exit_codes'
-require SUPPORT + '/lib/escape'
-require SUPPORT + '/lib/textmate'
-require SUPPORT + '/lib/ui'
-require SUPPORT + '/lib/tm/process'
-require SUPPORT + '/lib/web_preview'
-require 'rexml/document'
-
-STDOUT.sync = true
-
-class_name = TextMate::UI.request_string(
-  :title =&gt; "ForceMate | New Apex Class",
-  :prompt =&gt; "Class Name:")  
-
-cls_directory = ENV['TM_PROJECT_DIRECTORY'] + "/classes"
-if ! File.directory?(cls_directory)
-	Dir.mkdir(cls_directory)
-end
-Dir.chdir(cls_directory)
-
-cls = File.new("#{class_name}.cls", "w")
-cls.puts("public with sharing class #{class_name} {")
-cls.puts("")
-cls.puts("	public #{class_name}() {")
-cls.puts("")
-cls.puts("	}")
-cls.puts("}")
-cls.close
-
-cls_meta = File.new("#{class_name}.cls-meta.xml", "w")
-cls_meta.puts("&lt;?xml version=\"1.0\" encoding=\"UTF-8\"?&gt;")
-cls_meta.puts("&lt;ApexClass xmlns=\"http://soap.sforce.com/2006/04/metadata\"&gt;")
-cls_meta.puts("&lt;apiVersion&gt;22.0&lt;/apiVersion&gt;")
-cls_meta.puts("&lt;/ApexClass&gt;")
-cls_meta.close
-
-tm_ant = 'ant' 
-tm_ant = (ENV['TM_ANT'] == nil) ? 'ant' : ENV['TM_ANT']
-
-ant_build_file = ENV['TM_PROJECT_DIRECTORY'] + '/build.xml'
-
-TextMate::Process.run("ant -buildfile '#{ant_build_file}' deploy", :interactive_input =&gt; false) do |str|
-  STDOUT &lt;&lt; htmlize(str, :no_newline_after_br =&gt; true)
-end
-
-TextMate.rescan_project 
-TextMate.go_to :file =&gt; ENV['TM_PROJECT_DIRECTORY'] + "/classes/#{class_name}.cls"
-</string>
+require "#{ENV['TM_BUNDLE_SUPPORT']}/lib/mavensmate"
+MavensMate.new_apex_class</string>
 	<key>input</key>
 	<string>none</string>
 	<key>name</key>

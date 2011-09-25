@@ -6,36 +6,8 @@
 	<string>nop</string>
 	<key>command</key>
 	<string>#!/usr/bin/env ruby
-
-SUPPORT = ENV['TM_SUPPORT_PATH']
-BUNDLESUPPORT = ENV['TM_BUNDLE_SUPPORT']
-
-require SUPPORT + '/lib/textmate'
-require SUPPORT + '/lib/web_preview'
-require SUPPORT + '/lib/tm/process'
-require SUPPORT + '/lib/progress'
-
-STDOUT.sync = true
-
-tm_ant = 'ant' 
-tm_ant = (ENV['TM_ANT'] == nil) ? 'ant' : ENV['TM_ANT']
-
-TextMate.require_cmd "#{tm_ant}"
-TextMate.min_support 10895
-
-puts html_head( :window_title =&gt; "Refreshing Salesforce Project", :page_title =&gt; "Refresh Project from the Server" );
-ant_build_file = ENV['TM_PROJECT_DIRECTORY'] + '/build.xml'
-
-TextMate.call_with_progress( :title =&gt; 'Project Refresh', :message =&gt; 'Refreshing Project Metadata' ) do
-	TextMate::Process.run("ant -buildfile '#{ant_build_file}' retrieve", :interactive_input =&gt; false) do |str|
-  		STDOUT &lt;&lt; htmlize(str, :no_newline_after_br =&gt; true)
-	end
-end
-
-TextMate.rescan_project 
-
-
-</string>
+require "#{ENV['TM_BUNDLE_SUPPORT']}/lib/mavensmate"
+MavensMate.refresh_project</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>
