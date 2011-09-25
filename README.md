@@ -4,6 +4,10 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 <P>
 	<img src="http://joe-ferraro.com/images/mavensmate1.png"/>
 </P>
+<P>
+	<img src="http://joe-ferraro.com/images/mavensmate3.png"/>
+</P>
+
 
 <P>
 In order to use MavensMate, you will need the Force.com Migration Tool. To obtain the Force.com Migration Tool, go to "Setup -> Develop -> Tools" in your Salesforce.com org, download the zip and follow the instructions. It's also important to ensure your system environmental variables are set up correctly.
