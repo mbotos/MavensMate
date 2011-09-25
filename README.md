@@ -5,7 +5,7 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 	<img src="http://joe-ferraro.com/images/mavensmate1.png"/>
 </P>
 <P>
-	<img src="http://joe-ferraro.com/images/mavensmate3.png"/>
+	<img src="http://joe-ferraro.com/images/mavensmate4.png"/>
 </P>
 
 
