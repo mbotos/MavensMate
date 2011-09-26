@@ -162,8 +162,8 @@ module MavensMate
       TextMate.call_with_progress( :title => 'Project Clean', :message => 'Fetching Metadata' ) do
       	require 'fileutils'
       	pd = ENV['TM_PROJECT_DIRECTORY']
-      	Dir.foreach("#{pd}") do |entry|
-           FileUtils.rm_r "#{pd}/#{entry}" unless entry.include? "."
+      	Dir.foreach("#{pd}/src") do |entry|
+           FileUtils.rm_r "#{pd}/src/#{entry}" unless entry.include? "."
         end 
         TextMate.rescan_project
         ant_build_file = ENV['TM_PROJECT_DIRECTORY'] + '/build.xml'
@@ -172,9 +172,9 @@ module MavensMate
       	end
       	TextMate.rescan_project
       end 
-      puts "<script type\"text/javascript\">setTimeout(close(),250000);</script>"   
+      #puts "<script type\"text/javascript\">setTimeout(close(),250000);</script>"   
     else
-      TextMate.exit_discard
+      #TextMate.exit_discard
     end  
   end
   
@@ -194,7 +194,7 @@ module MavensMate
       :title => "ForceMate | New Apex Class",
       :prompt => "Class Name:")  
 
-    cls_directory = ENV['TM_PROJECT_DIRECTORY'] + "/classes"
+    cls_directory = ENV['TM_PROJECT_DIRECTORY'] + "/src/classes"
     if ! File.directory?(cls_directory)
     	Dir.mkdir(cls_directory)
     end
@@ -235,7 +235,7 @@ module MavensMate
       :title => "ForceMate | New Apex Trigger",
       :prompt => "Trigger Name:")  
 
-    trigger_directory = ENV['TM_PROJECT_DIRECTORY'] + "/triggers"
+    trigger_directory = ENV['TM_PROJECT_DIRECTORY'] + "/src/triggers"
     if ! File.directory?(trigger_directory)
     	Dir.mkdir(trigger_directory)
     end
@@ -273,7 +273,7 @@ module MavensMate
       :title => "ForceMate | New Visualforce Page",
       :prompt => "Page Name:")  
 
-    pages_directory = ENV['TM_PROJECT_DIRECTORY'] + "/pages"
+    pages_directory = ENV['TM_PROJECT_DIRECTORY'] + "/src/pages"
     if ! File.directory?(pages_directory)
     	Dir.mkdir(pages_directory)
     end
@@ -312,7 +312,7 @@ module MavensMate
       :title => "ForceMate | New Visualforce Component",
       :prompt => "Component Name:")  
 
-    comps_directory = ENV['TM_PROJECT_DIRECTORY'] + "/components"
+    comps_directory = ENV['TM_PROJECT_DIRECTORY'] + "/src/components"
     if ! File.directory?(comps_directory)
     	Dir.mkdir(comps_directory)
     end
