@@ -15,7 +15,7 @@ MavensMate.new_vf_page</string>
 	<key>output</key>
 	<string>showAsHTML</string>
 	<key>tabTrigger</key>
-	<string>vfpage</string>
+	<string>vfp</string>
 	<key>uuid</key>
 	<string>EED0E578-644B-4E24-B707-B56D1CED6780</string>
 </dict>

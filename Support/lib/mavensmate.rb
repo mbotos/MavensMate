@@ -13,13 +13,68 @@ require BUNDLESUPPORT + '/lib/ui'
 
 STDOUT.sync = true
 
-#TM_ANT = 'ant' 
 TM_ANT = (ENV['TM_ANT'] == nil) ? 'ant' : ENV['TM_ANT']
 
 TextMate.require_cmd "#{TM_ANT}"
 TextMate.min_support 10895
 
 module MavensMate
+  
+  def self.checkout_project
+    project_folder = ENV['FM_PROJECT_FOLDER']
+    project_folder +='/' unless project_folder.end_with?("/")
+
+    puts html_head( :window_title => "Checkout Salesforce Project", :page_title => "Salesforce.com Checkout Wizard" );
+
+    d = MavensMate::UI.new_project_dialog
+    un = d['sfdc_un'];
+    pw = d['sfdc_pw'];
+    projectName = d['project_name']
+    svn_un = d['svn_un']
+    svn_pw = d['svn_pw']
+    svn_url = d['svn_url']
+    server_url = d['sfdc_server_url']
+
+    if un.length == 0 || pw.length == 0 || projectName.length == 0 || server_url.length == 0
+    	puts "ERROR: all fields are required"
+    	abort
+    end
+
+    if svn_url.length == 0 || svn_un.length == 0 || svn_pw.length == 0
+    	puts "ERROR: please specify svn information"
+    	abort
+    end
+    
+    Dir.mkdir(project_folder) unless File.exists?(project_folder)
+
+    base_dir = ""
+    ant_build_file = "" 
+    ant_build_file = BUNDLESUPPORT + '/build.xml'
+
+    if svn_url.length > 0 && svn_un.length > 0 && svn_pw.length > 0
+    	TextMate.call_with_progress( :title => 'SVN Connection', :message => 'Checking out from Repository' ) do
+    		#checkout project
+    		Dir.mkdir("#{project_folder}/#{projectName}") unless File.exists?("#{project_folder}/#{projectName}")
+    		Dir.chdir("#{project_folder}")	
+    		TextMate::Process.run("svn checkout #{svn_url} '#{projectName}' --username #{svn_un} --password #{svn_pw}", :interactive_input => false) do |str|
+      			STDOUT << htmlize(str, :no_newline_after_br => true)
+    		end
+    		#add force.com nature
+    		TextMate::Process.run("ant -buildfile '#{ant_build_file}' -Dpd=#{project_folder} -Dun=#{un} -Dpw=#{pw} -Dpn='#{projectName}' -Dserverurl=#{server_url} checkoutProject", :interactive_input => false) do |str|
+        		STDOUT << htmlize(str, :no_newline_after_br => true)
+      	end
+    	end
+    end
+
+    Dir.chdir("#{project_folder}")
+
+    TextMate::Process.run("find . -type d -name '#{projectName}' -exec mate {} \\;", :interactive_input => false) do |str|
+      STDOUT << htmlize(str, :no_newline_after_br => true)
+    end
+    puts "</pre>"
+    puts "<script type\"text/javascript\">close();</script>"            
+    TextMate.exit_show_html
+  end
   
   def self.new_project
     project_folder = ENV['FM_PROJECT_FOLDER']
@@ -36,8 +91,8 @@ module MavensMate
     svn_url = d['svn_url']
     server_url = d['sfdc_server_url']
 
-    if un.length == 0
-    	puts "invalid input"
+    if un.length == 0 || pw.length == 0 || projectName.length == 0 || server_url.length == 0
+    	puts "ERROR: all salesforce.com-related fields are required"
     	abort
     end
 
@@ -94,16 +149,43 @@ module MavensMate
     #puts "<script type\"text/javascript\">close();</script>"    
   end
   
+  #removes all files from project directory and replaces the,
+  #with the latest from the server
+  def self.clean_project
+    confirmed = TextMate::UI.request_confirmation(
+      :title => "Salesforce Project Cleaner",
+      :prompt => "Your Salesforce project will be emptied and refreshed. Any local metadata (not on the Salesforce.com server) will be lost forever",
+      :button1 => "Clean")
+
+    if confirmed
+      puts html_head( :window_title => "Salesforce Project Cleaner", :page_title => "Cleaning Salesforce Project" );
+      TextMate.call_with_progress( :title => 'Project Clean', :message => 'Fetching Metadata' ) do
+      	require 'fileutils'
+      	pd = ENV['TM_PROJECT_DIRECTORY']
+      	Dir.foreach("#{pd}") do |entry|
+           FileUtils.rm_r "#{pd}/#{entry}" unless entry.include? "."
+        end 
+        TextMate.rescan_project
+        ant_build_file = ENV['TM_PROJECT_DIRECTORY'] + '/build.xml'
+      	TextMate::Process.run("ant -buildfile '#{ant_build_file}' retrieve", :interactive_input => false) do |str|
+        		STDOUT << htmlize(str, :no_newline_after_br => true)
+      	end
+      	TextMate.rescan_project
+      end 
+      puts "<script type\"text/javascript\">setTimeout(close(),250000);</script>"   
+    else
+      TextMate.exit_discard
+    end  
+  end
+  
   def self.refresh_project
     puts html_head( :window_title => "Refreshing Salesforce Project", :page_title => "Refresh Project from the Server" );
     ant_build_file = ENV['TM_PROJECT_DIRECTORY'] + '/build.xml'
-
     TextMate.call_with_progress( :title => 'Project Refresh', :message => 'Refreshing Project Metadata' ) do
     	TextMate::Process.run("ant -buildfile '#{ant_build_file}' retrieve", :interactive_input => false) do |str|
       		STDOUT << htmlize(str, :no_newline_after_br => true)
     	end
     end
-
     TextMate.rescan_project
   end
   

@@ -7,16 +7,16 @@
 	<key>command</key>
 	<string>#!/usr/bin/env ruby
 require "#{ENV['TM_BUNDLE_SUPPORT']}/lib/mavensmate"
-MavensMate.new_vf_component</string>
+MavensMate.clean_project</string>
 	<key>input</key>
 	<string>none</string>
+	<key>keyEquivalent</key>
+	<string>^~c</string>
 	<key>name</key>
-	<string>New Visualforce Component</string>
+	<string>Clean Project</string>
 	<key>output</key>
 	<string>showAsHTML</string>
-	<key>tabTrigger</key>
-	<string>vfc</string>
 	<key>uuid</key>
-	<string>0292BB0E-6EC5-4421-97F6-001C846A6A1A</string>
+	<string>DB7F713F-742F-4387-BA62-E1EC250E6E5C</string>
 </dict>
 </plist>
