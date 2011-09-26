@@ -12,24 +12,24 @@
 		    &lt;property environment="env"/&gt;
 
 			&lt;target name="validate"&gt;
-		      &lt;sf:deploy username="${un}" password="${pw}" serverurl="${serverurl}" deployRoot="../${pn}" checkOnly="true"/&gt;
+		      &lt;sf:deploy username="${un}" password="${pw}" serverurl="${serverurl}" deployRoot="../${pn}/src" checkOnly="true"/&gt;
 		    &lt;/target&gt;
 
 		    &lt;target name="testAndDeploy"&gt;
-		      &lt;sf:deploy username="${un}" password="${pw}" serverurl="${serverurl}" deployRoot="../${pn}" runAllTests="true" logType="Debugonly"/&gt;
+		      &lt;sf:deploy username="${un}" password="${pw}" serverurl="${serverurl}" deployRoot="../${pn}/src" runAllTests="true" logType="Debugonly"/&gt;
 		    &lt;/target&gt;
 
 		    &lt;target name="deploy"&gt;
-		      &lt;sf:deploy username="${un}" password="${pw}" serverurl="${serverurl}" deployRoot="../${pn}" runAllTests="false" logType="Debugonly"/&gt;
+		      &lt;sf:deploy username="${un}" password="${pw}" serverurl="${serverurl}" deployRoot="../${pn}/src" runAllTests="false" logType="Debugonly"/&gt;
 		    &lt;/target&gt;	
 
 			&lt;target name="retrieve"&gt;
-		      &lt;sf:retrieve username="${un}" password="${pw}" serverurl="${serverurl}" retrieveTarget="../${pn}" unpackaged="../${pn}/package.xml"/&gt;	
+		      &lt;sf:retrieve username="${un}" password="${pw}" serverurl="${serverurl}" retrieveTarget="../${pn}/src" unpackaged="../${pn}/src/package.xml"/&gt;	
 		    &lt;/target&gt;
 
 		    &lt;target name="runtest"&gt;
 				&lt;input message="Enter a test name:" addproperty="testname"/&gt;
-		      	&lt;sf:deploy username="${un}" password="${pw}" serverurl="${serverurl}" deployRoot="../${pn}"&gt;
+		      	&lt;sf:deploy username="${un}" password="${pw}" serverurl="${serverurl}" deployRoot="../${pn}/src"&gt;
 					&lt;runTest&gt;${testname}&lt;/runTest&gt;
 		      	&lt;/sf:deploy&gt;
 		    &lt;/target&gt;
