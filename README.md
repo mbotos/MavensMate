@@ -22,11 +22,10 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 </P>
 
 <P>
+<h2>Prerequisites</h2>
+<P>
 In order to use MavensMate, you will need the Force.com Migration Tool. To obtain the Force.com Migration Tool, go to "Setup -> Develop -> Tools" in your Salesforce.com org, download the zip and follow the instructions. It's also important to ensure your system environmental variables are set up correctly. If you can successfully run the command "ant -version" in Terminal, you should be good to go. 
 </P>
-
-<P>
-<h2>Prerequisites</h2>
 <P>You will need the following to run MavensMate:
 </P>
 <UL>
