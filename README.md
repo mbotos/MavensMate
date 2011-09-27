@@ -8,9 +8,21 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 	<img src="http://joe-ferraro.com/images/mavensmate4.png"/>
 </P>
 
+<P>
+<h2>Current Features</h2>
+<UL>
+	<LI>Create a new Salesforce.com project (and import to SVN & checkout working copy in the same step [Optional])
+	<LI>Checkout a Salesforce.com project from SVN (adds "Force.com Nature" to the project as well (for you Eclipse converters))
+	<LI>Create a new Apex Class, Apex Trigger, Visualforce Page, Visualforce Component, or Static Resource
+	<LI>Compile your Salesforce.com metadata (obviously)
+	<LI>Refresh your project from the server
+	<LI>Clean your project (wipe our your local copy completely and replace with a server copy)
+	<LI>Apex/Visualforce Syntax Highlighting (thanks @quintonwall)
+</UL>
+</P>
 
 <P>
-In order to use MavensMate, you will need the Force.com Migration Tool. To obtain the Force.com Migration Tool, go to "Setup -> Develop -> Tools" in your Salesforce.com org, download the zip and follow the instructions. It's also important to ensure your system environmental variables are set up correctly.
+In order to use MavensMate, you will need the Force.com Migration Tool. To obtain the Force.com Migration Tool, go to "Setup -> Develop -> Tools" in your Salesforce.com org, download the zip and follow the instructions. It's also important to ensure your system environmental variables are set up correctly. If you can successfully run the command "ant -version" in Terminal, you should be good to go. 
 </P>
 
 <P>
@@ -21,9 +33,10 @@ In order to use MavensMate, you will need the Force.com Migration Tool. To obtai
 	<LI>Apache Ant --> <A HREF="http://ant.apache.org/">http://ant.apache.org/</A>
 	<LI>TextMate --> <A HREF="http://macromates.com/">http://macromates.com/</A>
 	<LI>Subversion TextMate bundle (highly recommended) --> <A HREF="http://manual.macromates.com/en/bundles">http://manual.macromates.com/en/bundles</A>
+	<LI>ProjectPlus TextMate plugin (highly recommended, if you want nifty git/svn file status icons) --> <A HREF="http://ciaranwal.sh/projectplus">http://ciaranwal.sh/projectplus</A>	
 	<LI>A Salesforce.com org --> <A HREF="http://developer.force.com/">http://developer.force.com/</A>
 </UL>
-<P>
+</P>
 
 <P>
 <h2>Installation</h2>
@@ -43,13 +56,9 @@ In order to use MavensMate, you will need the Force.com Migration Tool. To obtai
 <H1>Quick Start</H1>
 <UL>
 	<LI>Open TextMate
-	<LI>Choose the MavensMate Bundle and click "New Project" (or you can simply use control+option+N)
+	<LI>Choose the MavensMate Bundle and click "New Project" (or you can simply use control+option+N) (**please note:TextMate requires a textfile be open in order to perform bundle operations, so if the MavensMate bundle options are grayed out under Bundles --> MavensMate, simply open a blank text file [command+N])
 	<LI>Enter your project information (SVN information is optional)
 	<LI>Click "Create Project"
 	<LI>Sit back and enjoy TextMate not eating up 800mb of your RAM	
 </UL>
-</P>
-		
-		
-	
 </P>
