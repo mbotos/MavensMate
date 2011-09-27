@@ -16,7 +16,7 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 	<LI>Create a new Apex Class, Apex Trigger, Visualforce Page, Visualforce Component, or Static Resource
 	<LI>Compile your Salesforce.com metadata (obviously)
 	<LI>Refresh your project from the server
-	<LI>Clean your project (wipe our your local copy completely and replace with a server copy)
+	<LI>Clean your project (wipe out your local copy completely and replace with a server copy)
 	<LI>Apex/Visualforce Syntax Highlighting (thanks @quintonwall)
 </UL>
 </P>
