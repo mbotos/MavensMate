@@ -25,6 +25,7 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 <P>
 <h2>Current Limitations</h2>
 <UL>
+	<LI>MavensMate currently utilizes the most basic developer-friendly package.xml manifest: Apex Classes, VF Components, VF Pages, Static Resources, and Apex Triggers. On the roadmap is the ability to create a custom package.xml by selecting the elements of metadata you'd like to be part of your Salesforce.com project.
 	<LI>Running tests from MavensMate is currently not possible (but on the roadmap)
 	<LI>Force.com IDE's "Deploy to Server" functionality that enables easy deployment from sandbox --> prod, with diff support is not available in MavensMate *at this time*
 </UL>
