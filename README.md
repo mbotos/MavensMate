@@ -53,11 +53,11 @@ In order to use MavensMate, you will need the Force.com Migration Tool. To obtai
 
 <P>
 <H1>Quick Start</H1>
-<UL>
+<OL>
 	<LI>Open TextMate
 	<LI>Choose the MavensMate Bundle and click "New Project" (or you can simply use control+option+N) (**please note:TextMate requires a textfile be open in order to perform bundle operations, so if the MavensMate bundle options are grayed out under Bundles --> MavensMate, simply open a blank text file [command+N])
 	<LI>Enter your project information (SVN information is optional)
 	<LI>Click "Create Project"
 	<LI>Sit back and enjoy TextMate not eating up 800mb of your RAM	
-</UL>
+</OL>
 </P>
