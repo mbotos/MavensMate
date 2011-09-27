@@ -18,6 +18,15 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 	<LI>Refresh your project from the server
 	<LI>Clean your project (wipe out your local copy completely and replace with a server copy)
 	<LI>Apex/Visualforce Syntax Highlighting (thanks @quintonwall)
+	<LI>Fantastic keyboard shortcut support (see MavensMate menu in Bundles to see what's possible)
+</UL>
+</P>
+
+<P>
+<h2>Current Limitations</h2>
+<UL>
+	<LI>Running tests from MavensMate is currently not possible (but on the roadmap)
+	<LI>Force.com IDE's "Deploy to Server" functionality that enables easy deployment from sandbox --> prod, with diff support is not available in MavensMate *at this time*
 </UL>
 </P>
 
