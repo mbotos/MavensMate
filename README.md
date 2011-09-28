@@ -18,7 +18,7 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 	<LI>Refresh your project from the server
 	<LI>Clean your project (wipe out your local copy completely and replace with a server copy)
 	<LI>Apex/Visualforce Syntax Highlighting (thanks @quintonwall)
-	<LI>Fantastic keyboard shortcut support (see MavensMate menu in Bundles to see what's possible)
+	<LI>Fantastic keyboard shortcut support: use control + shift + M to bring up MavensMate features
 </UL>
 </P>
 
