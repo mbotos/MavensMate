@@ -5,6 +5,8 @@
 	<key>fileTypes</key>
 	<array>
 		<string>apex</string>
+		<string>trigger</string>
+		<string>cls</string>
 	</array>
 	<key>foldingStartMarker</key>
 	<string>/\*\*|\{\s*$</string>

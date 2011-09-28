@@ -9,7 +9,11 @@ require SUPPORT + '/lib/tm/process'
 require SUPPORT + '/lib/web_preview'
 require SUPPORT + '/lib/progress'
 require 'rexml/document'
+
+require BUNDLESUPPORT + '/lib/client'
+require BUNDLESUPPORT + '/lib/factory'
 require BUNDLESUPPORT + '/lib/ui'
+require BUNDLESUPPORT + '/lib/exceptions'
 
 STDOUT.sync = true
 
@@ -19,6 +23,27 @@ TextMate.require_cmd "#{TM_ANT}"
 TextMate.min_support 10895
 
 module MavensMate
+  
+  def self.describe
+    #TODO: Finish
+    ant_build_file = "" 
+    ant_build_file = BUNDLESUPPORT + '/build.xml'
+    
+    TextMate.call_with_progress( :title => 'SVN Connection', :message => 'Checking out from Repository' ) do
+  		#describe org
+  		Dir.chdir("#{project_folder}/#{projectName}")
+  		TextMate.call_with_progress( :title => 'New Project', :message => 'Retrieving Metadata' ) do
+        TextMate::Process.run("ant -buildfile '#{ant_build_file}' describe", :interactive_input => false) do |str|
+          		STDOUT << htmlize(str, :no_newline_after_br => true)
+        	end
+        end
+  	end    
+  end
+  
+  def self.delete_metadata
+    #TODO
+  end
+  
   
   def self.checkout_project
     project_folder = ENV['FM_PROJECT_FOLDER']
@@ -156,26 +181,29 @@ module MavensMate
       :title => "Salesforce Project Cleaner",
       :prompt => "Your Salesforce project will be emptied and refreshed. Any local metadata (not on the Salesforce.com server) will be lost forever",
       :button1 => "Clean")
-
+    
     if confirmed
       puts html_head( :window_title => "Salesforce Project Cleaner", :page_title => "Cleaning Salesforce Project" );
       TextMate.call_with_progress( :title => 'Project Clean', :message => 'Fetching Metadata' ) do
-      	require 'fileutils'
-      	pd = ENV['TM_PROJECT_DIRECTORY']
-      	Dir.foreach("#{pd}/src") do |entry|
-           FileUtils.rm_r "#{pd}/src/#{entry}" unless entry.include? "."
-        end 
+        require 'fileutils'
+        pd = ENV['TM_PROJECT_DIRECTORY']
+        Dir.foreach("#{pd}/src") do |entry| #iterate the metadata folders
+          next if entry.include? "."
+          Dir.foreach("#{pd}/src/#{entry}") do |subentry| #iterate the files inside those folders
+            next if subentry == '.' || subentry == '..' || subentry == '.svn' || subentry == '.git'
+            FileUtils.rm_r "#{pd}/src/#{entry}/#{subentry}"
+          end
+        end
+        #end local cleanup
+        #fetching server stuff
         TextMate.rescan_project
         ant_build_file = ENV['TM_PROJECT_DIRECTORY'] + '/build.xml'
-      	TextMate::Process.run("ant -buildfile '#{ant_build_file}' retrieve", :interactive_input => false) do |str|
+        TextMate::Process.run("ant -buildfile '#{ant_build_file}' retrieve", :interactive_input => false) do |str|
         		STDOUT << htmlize(str, :no_newline_after_br => true)
-      	end
-      	TextMate.rescan_project
-      end 
-      #puts "<script type\"text/javascript\">setTimeout(close(),250000);</script>"   
-    else
-      #TextMate.exit_discard
-    end  
+        end
+        TextMate.rescan_project
+      end
+    end
   end
   
   def self.refresh_project
@@ -190,43 +218,29 @@ module MavensMate
   end
   
   def self.new_apex_class
+    puts html_head( :window_title => "New Apex Class", :page_title => "New Apex Class" );
     class_name = TextMate::UI.request_string(
-      :title => "ForceMate | New Apex Class",
-      :prompt => "Class Name:")  
+       :title => "MavensMate | New Apex Class",
+       :prompt => "Class Name:")  
 
-    cls_directory = ENV['TM_PROJECT_DIRECTORY'] + "/src/classes"
-    if ! File.directory?(cls_directory)
-    	Dir.mkdir(cls_directory)
-    end
-    Dir.chdir(cls_directory)
-
-    cls = File.new("#{class_name}.cls", "w")
-    cls.puts("public with sharing class #{class_name} {")
-    cls.puts("")
-    cls.puts("	public #{class_name}() {")
-    cls.puts("")
-    cls.puts("	}")
-    cls.puts("}")
-    cls.close
-
-    cls_meta = File.new("#{class_name}.cls-meta.xml", "w")
-    cls_meta.puts("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-    cls_meta.puts("<ApexClass xmlns=\"http://soap.sforce.com/2006/04/metadata\">")
-    cls_meta.puts("<apiVersion>22.0</apiVersion>")
-    cls_meta.puts("</ApexClass>")
-    cls_meta.close 
-
-    ant_build_file = ENV['TM_PROJECT_DIRECTORY'] + '/build.xml'
-
-    TextMate::Process.run("ant -buildfile '#{ant_build_file}' deploy", :interactive_input => false) do |str|
-      STDOUT << htmlize(str, :no_newline_after_br => true)
-    end
-
-    TextMate.rescan_project 
-    TextMate.go_to :file => ENV['TM_PROJECT_DIRECTORY'] + "/classes/#{class_name}.cls"
+     TextMate.call_with_progress( :title => 'New Apex Class', :message => 'Compiling class' ) do
+       MavensMate::FileFactory.put_local_metadata(:api_name => class_name, :meta_type => 'ApexClass', :object_name => '')
+       ant_build_file = ENV['TM_PROJECT_DIRECTORY'] + '/build.xml'
+       result = MavensMate::Client.deploy(ant_build_file)
+       if (!result[:success])
+         MavensMate::FileFactory.destroy_local_metadata(:api_name => class_name, :meta_type => 'ApexClass', :object_name => '')
+         puts result[:message]
+         abort
+       end 
+     end
+     #MavensMate::UI.close_html_window 
+     #TODO: would like to close the html window here, but cannot do so without introducing an odd bug  
+     TextMate.rescan_project    
+     TextMate.go_to :file => ENV['TM_PROJECT_DIRECTORY'] + "/src/classes/#{class_name}.cls"
   end
   
-  def self.new_apex_trigger
+  def self.new_apex_trigger 
+    puts html_head( :window_title => "New Apex Trigger", :page_title => "New Apex Trigger" );
     object_name = TextMate::UI.request_string(
       :title => "ForceMate | New Apex Trigger",
       :prompt => "Object API Name:")  
@@ -235,115 +249,58 @@ module MavensMate
       :title => "ForceMate | New Apex Trigger",
       :prompt => "Trigger Name:")  
 
-    trigger_directory = ENV['TM_PROJECT_DIRECTORY'] + "/src/triggers"
-    if ! File.directory?(trigger_directory)
-    	Dir.mkdir(trigger_directory)
-    end
-    Dir.chdir(trigger_directory)
-
-    tgr = File.new("#{trigger_name}.trigger", "w")
-    tgr.puts("trigger #{trigger_name} on #{object_name} (before insert) {")
-    tgr.puts("")
-    tgr.puts("}")
-    tgr.close
-
-    tgr_meta = File.new("#{trigger_name}.trigger-meta.xml", "w")
-    tgr_meta.puts("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-    tgr_meta.puts("<ApexTrigger xmlns=\"http://soap.sforce.com/2006/04/metadata\">")
-    tgr_meta.puts("<apiVersion>22.0</apiVersion>")
-    tgr_meta.puts("<status>Active</status>")
-    tgr_meta.puts("</ApexTrigger>")
-    tgr_meta.close
-
-    tm_ant = 'ant' 
-    tm_ant = (ENV['TM_ANT'] == nil) ? 'ant' : ENV['TM_ANT']
-
-    ant_build_file = ENV['TM_PROJECT_DIRECTORY'] + '/build.xml'
-
-    TextMate::Process.run("ant -buildfile '#{ant_build_file}' deploy", :interactive_input => false) do |str|
-      STDOUT << htmlize(str, :no_newline_after_br => true)
-    end
-
-    TextMate.rescan_project
-    TextMate.go_to :file => ENV['TM_PROJECT_DIRECTORY'] + "/triggers/#{trigger_name}.trigger"    
+    TextMate.call_with_progress( :title => 'New Apex Class', :message => 'Compiling trigger' ) do
+      f = MavensMate::FileFactory.put_local_metadata(:api_name => trigger_name, :meta_type => 'ApexTrigger', :object_name => object_name)
+      ant_build_file = ENV['TM_PROJECT_DIRECTORY'] + '/build.xml'
+      result = MavensMate::Client.deploy(ant_build_file)
+      if (!result[:success])
+        MavensMate::FileFactory.destroy_local_metadata(:api_name => trigger_name, :meta_type => 'ApexTrigger', :object_name => object_name)
+        puts result[:message]
+        abort      
+      end
+    end 
+    TextMate.rescan_project 
+    TextMate.go_to :file => ENV['TM_PROJECT_DIRECTORY'] + "/src/triggers/#{trigger_name}.trigger"     
   end
   
   def self.new_vf_page
+    puts html_head( :window_title => "New Visualforce Page", :page_title => "New Visualforce Page" );
     page_name = TextMate::UI.request_string(
       :title => "ForceMate | New Visualforce Page",
       :prompt => "Page Name:")  
 
-    pages_directory = ENV['TM_PROJECT_DIRECTORY'] + "/src/pages"
-    if ! File.directory?(pages_directory)
-    	Dir.mkdir(pages_directory)
-    end
-    Dir.chdir(pages_directory)
-
-    page = File.new("#{page_name}.page", "w")
-    page.puts("<apex:page showHeader=\"true\" sidebar=\"true\">")
-    page.puts("")
-    page.puts("</apex:page>")
-    page.close
-
-    page_meta = File.new("#{page_name}.page-meta.xml", "w")
-    page_meta.puts("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-    page_meta.puts("<ApexPage xmlns=\"http://soap.sforce.com/2006/04/metadata\">")
-    page_meta.puts("<label>#{page_name}</label>")
-    page_meta.puts("<description>A visualforce page</description>")
-    page_meta.puts("<apiVersion>22.0</apiVersion>")
-    page_meta.puts("</ApexPage>")
-    page_meta.close
-
-    tm_ant = 'ant' 
-    tm_ant = (ENV['TM_ANT'] == nil) ? 'ant' : ENV['TM_ANT']
-
-    ant_build_file = ENV['TM_PROJECT_DIRECTORY'] + '/build.xml'
-
-    TextMate::Process.run("ant -buildfile '#{ant_build_file}' deploy", :interactive_input => false) do |str|
-      STDOUT << htmlize(str, :no_newline_after_br => true)
-    end
-
-    TextMate.rescan_project 
-    TextMate.go_to :file => ENV['TM_PROJECT_DIRECTORY'] + "/pages/#{page_name}.page"
+      TextMate.call_with_progress( :title => 'New Visualforce Page', :message => 'Compiling page' ) do
+        f = MavensMate::FileFactory.put_local_metadata(:api_name => page_name, :meta_type => 'ApexPage', :object_name => '')
+        ant_build_file = ENV['TM_PROJECT_DIRECTORY'] + '/build.xml'
+        result = MavensMate::Client.deploy(ant_build_file)
+        if (!result[:success])
+          MavensMate::FileFactory.destroy_local_metadata(:api_name => page_name, :meta_type => 'ApexPage', :object_name => '')
+          puts result[:message] 
+          abort
+        end
+      end
+      TextMate.rescan_project
+      TextMate.go_to :file => ENV['TM_PROJECT_DIRECTORY'] + "/src/pages/#{page_name}.page"
   end
   
   def self.new_vf_component
+    puts html_head( :window_title => "New Visualforce Component", :page_title => "New Visualforce Component" );
     comp_name = TextMate::UI.request_string(
       :title => "ForceMate | New Visualforce Component",
       :prompt => "Component Name:")  
 
-    comps_directory = ENV['TM_PROJECT_DIRECTORY'] + "/src/components"
-    if ! File.directory?(comps_directory)
-    	Dir.mkdir(comps_directory)
-    end
-    Dir.chdir(comps_directory)
-
-    comp = File.new("#{comp_name}.component", "w")
-    comp.puts("<apex:component>")
-    comp.puts("")
-    comp.puts("</apex:component>")
-    comp.close
-
-    comp_meta = File.new("#{comp_name}.component-meta.xml", "w")
-    comp_meta.puts("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-    comp_meta.puts("<ApexComponent xmlns=\"http://soap.sforce.com/2006/04/metadata\">")
-    comp_meta.puts("<label>#{comp_name}</label>")
-    comp_meta.puts("<description>A visualforce component</description>")
-    comp_meta.puts("<apiVersion>22.0</apiVersion>")
-    comp_meta.puts("</ApexComponent>")
-    comp_meta.close
-
-    tm_ant = 'ant' 
-    tm_ant = (ENV['TM_ANT'] == nil) ? 'ant' : ENV['TM_ANT']
-
-    ant_build_file = ENV['TM_PROJECT_DIRECTORY'] + '/build.xml'
-
-    TextMate::Process.run("ant -buildfile '#{ant_build_file}' deploy", :interactive_input => false) do |str|
-      STDOUT << htmlize(str, :no_newline_after_br => true)
-    end
-
-    TextMate.rescan_project 
-    TextMate.go_to :file => ENV['TM_PROJECT_DIRECTORY'] + "/components/#{comp_name}.component"
+      TextMate.call_with_progress( :title => 'New Visualforce Component', :message => 'Compiling component' ) do
+        f = MavensMate::FileFactory.put_local_metadata(:api_name => comp_name, :meta_type => 'ApexComponent', :object_name => '')
+        ant_build_file = ENV['TM_PROJECT_DIRECTORY'] + '/build.xml'
+        result = MavensMate::Client.deploy(ant_build_file)
+        if (!result[:success])
+          MavensMate::FileFactory.destroy_local_metadata(:api_name => comp_name, :meta_type => 'ApexComponent', :object_name => '')
+          puts result[:message]
+          abort
+        end
+      end
+      TextMate.rescan_project
+      TextMate.go_to :file => ENV['TM_PROJECT_DIRECTORY'] + "/src/components/#{comp_name}.component"
   end
   
 end

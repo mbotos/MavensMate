@@ -5,6 +5,7 @@
 	<key>fileTypes</key>
 	<array>
 		<string>page</string>
+		<string>component</string>
 	</array>
 	<key>firstLineMatch</key>
 	<string>&lt;!DOCTYPE|&lt;(?i:html)|&lt;\?(?i:php)</string>

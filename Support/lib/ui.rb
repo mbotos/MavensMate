@@ -44,11 +44,20 @@ module MavensMate
         return return_hash        
       end
       
+      #def new_project
+      #  	nib = "#{ENV['TM_BUNDLE_SUPPORT']}/nibs/NewProject.nib"
+      #  	TextMate::UI.dialog(:nib => nib, :center => true,
+      #      :parameters => {'sfdc_server_url' => 'foo','usernames' => ['foo@foo.com', 'bar@bar.com']}) do |dialog|              
+      #        project_input = dialog.wait_for_input          
+      #      end
+      #      puts project_input["sfdc_un"]      														  
+      #end
+      
       # launch new apex class dialog
       def new_apex_class_dialog
         return TextMate::UI.request_string(
           :title => "ForceMate | New Apex Class",
-          :prompt => "Class Name:")
+          :prompt => "Class Name:") 
       end
       
       # launch new apex class dialog
@@ -63,6 +72,10 @@ module MavensMate
         return TextMate::UI.request_string(
           :title => "ForceMate | New Apex Trigger",
           :prompt => "Trigger Name:")
+      end
+      
+      def close_html_window
+        puts "<script type\"text/javascript\">close();</script>"            
       end
     
     end  

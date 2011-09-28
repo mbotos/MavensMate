@@ -11,7 +11,7 @@ MavensMate.refresh_project</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>
-	<string>^~r</string>
+	<string>^M</string>
 	<key>name</key>
 	<string>Refresh Project From Server</string>
 	<key>output</key>

@@ -2,6 +2,11 @@
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
     <property environment="env"/>
 	
+	<target name="describe">
+		<sf:describeMetadata username="joeferraro@force.com" password="352198" serverurl="https://www.salesforce.com"/>
+	</target>
+	
+	
 	<target name="checkoutProject">
 		<echo message="------Adding Force.com Nature------"/>
 		<echo file="${pd}${pn}/build.properties">sf.username = ${un}${line.separator}sf.password = ${pw}${line.separator}sf.serverurl = ${serverurl}</echo>

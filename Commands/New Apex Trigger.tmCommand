@@ -10,6 +10,8 @@ require "#{ENV['TM_BUNDLE_SUPPORT']}/lib/mavensmate"
 MavensMate.new_apex_trigger</string>
 	<key>input</key>
 	<string>none</string>
+	<key>keyEquivalent</key>
+	<string>^M</string>
 	<key>name</key>
 	<string>New Apex Trigger</string>
 	<key>output</key>
