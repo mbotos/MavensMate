@@ -11,7 +11,7 @@ MavensMate.checkout_project</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>
-	<string>^~c</string>
+	<string>^M</string>
 	<key>name</key>
 	<string>Checkout Project</string>
 	<key>output</key>
