@@ -1,6 +1,8 @@
 <h1>MavensMate</h1>
 MavensMate is a TextMate bundle that aims to replicate the functionality of the Eclipse-based Force.com IDE. In its current state, MavensMate enables developers to create Salesforce.com projects, connect them to SVN, create certain types of metadata, and compile and retrieve metadata, all from TextMate.
 
+<b>MavensMate has been updated to utilize keychain for security and direct calls to the Salesforce.com metadata API (instead of ANT) for performance</b>
+
 <P>
 <h2>Installation</h2>
 <P>How To Install MavensMate</P>
