@@ -2,19 +2,6 @@
 MavensMate is a TextMate bundle that aims to replicate the functionality of the Eclipse-based Force.com IDE. In its current state, MavensMate enables developers to create Salesforce.com projects, connect them to SVN, create certain types of metadata, and compile and retrieve metadata, all from TextMate.
 
 <P>
-	<img src="http://wearemavens.com/mm/mavensmate1.png"/>
-</P>
-<P>
-	<img src="http://wearemavens.com/mm/mavensmate5.png"/>
-</P>
-<P>
-	<img src="http://wearemavens.com/mm/mavensmate6.png"/>
-</P>
-<P>
-	<img src="http://joe-ferraro.com/images/mavensmate4.png"/>
-</P>
-
-<P>
 <h2>Installation</h2>
 <P>How To Install MavensMate</P>
 ```
@@ -28,6 +15,19 @@ $ gem install rubyzip
 	<LI>Open TextMate, go to Preferences --> Advanced --> Shell Variables and add a Shell Variable called "FM_PROJECT_FOLDER" with the value being the location where you'd like your Salesforce.com projects to reside (for example: '/Users/joe/Projects/') [*notice the absolute path*] 
 </OL>
 </P> 
+
+<P>
+	<img src="http://wearemavens.com/mm/mavensmate1.png"/>
+</P>
+<P>
+	<img src="http://wearemavens.com/mm/mavensmate5.png"/>
+</P>
+<P>
+	<img src="http://wearemavens.com/mm/mavensmate6.png"/>
+</P>
+<P>
+	<img src="http://joe-ferraro.com/images/mavensmate4.png"/>
+</P>
 
 <P>
 <h2>Current Features</h2>
