@@ -1,0 +1,55 @@
+<% script_tag = javascript_include_tag("prototype", "rb_gateway", "toggle") %>
+<% style_tag = style_include_tag("bootstrap") %>
+<html>
+<head>
+  	<title>MavensMate</title>
+  	<% if @script_at_top %> 
+    	<%= script_tag %>
+  	<% end %>
+		<%= style_tag %>
+	<script>
+		<% support = ENV['TM_BUNDLE_SUPPORT'] %>
+		var TM_BUNDLE_SUPPORT = '<%= support %>';
+		window.onload=function() {
+			document.getElementsByTagName("input")[0].focus();
+		}
+	</script>	  
+	<style>
+		input {
+			height:30px !important; 
+		}
+		
+		#mm_logger {
+			display:none;
+			height:200px;
+			overflow-y:auto;
+			padding:10px;
+			border:1px solid #f2f2f2;
+		}
+	</style>
+</head>
+<body id='body'>
+  	<div id='debug'></div>
+  	<div id='wrapper'>
+			<% yield %>
+		</div>
+		<script>
+			//window.resizeTo(document.getElementById('wrapper').offsetWidth, document.getElementById('wrapper').offsetHeight+22);
+			window.resizeTo(325, document.getElementById('wrapper').offsetHeight+22);
+			window.moveTo((screen.width-325)/2,(screen.height-document.getElementById('wrapper').offsetHeight-400)/2);
+		</script>
+</body>
+
+<!-- we put the script at the end because it messes up TextMate's html rendering, for some reason -->
+<% unless @script_at_top %>
+  <%= script_tag %>
+<% end %>
+<%= @content_for_javascript %>
+<% if params[:on_complete] %>
+<script language="javascript">
+	try {
+    setTimeout(function() { a=1 }, 1)
+  } catch(e) { $('debug').update("Error" + e + " - <br/><%= e_js params[:on_complete] %>")}
+</script> 
+<% end %>
+</html>

@@ -6,19 +6,17 @@
 	<string>nop</string>
 	<key>command</key>
 	<string>#!/usr/bin/env ruby
-require "#{ENV['TM_BUNDLE_SUPPORT']}/lib/mavensmate"
-MavensMate.new_vf_page</string>
+require ENV['TM_BUNDLE_SUPPORT'] + '/environment.rb'
+dispatch :controller =&gt; "deploy", :action =&gt; "index", :meta_type =&gt; "ApexPage", :message =&gt; ""</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>
-	<string>^M</string>
+	<string>^~@m</string>
 	<key>name</key>
 	<string>New Visualforce Page</string>
 	<key>output</key>
 	<string>showAsHTML</string>
-	<key>tabTrigger</key>
-	<string>vfp</string>
 	<key>uuid</key>
-	<string>EED0E578-644B-4E24-B707-B56D1CED6780</string>
+	<string>EE3060A0-17D2-4D6A-BFA2-583151E7D22E</string>
 </dict>
 </plist>

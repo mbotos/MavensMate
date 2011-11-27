@@ -6,19 +6,17 @@
 	<string>nop</string>
 	<key>command</key>
 	<string>#!/usr/bin/env ruby
-require "#{ENV['TM_BUNDLE_SUPPORT']}/lib/mavensmate"
-MavensMate.new_apex_trigger</string>
+require ENV['TM_BUNDLE_SUPPORT'] + '/environment.rb'
+dispatch :controller =&gt; "deploy", :action =&gt; "index", :meta_type =&gt; "ApexTrigger", :message =&gt; ""</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>
-	<string>^M</string>
+	<string>^~@m</string>
 	<key>name</key>
 	<string>New Apex Trigger</string>
 	<key>output</key>
 	<string>showAsHTML</string>
-	<key>tabTrigger</key>
-	<string>trigger</string>
 	<key>uuid</key>
-	<string>A229D4BE-532F-4278-914D-1207941E533D</string>
+	<string>E56E0EDB-2FE9-4BD5-AD56-426E9F6A0637</string>
 </dict>
 </plist>

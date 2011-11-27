@@ -6,19 +6,17 @@
 	<string>nop</string>
 	<key>command</key>
 	<string>#!/usr/bin/env ruby
-require "#{ENV['TM_BUNDLE_SUPPORT']}/lib/mavensmate"
-MavensMate.new_vf_component</string>
+require ENV['TM_BUNDLE_SUPPORT'] + '/environment.rb'
+dispatch :controller =&gt; "deploy", :action =&gt; "index", :meta_type =&gt; "ApexComponent", :message =&gt; ""</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>
-	<string>^M</string>
+	<string>^~@m</string>
 	<key>name</key>
 	<string>New Visualforce Component</string>
 	<key>output</key>
 	<string>showAsHTML</string>
-	<key>tabTrigger</key>
-	<string>vfc</string>
 	<key>uuid</key>
-	<string>0292BB0E-6EC5-4421-97F6-001C846A6A1A</string>
+	<string>10608648-3CED-401A-A99E-13B101A82CAF</string>
 </dict>
 </plist>

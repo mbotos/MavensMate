@@ -3,20 +3,20 @@
 <plist version="1.0">
 <dict>
 	<key>beforeRunningCommand</key>
-	<string>nop</string>
+	<string>saveActiveFile</string>
 	<key>command</key>
 	<string>#!/usr/bin/env ruby
 require "#{ENV['TM_BUNDLE_SUPPORT']}/lib/mavensmate"
-MavensMate.clean_project</string>
+MavensMate.save</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>
-	<string>^M</string>
+	<string>^~@m</string>
 	<key>name</key>
-	<string>Clean Project</string>
+	<string>Save Selected Metadata</string>
 	<key>output</key>
-	<string>showAsHTML</string>
+	<string>discard</string>
 	<key>uuid</key>
-	<string>DB7F713F-742F-4387-BA62-E1EC250E6E5C</string>
+	<string>FB4E53B8-0467-4C10-9284-1FACCEFBC427</string>
 </dict>
 </plist>

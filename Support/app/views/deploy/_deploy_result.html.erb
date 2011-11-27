@@ -1,0 +1,13 @@
+<div id="result_foo" style="padding:10px;">
+	<% if ! success %>
+		<div class="alert-message error">
+			<p><strong>Error!</strong> Your deployment failed.</p>
+		</div>
+		<div class="alert-message block-message error">
+			<p><strong><%= message %></p>
+	  </div>
+	<% end %>
+	<% if success %>
+		<script>window.close();</script>
+	<% end %>
+</div>

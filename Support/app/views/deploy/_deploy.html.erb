@@ -1,0 +1,27 @@
+<div id="deploy_output">
+	
+	<div id="result_output">
+
+	</div>
+	
+	<div id="form">
+		<form class="form-stacked">
+			<fieldset>
+				<div class="clearfix">
+					<label for="apiName"><%= meta_label %> Name</label> 
+					<input class="xlarge" size="100" type="text" id="apiName">
+				</div>
+				<div class="clearfix" style="display:<% if meta_type != "ApexTrigger" %>none<% end %>">
+					<label for="objectName">Object API Name</label> 
+					<input class="xlarge" size="100" type="text" id="objectName">
+				</div>
+				
+				<div class="actions">	
+					<input type="button" class="btn primary" value="Deploy"  onclick="$('result_output').update(dispatch({controller: 'deploy', action: 'deploy_metadata', meta_type: '<%= meta_type %>' , api_name: $F('apiName'), object_api_name: $F('objectName')  }));">
+					&nbsp;
+					<button type="reset" class="btn" onclick="window.close();">Cancel</button>
+				</div>
+			</fieldset>
+		</form>
+	</div>
+</div>

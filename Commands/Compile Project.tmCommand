@@ -11,11 +11,11 @@ MavensMate.compile_project</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>
-	<string>^M</string>
+	<string>^~@m</string>
 	<key>name</key>
 	<string>Compile Project</string>
 	<key>output</key>
-	<string>showAsHTML</string>
+	<string>discard</string>
 	<key>tabTrigger</key>
 	<string>fmc</string>
 	<key>uuid</key>

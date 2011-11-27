@@ -6,17 +6,17 @@
 	<string>nop</string>
 	<key>command</key>
 	<string>#!/usr/bin/env ruby
-require "#{ENV['TM_BUNDLE_SUPPORT']}/lib/mavensmate"
-MavensMate.new_project</string>
+require ENV['TM_BUNDLE_SUPPORT'] + '/environment.rb'
+dispatch :controller =&gt; "project", :action =&gt; "index", :user_action =&gt; "new"</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>
-	<string>^M</string>
+	<string>^~@m</string>
 	<key>name</key>
 	<string>New Project</string>
 	<key>output</key>
 	<string>showAsHTML</string>
 	<key>uuid</key>
-	<string>1FB67C08-FB41-4851-B989-544492F641FE</string>
+	<string>6FAD4C03-DFB5-4059-9663-5EEF048199F9</string>
 </dict>
 </plist>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>beforeRunningCommand</key>
+	<string>nop</string>
+	<key>command</key>
+	<string>#!/usr/bin/env ruby
+require "#{ENV['TM_BUNDLE_SUPPORT']}/lib/mavensmate"
+MavensMate.delete_selected_files</string>
+	<key>input</key>
+	<string>none</string>
+	<key>keyEquivalent</key>
+	<string>^~@m</string>
+	<key>name</key>
+	<string>Delete Selected Metadata</string>
+	<key>output</key>
+	<string>discard</string>
+	<key>uuid</key>
+	<string>9ADCD2D2-8675-41A8-A8D6-A584A22B65DD</string>
+</dict>
+</plist>

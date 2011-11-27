@@ -6,19 +6,17 @@
 	<string>nop</string>
 	<key>command</key>
 	<string>#!/usr/bin/env ruby
-require "#{ENV['TM_BUNDLE_SUPPORT']}/lib/mavensmate"
-MavensMate.new_apex_class</string>
+require ENV['TM_BUNDLE_SUPPORT'] + '/environment.rb'
+dispatch :controller =&gt; "deploy", :action =&gt; "index", :meta_type =&gt; "ApexClass", :message =&gt; ""</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>
-	<string>^M</string>
+	<string>^~@m</string>
 	<key>name</key>
 	<string>New Apex Class</string>
 	<key>output</key>
 	<string>showAsHTML</string>
-	<key>tabTrigger</key>
-	<string>class</string>
 	<key>uuid</key>
-	<string>F464133A-25C2-4BDA-93A5-8B8E33FBF0CA</string>
+	<string>86C3C4AA-CCE2-4CFA-A1C8-83518ECF2DDA</string>
 </dict>
 </plist>
