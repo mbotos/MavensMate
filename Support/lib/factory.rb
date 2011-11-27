@@ -96,7 +96,7 @@ module MavensMate
         put_files_in_tmp_directories(hash)
         return zip_tmp_directory                       
       end
-       
+             
       def copy_project_to_tmp
         tmp_dir = Dir.tmpdir
         FileUtils.rm_rf("#{tmp_dir}/mmzip")
@@ -140,7 +140,7 @@ module MavensMate
         
         if ! options[:dir].nil?
           Dir.chdir('..')
-          put_package(Dir.getwd, binding, false)
+          put_new_package(Dir.getwd, binding, false)
         end
         
         if dir == "tmp"
@@ -217,8 +217,8 @@ module MavensMate
           file_contents = File.read("deploy.zip")
           return Base64.encode64(file_contents)
         end
-      
-        def put_package(where, binding, delete=false)
+        
+        def put_new_package(where, binding, delete=false)
           Dir.chdir(where)
           file_name = delete ? "destructiveChanges.xml" : "package.xml"
           template = ERB.new File.new("#{ENV['TM_BUNDLE_SUPPORT']}/templates/new_package.html.erb").read, nil, "-"
@@ -227,7 +227,17 @@ module MavensMate
           src.puts(erb)
           src.close
         end
-      
+        
+        def put_package(where, binding, delete=false)
+          Dir.chdir(where)
+          file_name = delete ? "destructiveChanges.xml" : "package.xml"
+          template = ERB.new File.new("#{ENV['TM_BUNDLE_SUPPORT']}/templates/package.html.erb").read, nil, "-"
+          erb = template.result(binding)        
+          src = File.new(file_name, "w")
+          src.puts(erb)
+          src.close
+        end
+              
         def put_empty_package(where)
           Dir.chdir(where)
           template = ERB.new File.new("#{ENV['TM_BUNDLE_SUPPORT']}/templates/empty_package.html.erb").read, nil, "-"
