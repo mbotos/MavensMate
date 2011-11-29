@@ -19,7 +19,9 @@ $ gem install rubyzip
 </P> 
 
 <P>
-	<img src="http://wearemavens.com/mm/mavensmate1.png"/>
+	<img src="http://wearemavens.com/mm/mavensmate1.png" style="float:left"/>
+	<img src="http://wearemavens.com/mm/mavensmate7.png" style="float:left"/>
+	<div style="clear:left;"></div>
 </P>
 <P>
 	<img src="http://wearemavens.com/mm/mavensmate5.png"/>
