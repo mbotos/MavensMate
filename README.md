@@ -6,11 +6,15 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 <P>
 <h2>Installation</h2>
 <P>How To Install MavensMate</P>
-<b>*MavensMate requires Ruby 1.9.2!*</b><br/><br/>
+<p>
+<b>*MavensMate requires Ruby 1.9.2!*</b>
+</p>
+
 ```
 $ gem install savon
 $ gem install rubyzip
 ```
+
 <OL>
 	<LI><A HREF="https://github.com/joeferraro/MavensMate/tarball/master">Download this project</A>
 	<LI>Unzip and rename the parent directory to "MavensMate.tmbundle"
