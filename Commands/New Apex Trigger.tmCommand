@@ -6,6 +6,11 @@
 	<string>nop</string>
 	<key>command</key>
 	<string>#!/usr/bin/env ruby
+require ENV['TM_SUPPORT_PATH'] + '/lib/ui'
+if RUBY_VERSION.include? "1.8"
+	TextMate::UI.alert(:warning, "MavensMate", "Hm, it looks like you're running Ruby 1.8.7. MavensMate requires Ruby 1.9+.")
+	abort
+end
 require ENV['TM_BUNDLE_SUPPORT'] + '/environment.rb'
 dispatch :controller =&gt; "deploy", :action =&gt; "index", :meta_type =&gt; "ApexTrigger", :message =&gt; ""</string>
 	<key>input</key>

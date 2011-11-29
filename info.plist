@@ -2,18 +2,60 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>name</key>
-	<string>MavensMate</string>
-	<key>ordering</key>
+	<key>deleted</key>
 	<array>
-		<string>1FB67C08-FB41-4851-B989-544492F641FE</string>
-		<string>4BC0B467-8D75-416A-8B44-264A3290C38B</string>
-		<string>00D32352-6D38-433A-8028-47D9E99BAE34</string>
 		<string>13F4C69E-CE7F-48C1-B381-E55F331CE1FC</string>
+		<string>1FB67C08-FB41-4851-B989-544492F641FE</string>
 		<string>F464133A-25C2-4BDA-93A5-8B8E33FBF0CA</string>
 		<string>A229D4BE-532F-4278-914D-1207941E533D</string>
 		<string>EED0E578-644B-4E24-B707-B56D1CED6780</string>
 		<string>0292BB0E-6EC5-4421-97F6-001C846A6A1A</string>
+		<string>A4295955-0825-4EDF-AB53-8F816C7B6B3C</string>
+		<string>861404E1-22C2-4361-8186-14A44B282809</string>
+		<string>2518ACAC-3E11-4630-8F95-EE3FBF693A09</string>
+		<string>00D32352-6D38-433A-8028-47D9E99BAE34</string>
+	</array>
+	<key>mainMenu</key>
+	<dict>
+		<key>items</key>
+		<array>
+			<string>6FAD4C03-DFB5-4059-9663-5EEF048199F9</string>
+			<string>7FD3EAED-CC6F-4CAD-AF8B-93BBD1F7A1F7</string>
+			<string>72757B29-4893-4710-B3BB-23057D5186E2</string>
+			<string>------------------------------------</string>
+			<string>FB4E53B8-0467-4C10-9284-1FACCEFBC427</string>
+			<string>4BC0B467-8D75-416A-8B44-264A3290C38B</string>
+			<string>------------------------------------</string>
+			<string>7C91126B-2F18-4DBF-BD7E-EBCAAE3E2B1E</string>
+			<string>------------------------------------</string>
+			<string>86C3C4AA-CCE2-4CFA-A1C8-83518ECF2DDA</string>
+			<string>E56E0EDB-2FE9-4BD5-AD56-426E9F6A0637</string>
+			<string>EE3060A0-17D2-4D6A-BFA2-583151E7D22E</string>
+			<string>10608648-3CED-401A-A99E-13B101A82CAF</string>
+			<string>------------------------------------</string>
+			<string>9ADCD2D2-8675-41A8-A8D6-A584A22B65DD</string>
+			<string>48116119-1CDB-4539-87A4-46A138E310B3</string>
+			<string>0679155B-EA6E-40B3-AC20-38C84814AA2D</string>
+			<string>A86D0BC3-7558-45AB-BF57-C843184E5B9E</string>
+		</array>
+		<key>submenus</key>
+		<dict/>
+	</dict>
+	<key>name</key>
+	<string>MavensMate</string>
+	<key>ordering</key>
+	<array>
+		<string>6FAD4C03-DFB5-4059-9663-5EEF048199F9</string>
+		<string>7FD3EAED-CC6F-4CAD-AF8B-93BBD1F7A1F7</string>
+		<string>72757B29-4893-4710-B3BB-23057D5186E2</string>
+		<string>FB4E53B8-0467-4C10-9284-1FACCEFBC427</string>
+		<string>4BC0B467-8D75-416A-8B44-264A3290C38B</string>
+		<string>7C91126B-2F18-4DBF-BD7E-EBCAAE3E2B1E</string>
+		<string>86C3C4AA-CCE2-4CFA-A1C8-83518ECF2DDA</string>
+		<string>E56E0EDB-2FE9-4BD5-AD56-426E9F6A0637</string>
+		<string>EE3060A0-17D2-4D6A-BFA2-583151E7D22E</string>
+		<string>10608648-3CED-401A-A99E-13B101A82CAF</string>
+		<string>9ADCD2D2-8675-41A8-A8D6-A584A22B65DD</string>
 		<string>C4D3A5F4-B1DE-48C5-84CE-AC99DDA78292</string>
 		<string>A574B2F1-E7FF-4A58-AC03-721D32545534</string>
 		<string>48116119-1CDB-4539-87A4-46A138E310B3</string>
