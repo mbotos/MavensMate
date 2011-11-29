@@ -6,7 +6,7 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 <P>
 <h2>Installation</h2>
 <P>How To Install MavensMate</P>
-<b>*MavensMate requires Ruby 1.9.2!*</b>
+<b>*MavensMate requires Ruby 1.9.2!*</b><br/><br/>
 ```
 $ gem install savon
 $ gem install rubyzip
