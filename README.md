@@ -7,7 +7,7 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 <h2>Installation</h2>
 <P>How To Install MavensMate</P>
 <p>
-<b>*MavensMate requires Ruby 1.9.2!*</b>
+<b>*MavensMate requires Ruby 1.9.2*</b>
 </p>
 
 ```
@@ -23,21 +23,6 @@ $ gem install rubyzip
 </OL>
 </P> 
 
-<P>
-	<img src="http://wearemavens.com/mm/mavensmate1.png"/>
-</P>
-<p>
-	<img src="http://joe-ferraro.com/images/mavensmate7.png"/>
-</p>
-<P>
-	<img src="http://wearemavens.com/mm/mavensmate5.png"/>
-</P>
-<P>
-	<img src="http://wearemavens.com/mm/mavensmate6.png"/>
-</P>
-<P>
-	<img src="http://joe-ferraro.com/images/mavensmate4.png"/>
-</P>
 
 <P>
 <h2>Current Features</h2>
@@ -53,23 +38,14 @@ $ gem install rubyzip
 </P>
 
 <P>
-<h2>Current Limitations</h2>
-<UL>
-	<LI>MavensMate currently utilizes the most basic developer-friendly package.xml manifest: Apex Classes, VF Components, VF Pages, Static Resources, and Apex Triggers. On the roadmap is the ability to create a custom package.xml by selecting the elements of metadata you'd like to be part of your Salesforce.com project.
-	<LI>Running tests from MavensMate is currently not possible (but on the roadmap)
-	<LI>Force.com IDE's "Deploy to Server" functionality that enables easy deployment from sandbox --> prod, with diff support is not available in MavensMate *at this time*
-</UL>
-</P>
-
-<P>
 <h2>Prerequisites</h2>
 
 <P>You will need the following to run MavensMate:</P>
 <UL>
+	<LI>Ruby 1.9.2 --> I suggest using rvm <A HREF="http://beginrescueend.com/">http://beginrescueend.com/</A>
 	<LI>TextMate --> <A HREF="http://macromates.com/">http://macromates.com/</A>
 	<LI>Savon --> <A HREF="https://github.com/rubiii/savon">https://github.com/rubiii/savon</A>
 	<LI>RubyZip --> <A HREF="http://rubygems.org/gems/rubyzip">http://rubygems.org/gems/rubyzip</A>
-	<LI>Subversion TextMate bundle (highly recommended) --> <A HREF="http://manual.macromates.com/en/bundles">http://manual.macromates.com/en/bundles</A> 
 	<LI>ProjectPlus TextMate plugin (highly recommended, if you want nifty git/svn file status icons) --> <A HREF="http://ciaranwal.sh/projectplus">http://ciaranwal.sh/projectplus</A>	
 	<LI>A Salesforce.com org --> <A HREF="http://developer.force.com/">http://developer.force.com/</A>
 </UL>
@@ -88,4 +64,30 @@ $ gem install rubyzip
 	<LI>Click "Create Project"
 	<LI>Sit back and enjoy TextMate not eating up 800mb of your RAM	
 </OL>
+</P>
+
+<P>
+<h2>Current Limitations</h2>
+<UL>
+	<LI>MavensMate currently utilizes the most basic developer-friendly package.xml manifest: Apex Classes, VF Components, VF Pages, Static Resources, and Apex Triggers. On the roadmap is the ability to create a custom package.xml by selecting the elements of metadata you'd like to be part of your Salesforce.com project.
+	<LI>Running tests from MavensMate is currently not possible (but on the roadmap)
+	<LI>Force.com IDE's "Deploy to Server" functionality that enables easy deployment from sandbox --> prod, with diff support is not available in MavensMate *at this time*
+</UL>
+</P>
+
+<H1>Screenshots</H1>
+<P>
+	<img src="http://wearemavens.com/mm/mavensmate1.png"/>
+</P>
+<p>
+	<img src="http://joe-ferraro.com/images/mavensmate7.png"/>
+</p>
+<P>
+	<img src="http://wearemavens.com/mm/mavensmate5.png"/>
+</P>
+<P>
+	<img src="http://wearemavens.com/mm/mavensmate6.png"/>
+</P>
+<P>
+	<img src="http://joe-ferraro.com/images/mavensmate4.png"/>
 </P>
