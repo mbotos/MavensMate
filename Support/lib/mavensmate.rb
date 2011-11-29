@@ -401,18 +401,22 @@ module MavensMate
         
     #gets array of selected files
     def self.get_selected_files
-      selected_files = Shellwords.shellwords(ENV["TM_SELECTED_FILES"])
-      selected_files.each do |f|
-        next if f.include? "-meta.xml"        
-        ext = File.extname(f).gsub(".","") #=> cls
-        mt_hash = MavensMate::FileFactory.get_meta_type_by_suffix(ext)      
-        if mt_hash[:meta_file]
-          if ! selected_files.include? f + "-meta.xml" #if they didn't select the meta file, select it anyway
-            selected_files.push(f + "-meta.xml")   
+      begin
+        selected_files = Shellwords.shellwords(ENV["TM_SELECTED_FILES"])
+        selected_files.each do |f|
+          next if f.include? "-meta.xml"        
+          ext = File.extname(f).gsub(".","") #=> cls
+          mt_hash = MavensMate::FileFactory.get_meta_type_by_suffix(ext)      
+          if mt_hash[:meta_file]
+            if ! selected_files.include? f + "-meta.xml" #if they didn't select the meta file, select it anyway
+              selected_files.push(f + "-meta.xml")   
+            end
           end
         end
+        return selected_files
+      rescue
+        return Array[ENV['TM_FILEPATH']]
       end
-      return selected_files
     end
         
     #adds salesforce.com creds to the keychain
