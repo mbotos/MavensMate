@@ -3,6 +3,7 @@ require 'savon'
 require 'fileutils'
 require 'base64'
 require 'yaml'
+require 'json'
 require BUNDLESUPPORT + '/lib/factory'
 require BUNDLESUPPORT + '/lib/keychain'
 require BUNDLESUPPORT + '/lib/metadata_helper'
@@ -12,7 +13,7 @@ module MavensMate
   class Client 
     
     include MetadataHelper
-    PACKAGE_TYPES = [ "ApexClass", "ApexComponent", "ApexPage", "ApexTrigger" ]
+    PACKAGE_TYPES = [ "ApexClass", "ApexComponent", "ApexPage", "ApexTrigger", "StaticResource" ]
     
     # sfdc username
     attr_accessor :username
@@ -25,20 +26,29 @@ module MavensMate
     # metadata client
     attr_accessor :mclient
     # session id
-    attr_reader :sid
+    attr_accessor :sid
     # metadata api endpoint url
-    attr_reader :metadata_server_url
+    attr_accessor :metadata_server_url
            
     def initialize(creds={})
+      HTTPI.log = false
       Savon.configure do |config|
         config.log = false
       end      
-      creds = (creds[:username].nil? || creds[:password].nil? || creds[:endpoint].nil?) ? get_creds : creds
-      self.username = creds[:username]
-      self.password = creds[:password]
-      self.endpoint = creds[:endpoint] 
-      self.pclient = get_partner_client
-      login
+      if creds[:sid].nil? && creds[:metadata_server_url].nil?        
+        creds = (creds[:username].nil? || creds[:password].nil? || creds[:endpoint].nil?) ? get_creds : creds
+        self.username = creds[:username]
+        self.password = creds[:password]
+        if ! creds[:endpoint].include? "Soap"
+          creds[:endpoint] = (creds[:endpoint].include? "test") ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"
+        end
+        self.endpoint = creds[:endpoint] 
+        self.pclient = get_partner_client
+        login
+      else
+        self.sid = creds[:sid]
+        self.metadata_server_url = creds[:metadata_server_url]
+      end
     end
     
     #logs into SFDC, sets metadata server url & sessionid
@@ -52,8 +62,8 @@ module MavensMate
       end
       
       res = response.to_hash
-      @metadata_server_url = res[:login_response][:result][:metadata_server_url]
-      @sid = res[:login_response][:result][:session_id].to_s
+      self.metadata_server_url = res[:login_response][:result][:metadata_server_url]
+      self.sid = res[:login_response][:result][:session_id].to_s
     end
     
     #retrieves metadata in zip format. :path => retrieve specific file  
@@ -170,26 +180,102 @@ module MavensMate
          end
       end
     end
+    
+    #describes an org's metadata
+    def describe
+      self.mclient = get_metadata_client
+      begin
+        response = self.mclient.request :describe_metadata do |soap|
+          soap.header = get_soap_header  
+          soap.body = "<apiVersion>#{MM_API_VERSION}</apiVersion>"
+        end
+      rescue Savon::SOAP::Fault => fault
+        raise Exception.new(fault.to_s)
+      end
+      puts "<br/><br/> describe response: " + response.to_hash.inspect
+      hash = response.to_hash
+      folders = Array.new
+      hash[:describe_metadata_response][:result][:metadata_objects].each { |object| 
+        folders.push({
+          :title => object[:directory_name],
+          :isLazy => true,
+          :isFolder => true,
+          :directory_name => object[:directory_name],
+          :meta_type => object[:xml_name],
+          :select => PACKAGE_TYPES.include?(object[:xml_name]) ? true : false
+        })
+      }
+      folders.sort! { |a,b| a[:title] <=> b[:title] }
+      return folders.to_json
+    end
+    
+    #list metadata for a specific type
+    def list(type="")
+      self.mclient = get_metadata_client
+      begin
+        response = self.mclient.request :list_metadata do |soap|
+          soap.header = get_soap_header  
+          soap.body = "<ListMetadataQuery><type>#{type}</type></ListMetadataQuery>"
+        end
+      rescue Savon::SOAP::Fault => fault
+        raise Exception.new(fault.to_s)
+      end
+      begin
+        hash = response.to_hash
+        els = Array.new
+        if hash[:list_metadata_response].nil?
+          return "[]"
+        elsif hash[:list_metadata_response][:result].kind_of? Hash
+          els.push({
+            :title => hash[:list_metadata_response][:result][:full_name],
+            :key => hash[:list_metadata_response][:result][:full_name],
+            :isLazy => true
+          })  
+          return els.to_json        
+        else
+          hash[:list_metadata_response][:result].each { |el| 
+            els.push({
+              :title => el[:full_name],
+              :key => el[:full_name]
+            })
+          }
+          els.sort! { |a,b| a[:title].downcase <=> b[:title].downcase }
+          return els.to_json
+        end
+      rescue Exception => e
+        return hash.inspect + "\n\n\n" + e.message + "\n" + e.backtrace.join("\n")
+      end
+    end
                                                             
     private
       
+      #ensures json is properly formatted for the dynatree control
+      def to_json(what)
+        what.to_hash.to_json
+      end
+      
       #returns header for soap calls with valid sessionid
       def get_soap_header
-        return { "ins0:SessionHeader" => { "ins0:sessionId" => @sid } } 
+        return { "ins0:SessionHeader" => { "ins0:sessionId" => self.sid } } 
       end
       
       #returns body for soap calls with requested metadata specified
       def get_retrieve_body(options)
         types_body = ""        
-        if options[:path].nil? #grab all
+        if ! options[:path].nil? #grab path only
+          path = options[:path]
+          ext = File.extname(path).gsub(".","") #=> "cls"
+          mt = MavensMate::FileFactory.get_meta_type_by_suffix(ext)
+          file_name_no_ext = File.basename(path, File.extname(path)) #=> "myclass" 
+          types_body << "<types><members>#{file_name_no_ext}</members><name>#{mt[:xml_name]}</name></types>"
+        elsif ! options[:meta_types].nil? #grab selected
+          options[:meta_types].each { |type|  
+            types_body << "<types><members>*</members><name>"+type+"</name></types>"
+          }
+        else #grab from default package
           PACKAGE_TYPES.each { |type|  
             types_body << "<types><members>*</members><name>"+type+"</name></types>"
           }
-        else #grab selected file
-          path = options[:path]
-          ext = File.extname(path) #=> ".cls"
-          file_name_no_ext = File.basename(path, ext) #=> "myclass"
-          types_body << "<types><members>#{file_name_no_ext}</members><name>#{EXT_META_MAP[ext]}</name></types>"
         end     
         return "<RetrieveRequest><unpackaged>#{types_body}</unpackaged><apiVersion>#{MM_API_VERSION}</apiVersion></RetrieveRequest>"
       end
@@ -219,7 +305,7 @@ module MavensMate
         client = Savon::Client.new do
           wsdl.document = File.expand_path(ENV['TM_BUNDLE_SUPPORT']+"/metadata.xml", __FILE__)
         end
-        client.wsdl.endpoint = @metadata_server_url
+        client.wsdl.endpoint = self.metadata_server_url
         #puts "<br/><br/>METADATA CLIENT ACTIONS: #{client.wsdl.soap_actions}"
         return client
       end

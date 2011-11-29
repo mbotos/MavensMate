@@ -41,10 +41,10 @@
 				
 				<div class="actions">					
 					<% if user_action == "new" %>
-						<input type="button" class="btn primary" value="New Project"  onclick="$('result_output').update(dispatch({controller: 'project', action: 'new_project', pn: $F('pn'), un: $F('un'), pw: $F('pw'), server_url: $F('server_url'), svn_un: $F('svn_un'), svn_pw: $F('svn_pw'), svn_url: $F('svn_url') }));">
+						<input type="button" class="btn primary" value="New Project"  onclick="$('#result_output').html(dispatch({controller: 'project', action: 'new_project', pn: $('#pn').val(), un: $('#un').val(), pw: $('#pw').val(), server_url: $('#server_url').val(), svn_un: $('#svn_un').val(), svn_pw: $('#svn_pw').val(), svn_url: $('#svn_url').val() }));">
 					<% end %>
 					<% if user_action == "checkout" %>
-						<input type="button" class="btn primary" value="Checkout Project"  onclick="$('result_output').update(dispatch({controller: 'project', action: 'checkout', pn: $F('pn'), un: $F('un'), pw: $F('pw'), server_url: $F('server_url'), svn_un: $F('svn_un'), svn_pw: $F('svn_pw'), svn_url: $F('svn_url') }));">
+						<input type="button" class="btn primary" value="Checkout Project"  onclick="$('#result_output').html(dispatch({controller: 'project', action: 'checkout', pn: $('#pn').val(), un: $('#un').val(), pw: $('#pw').val(), server_url: $('#server_url').val(), svn_un: $('#svn_un').val(), svn_pw: $('#svn_pw').val(), svn_url: $('#svn_url').val() }));">
 					<% end %>
 					&nbsp;
 					<button type="reset" class="btn" onclick="window.close();">Cancel</button>

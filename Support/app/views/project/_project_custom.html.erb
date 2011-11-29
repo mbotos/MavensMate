@@ -1,0 +1,153 @@
+<div id="deploy_output">
+	
+	<div id="result_output">
+
+	</div>
+	<div class="alert-message error" style="display:none;" data-alert="alert" id="cred_alert">
+		<a class="close" href="#">×</a>
+		<p><strong>Error!</strong> You need to provide valid Salesforce.com credentials in Project Details.</p>
+	</div>
+	<ul class="tabs">
+		<li class="active"><a href="#form">Project Details</a></li>
+		<li><a href="#metadata">Metadata</a></li>
+	</ul>
+	
+	<div class="pill-content">
+		<div id="form" class="active">
+			<form class="form-stacked">
+				<fieldset>
+					<div class="clearfix">
+						<label for="pn">Project Name</label> 
+						<input class="xlarge" size="100" type="text" id="pn">
+					</div>
+					<div class="clearfix">
+						<label for="un">Salesforce Username</label> 
+						<input class="xlarge" size="100" type="text" id="un">
+					</div>
+					<div class="clearfix">
+						<label for="pw">Salesforce Password</label> 
+						<input class="xlarge" size="100" type="password" id="pw">
+					</div>
+					<div class="clearfix">
+						<label for="server_url">Server URL</label> 
+						<select id="server_url">
+							<option>https://www.salesforce.com</option>
+							<option>https://test.salesforce.com</option>
+						</select>
+					</div>
+					<div class="clearfix">
+						<label for="svn_un">SVN Username</label> 
+						<input class="xlarge" size="100" type="text" id="svn_un">
+					</div>				
+					<div class="clearfix">
+						<label for="svn_pw">SVN Password</label> 
+						<input class="xlarge" size="100" type="text" id="svn_pw">
+					</div>
+					<div class="clearfix">
+						<label for="svn_url">SVN URL</label> 
+						<input class="xlarge" size="100" type="text" id="svn_url">
+					</div>								
+				
+					<div class="actions">					
+						<% if user_action == "new" %>
+							<input type="button" class="btn primary" value="Create Project"  onclick='$("#result_output").html(dispatch({controller: "project", action: "new_custom_project", pn: $("#pn").val(), un: $("#un").val(), pw: $("#pw").val(), server_url: $("#server_url").val(), svn_un: $("#svn_un").val(), svn_pw: $("#svn_pw").val(), svn_url: $("#svn_url").val(), tree: get_tree_json() }));'>
+						<% end %>
+						<% if user_action == "checkout" %>
+							<input type="button" class="btn primary" value="Checkout Project"  onclick="$('#result_output').html(dispatch({controller: 'project', action: 'checkout', pn: $('#pn').val(), un: $('#un').val(), pw: $('#pw').val(), server_url: $('#server_url').val(), svn_un: $('#svn_un').val(), svn_pw: $('#svn_pw').val(), svn_url: $('#svn_url').val() }));">
+						<% end %>
+						&nbsp;
+						<button type="reset" class="btn" onclick="window.close();">Cancel</button>
+					</div>
+				</fieldset>
+			</form>
+		</div>
+		
+		<div id="metadata">
+			<div id="treewrapper">
+				<div id="tree"></div>
+				<div id="info"></div>
+			</div>
+		</div>
+	</div>
+	<script>
+		$(function() {
+			$('.tabs').tabs();
+							
+	    $("#tree").dynatree({
+          onQueryExpand: function(node) {
+							console.log($('#sid'))
+							if ( $('#sid').val() == null || $('#sid').val() == "") {
+								showCredAlert();
+								return false;
+							}
+          },
+				 dataType: "jsonp",
+				 onLazyRead: function(node){
+						node.appendAjax({url: "http://127.0.0.1:7125",
+				  		data: {
+								"key": node.data.meta_type,
+								"sid": $("#sid").val(),
+								"murl": $("#murl").val()
+							},
+							dataFilter: function (data, type) {
+								data = data.substring(data.indexOf('['));
+								return data;
+							}
+							});
+				 },
+          persist: false,
+				 checkbox: true,
+				 selectMode: 3,
+				children: <%= my_json %>
+      	});
+	
+				dispatch({controller: 'project', action: 'start_server' });	
+			});
+				
+			$(function() {
+			    $('.tabs a').bind('change', function (e) {
+						console.log(e.target.href.indexOf("metadata"))
+						if (e.target.href.indexOf("metadata") != -1 && ($('#sid').val() == null || $('#sid').val() == "")) {
+							console.log('no creds');
+							$('#result_output').html(dispatch({controller: 'project', action: 'login', un: $('#un').val(), pw: $('#pw').val(), server_url: $('#server_url').val() }));
+						}
+			    });
+			});
+		
+		function showCredAlert() {
+			$("#cred_alert").show();
+			window.resizeTo(325, document.getElementById('wrapper').offsetHeight+30);
+		}
+		
+		function get_tree_json() {
+			dict = $('#tree').dynatree('getTree').toDict();
+			c = dict.children;
+			var mystring = "["
+			//var myJSONText = JSON.stringify(dict);
+			//console.log(myJSONText);
+			for(var key in c) {
+				console.log(c[key]);
+				if (c[key].select) {
+					mystring += "'" + c[key].meta_type + "',"
+				}
+			}
+			mystring += "]";
+			mystring = mystring.replace(",]","]")
+			return mystring;
+			//return myJSONText.replace(/"/g, "\\\"");
+		}
+			
+	</script>
+	<style>
+		#treewrapper {
+			height:480px;
+			overflow-y:auto;
+			width:98%;
+			border:1px solid #f2f2f2;
+		}
+		
+		ul.dynatree-container {
+			border:none !important;
+		}
+	</style>
+</div>

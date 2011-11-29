@@ -57,7 +57,12 @@ module MavensMate
       TextMate.call_with_progress( :title => 'MavensMate', :message => 'Retrieving Project Metadata' ) do          
         MavensMate::FileFactory.put_project_directory(project_name) #put project directory in the filesystem 
         client = MavensMate::Client.new({ :username => un, :password => pw, :endpoint => endpoint })
-        project_zip = client.retrieve #get metadata in zip file
+        if ! params[:selected_types].nil?
+          options = { :meta_types => params[:selected_types]}
+          project_zip = client.retrieve(options) #get selected metadata
+        else
+          project_zip = client.retrieve #get metadata in zip file
+        end  
         MavensMate::FileFactory.put_project_metadata(project_name, project_zip) #put the metadata in the project directory    
         add_to_keychain(project_name, pw)
         MavensMate::FileFactory.put_project_config(un, project_name, server_url)
@@ -83,6 +88,7 @@ module MavensMate
     rescue Exception => e
       puts "</div>"
       FileUtils.rm_rf("#{project_folder}#{project_name}")
+      #TextMate::UI.alert(:warning, "MavensMate", e.message + "\n" + e.backtrace.join("\n"))
       return { :is_success => false, :error_message => e.message, :project_name => project_name } 
     end
     puts "</div>"
@@ -201,8 +207,8 @@ module MavensMate
         end
       end
     rescue Exception => e
-      #TextMate::UI.alert(:warning, "MavensMate", e.message + "\n" + e.backtrace.join("\n"))
-      TextMate::UI.alert(:warning, "MavensMate", e.message)
+      TextMate::UI.alert(:warning, "MavensMate", e.message + "\n" + e.backtrace.join("\n"))
+      #TextMate::UI.alert(:warning, "MavensMate", e.message)
     end
   end
   
@@ -370,11 +376,15 @@ module MavensMate
       selected_files = get_selected_files      
       meta_hash = {}
       selected_files.each do |f|
+        puts "selected file: " + f + "<br/>"
         next if ! f.include? "." #need files only, not directories
         next if f.include? "-meta.xml" #dont need meta files
-
         ext = File.extname(f) #=> .cls
-        meta_type = EXT_META_MAP[ext] #=> ApexClass 
+        ext_no_period = File.extname(f).gsub(".","") #=> cls
+        puts "ext_no_period: " + ext_no_period + "<br/>"
+        mt_hash = MavensMate::FileFactory.get_meta_type_by_suffix(ext_no_period)      
+        meta_type = mt_hash[:xml_name]
+        puts "meta_type: " + meta_type.inspect + "<br/>"
 
         if ! meta_hash.key? meta_type #key isn't there yet, put it in        
           meta_hash[meta_type] = [File.basename(f, ext)] #file name with no extension
@@ -393,9 +403,13 @@ module MavensMate
     def self.get_selected_files
       selected_files = Shellwords.shellwords(ENV["TM_SELECTED_FILES"])
       selected_files.each do |f|
-        next if f.include? "-meta.xml" 
-        if ! selected_files.include? f + "-meta.xml" #if they didn't select the meta file, select it anyway
-          selected_files.push(f + "-meta.xml")   
+        next if f.include? "-meta.xml"        
+        ext = File.extname(f).gsub(".","") #=> cls
+        mt_hash = MavensMate::FileFactory.get_meta_type_by_suffix(ext)      
+        if mt_hash[:meta_file]
+          if ! selected_files.include? f + "-meta.xml" #if they didn't select the meta file, select it anyway
+            selected_files.push(f + "-meta.xml")   
+          end
         end
       end
       return selected_files

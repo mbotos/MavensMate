@@ -71,10 +71,10 @@ module MavensMate
          }
          Dir.chdir("#{ENV['TM_PROJECT_DIRECTORY']}/unpackaged")
          meta_type_ext = File.extname(file_path) #=> ".cls"
-         meta_type = EXT_META_MAP[meta_type_ext] #=> "ApexClass"
-         meta_type_dir_name = META_DIR_MAP[meta_type] #=> "classes"
-         copy_to_dir = "#{ENV['TM_PROJECT_DIRECTORY']}/src/#{meta_type_dir_name}" #=> "/Users/username/Projects/myproject/src/classes"
-         TextMate::Process.run("cp -r '#{Dir.getwd}/#{meta_type_dir_name}/' '#{copy_to_dir}'", :interactive_input => false) do |str|
+         meta_type_no_ext = meta_type_ext.gsub(".","")
+         mt = get_meta_type_by_suffix(meta_type_no_ext)
+         copy_to_dir = "#{ENV['TM_PROJECT_DIRECTORY']}/src/#{mt[:directory_name]}" #=> "/Users/username/Projects/myproject/src/classes"
+         TextMate::Process.run("cp -r '#{Dir.getwd}/#{mt[:directory_name]}/' '#{copy_to_dir}'", :interactive_input => false) do |str|
            STDOUT << htmlize(str, :no_newline_after_br => true)          
          end
          Dir.chdir("#{ENV['TM_PROJECT_DIRECTORY']}")
@@ -82,7 +82,7 @@ module MavensMate
          FileUtils.rm_r "#{ENV['TM_PROJECT_DIRECTORY']}/metadata.zip"
       end
       
-      def put_delete_metadata(hash)     
+      def put_delete_metadata(hash)
         cleanup_tmp        
         put_package(Dir.getwd, binding, true)
         put_empty_package(Dir.getwd)        
@@ -174,8 +174,20 @@ module MavensMate
         FileUtils.rm_r dir
       end
       
-      private
+      def get_meta_type_by_suffix(suffix)
+        return META_DICTIONARY.detect {|f| f[:suffix] == suffix }
+      end
       
+      def get_meta_type_by_dir(dir)
+        return META_DICTIONARY.detect {|f| f[:directory_name] == dir }
+      end
+      
+      def get_meta_type_by_name(name)
+        return META_DICTIONARY.detect {|f| f[:xml_name] == name }
+      end
+            
+      private
+                
         def cleanup_tmp
           FileUtils.rm_rf("#{Dir.tmpdir}/mmzip")
           Dir.mkdir("#{Dir.tmpdir}/mmzip")
@@ -185,23 +197,27 @@ module MavensMate
       
         def put_files_in_tmp_directories(hash)
           hash.each { |key, value|
-            Dir.chdir("#{Dir.tmpdir}/mmzip/unpackaged/#{META_DIR_MAP[key]}")
+            mt = get_meta_type_by_name(key)
+            Dir.chdir("#{Dir.tmpdir}/mmzip/unpackaged/#{mt[:directory_name]}")
             value.each do |f|
               FileUtils.copy_file(
-                "#{ENV['TM_PROJECT_DIRECTORY']}/src/#{META_DIR_MAP[key]}/#{f}#{META_EXT_MAP[key]}",
-                "#{Dir.getwd}/#{f}#{META_EXT_MAP[key]}"
+                "#{ENV['TM_PROJECT_DIRECTORY']}/src/#{mt[:directory_name]}/#{f}.#{mt[:suffix]}",
+                "#{Dir.getwd}/#{f}.#{mt[:suffix]}"
               )
+              if mt[:meta_file]
               FileUtils.copy_file(
-                "#{ENV['TM_PROJECT_DIRECTORY']}/src/#{META_DIR_MAP[key]}/#{f}#{META_EXT_MAP[key]}-meta.xml",
-                "#{Dir.getwd}/#{f}#{META_EXT_MAP[key]}-meta.xml"
+                "#{ENV['TM_PROJECT_DIRECTORY']}/src/#{mt[:directory_name]}/#{f}.#{mt[:suffix]}-meta.xml",
+                "#{Dir.getwd}/#{f}.#{mt[:suffix]}-meta.xml"
               )
+              end
             end
           }
         end
       
         def put_tmp_directories(hash)
           hash.each_key { |key|
-            Dir.mkdir("#{Dir.tmpdir}/mmzip/unpackaged/#{META_DIR_MAP[key]}")
+            mt = get_meta_type_by_name(key)
+            Dir.mkdir("#{Dir.tmpdir}/mmzip/unpackaged/#{mt[:directory_name]}")
           }
         end
       

@@ -17,7 +17,7 @@
 				</div>
 				
 				<div class="actions">	
-					<input type="button" class="btn primary" value="Deploy"  onclick="$('result_output').update(dispatch({controller: 'deploy', action: 'deploy_metadata', meta_type: '<%= meta_type %>' , api_name: $F('apiName'), object_api_name: $F('objectName')  }));">
+					<input type="button" class="btn primary" value="Deploy"  onclick="$('#result_output').html(dispatch({controller: 'deploy', action: 'deploy_metadata', meta_type: '<%= meta_type %>' , api_name: $('#apiName').val(), object_api_name: $('#objectName').val()  }));">
 					&nbsp;
 					<button type="reset" class="btn" onclick="window.close();">Cancel</button>
 				</div>

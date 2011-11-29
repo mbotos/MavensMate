@@ -3,20 +3,20 @@
 <plist version="1.0">
 <dict>
 	<key>beforeRunningCommand</key>
-	<string>saveActiveFile</string>
+	<string>nop</string>
 	<key>command</key>
 	<string>#!/usr/bin/env ruby
-require "#{ENV['TM_BUNDLE_SUPPORT']}/lib/mavensmate"
-MavensMate.save</string>
+require ENV['TM_BUNDLE_SUPPORT'] + '/environment.rb'
+dispatch :controller =&gt; "project", :action =&gt; "index_custom_project", :user_action =&gt; "new"</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>
-	<string>@C</string>
+	<string>^~@m</string>
 	<key>name</key>
-	<string>Save Selected Metadata</string>
+	<string>New Project (CUSTOM)</string>
 	<key>output</key>
-	<string>discard</string>
+	<string>showAsHTML</string>
 	<key>uuid</key>
-	<string>FB4E53B8-0467-4C10-9284-1FACCEFBC427</string>
+	<string>7FD3EAED-CC6F-4CAD-AF8B-93BBD1F7A1F7</string>
 </dict>
 </plist>
