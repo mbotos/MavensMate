@@ -130,7 +130,7 @@ module MavensMate
     		#checkout project
     		Dir.mkdir("#{project_folder}#{project_name}") unless File.exists?("#{project_folder}#{project_name}")
     		Dir.chdir("#{project_folder}")	
-    		TextMate::Process.run("svn checkout #{svn_url} '#{project_name}' --username #{svn_un} --password #{svn_pw}", :interactive_input => false) do |str|
+    		TextMate::Process.run("svn checkout '#{svn_url}' '#{project_name}' --username #{svn_un} --password #{svn_pw}", :interactive_input => false) do |str|
       			#STDOUT << htmlize(str, :no_newline_after_br => true)
     		end
     		#add force.com nature if it's not there already
