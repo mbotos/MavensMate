@@ -30,11 +30,16 @@ module MavensMate
       abort
     end
     
+    if (ENV['FM_PROJECT_FOLDER'].nil?)
+      TextMate::UI.alert(:warning, "MavensMate", "Please specify your projects folder by setting the 'FM_PROJECT_FOLDER' shell variable in TextMate preferences")
+      abort
+    end
+    
     if (params[:pn].nil? || params[:un].nil? || params[:pw].nil?)
       TextMate::UI.alert(:warning, "MavensMate", "Project Name, Salesforce Username, and Salesforce Password are all required fields!")
       abort
     end
-    
+       
     project_folder = get_project_folder
     project_name = params[:pn]
   	if File.directory?("#{project_folder}#{project_name}")
@@ -99,6 +104,11 @@ module MavensMate
   def self.checkout_project(params)
     if ! has_internet
       TextMate::UI.alert(:warning, "MavensMate", "You don't seem to have an active internet connection!")
+      abort
+    end
+    
+    if (ENV['FM_PROJECT_FOLDER'].nil?)
+      TextMate::UI.alert(:warning, "MavensMate", "Please specify your projects folder by setting the 'FM_PROJECT_FOLDER' shell variable in TextMate preferences")
       abort
     end
     
