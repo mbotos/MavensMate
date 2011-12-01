@@ -51,6 +51,7 @@ gem install rubyzip
 /Users/username/development/projects
 ```
 
+<P><img src="http://wearemavens.com/images/mm/path.png"/></P>
 
 <h3>Finally! Installing MavensMate</h3>
 <p>Installing MavensMate via Git (recommended)</p>
@@ -117,21 +118,4 @@ osascript -e 'tell app "TextMate" to reload bundles'
 	<LI>Running tests from MavensMate is currently not possible (but on the roadmap)
 	<LI>Force.com IDE's "Deploy to Server" functionality that enables easy deployment from sandbox --> prod, with diff support is not available in MavensMate *at this time*
 </UL>
-</P>
-
-<H1>Screenshots</H1>
-<P>
-	<img src="http://wearemavens.com/mm/mavensmate1.png"/>
-</P>
-<p>
-	<img src="http://joe-ferraro.com/images/mavensmate7.png"/>
-</p>
-<P>
-	<img src="http://wearemavens.com/mm/mavensmate5.png"/>
-</P>
-<P>
-	<img src="http://wearemavens.com/mm/mavensmate6.png"/>
-</P>
-<P>
-	<img src="http://joe-ferraro.com/images/mavensmate4.png"/>
 </P>
