@@ -9,21 +9,21 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 
 <p>1. Install rvm (Ruby Version Manager) if you have not already:</p>
 ```
-bash < <(curl -s https://raw.github.com/wayneeseguin/rvm/master/binscripts/rvm-installer )
+$ bash < <(curl -s https://raw.github.com/wayneeseguin/rvm/master/binscripts/rvm-installer )
 ```
 
 <p>2. Install Ruby 1.9.2:</p>
 ```
-rvm install 1.9.2
-rvm use 1.9.2 --default 
+$ rvm install 1.9.2
+$ rvm use 1.9.2 --default 
 ```
 
 <p>3. Update TextMate's osx-plist for Ruby 1.9:</p>
 ```
-git clone git://github.com/kballard/osx-plist.git
-cd osx-plist/ext/plist
-ruby extconf.rb && make
-cp plist.bundle /Applications/TextMate.app/Contents/SharedSupport/Support/lib/osx/
+$ git clone git://github.com/kballard/osx-plist.git
+$ cd osx-plist/ext/plist
+$ ruby extconf.rb && make
+$ cp plist.bundle /Applications/TextMate.app/Contents/SharedSupport/Support/lib/osx/
 ```
 
 <p>4. Make TextMate aware that we want to use Ruby 1.9.2:</p>
@@ -39,8 +39,8 @@ cp plist.bundle /Applications/TextMate.app/Contents/SharedSupport/Support/lib/os
 
 <p>5. Now, let's install a couple of gems:</p>
 ```
-gem install savon
-gem install rubyzip
+$ gem install savon
+$ gem install rubyzip
 ```
 <p><b>*Note:</b> DO NOT use sudo to work with RVM gems (http://beginrescueend.com/rubies/rubygems)</p>
 
@@ -54,10 +54,10 @@ gem install rubyzip
 <h3>Finally! Installing MavensMate</h3>
 <p>Installing MavensMate via Git (recommended)</p>
 ```
-mkdir -p ~/Library/Application\ Support/TextMate/Bundles
-cd ~/Library/Application\ Support/TextMate/Bundles
-git clone git://github.com/joeferraro/MavensMate.tmbundle.git "MavensMate.tmbundle"
-osascript -e 'tell app "TextMate" to reload bundles'
+$ mkdir -p ~/Library/Application\ Support/TextMate/Bundles
+$ cd ~/Library/Application\ Support/TextMate/Bundles
+$ git clone git://github.com/joeferraro/MavensMate.tmbundle.git "MavensMate.tmbundle"
+$ osascript -e 'tell app "TextMate" to reload bundles'
 ```
 
 <p>Installing MavensMate manually</p>
