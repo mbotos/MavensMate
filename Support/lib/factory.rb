@@ -1,4 +1,4 @@
-require 'rubygems'    
+require 'rubygems'
 require 'zip/zipfilesystem'
 require 'fileutils'   
 require 'tmpdir'

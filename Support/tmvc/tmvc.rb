@@ -1,9 +1,8 @@
-TMVC_ROOT = File.dirname(__FILE__)
-ROOT = TMVC_ROOT + "/.."
+TMVC_ROOT = "#{ENV['TM_BUNDLE_SUPPORT']}/tmvc"
+ROOT = "#{ENV['TM_BUNDLE_SUPPORT']}"
 CONTROLLERS_ROOT = ROOT + "/app/controllers"
 HELPERS_ROOT = ROOT + '/app/helpers' 
 VIEWS_ROOT = ROOT + "/app/views"
-
 
 %w[string hash erb_stdout ruby_tm_helpers format_helpers/tag_helper html_helpers application_helper application_controller].each do |filename|
   require TMVC_ROOT + "/lib/#{filename}.rb"
@@ -48,7 +47,6 @@ module TMVC
       begin
         raise "must supply a controller to use!" unless controller = params[:controller]
         params[:action] ||= "index"
-        #puts "controller name is: " + controller
         controller_class = "#{controller}_controller".classify.constantize
         controller_class.call(params[:action], params) 
       rescue => e

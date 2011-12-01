@@ -11,9 +11,8 @@ if RUBY_VERSION.include? "1.8"
 	TextMate::UI.alert(:warning, "MavensMate", "Hm, it looks like you're running Ruby 1.8.7. MavensMate requires Ruby 1.9+.")
 	abort
 end
-
 require ENV['TM_BUNDLE_SUPPORT'] + '/environment.rb'
-dispatch :controller =&gt; "project", :action =&gt; "index", :user_action =&gt; "new"</string>
+dispatch :controller =&gt; "project", :action =&gt; "index_custom_project", :user_action =&gt; "new"</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>
@@ -23,6 +22,6 @@ dispatch :controller =&gt; "project", :action =&gt; "index", :user_action =&gt; 
 	<key>output</key>
 	<string>showAsHTML</string>
 	<key>uuid</key>
-	<string>6FAD4C03-DFB5-4059-9663-5EEF048199F9</string>
+	<string>7FD3EAED-CC6F-4CAD-AF8B-93BBD1F7A1F7</string>
 </dict>
 </plist>

@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>beforeRunningCommand</key>
-	<string>nop</string>
+	<string>saveActiveFile</string>
 	<key>command</key>
 	<string>#!/usr/bin/env ruby
 require ENV['TM_SUPPORT_PATH'] + '/lib/ui'
@@ -12,16 +12,16 @@ if RUBY_VERSION.include? "1.8"
 	abort
 end
 require "#{ENV['TM_BUNDLE_SUPPORT']}/lib/mavensmate"
-MavensMate.refresh_selected_file</string>
+MavensMate.save</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>
 	<string>^~@m</string>
 	<key>name</key>
-	<string>Refresh Selected File From Server</string>
+	<string>Compile Selected Files</string>
 	<key>output</key>
 	<string>discard</string>
 	<key>uuid</key>
-	<string>7C91126B-2F18-4DBF-BD7E-EBCAAE3E2B1E</string>
+	<string>C51B1549-9054-47AB-BF2F-65D59E8BAA0A</string>
 </dict>
 </plist>

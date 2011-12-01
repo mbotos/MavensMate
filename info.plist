@@ -19,21 +19,22 @@
 	<dict>
 		<key>items</key>
 		<array>
-			<string>6FAD4C03-DFB5-4059-9663-5EEF048199F9</string>
 			<string>7FD3EAED-CC6F-4CAD-AF8B-93BBD1F7A1F7</string>
 			<string>72757B29-4893-4710-B3BB-23057D5186E2</string>
 			<string>------------------------------------</string>
 			<string>FB4E53B8-0467-4C10-9284-1FACCEFBC427</string>
+			<string>C51B1549-9054-47AB-BF2F-65D59E8BAA0A</string>
 			<string>4BC0B467-8D75-416A-8B44-264A3290C38B</string>
 			<string>------------------------------------</string>
 			<string>7C91126B-2F18-4DBF-BD7E-EBCAAE3E2B1E</string>
+			<string>------------------------------------</string>
+			<string>9ADCD2D2-8675-41A8-A8D6-A584A22B65DD</string>
 			<string>------------------------------------</string>
 			<string>86C3C4AA-CCE2-4CFA-A1C8-83518ECF2DDA</string>
 			<string>E56E0EDB-2FE9-4BD5-AD56-426E9F6A0637</string>
 			<string>EE3060A0-17D2-4D6A-BFA2-583151E7D22E</string>
 			<string>10608648-3CED-401A-A99E-13B101A82CAF</string>
 			<string>------------------------------------</string>
-			<string>9ADCD2D2-8675-41A8-A8D6-A584A22B65DD</string>
 			<string>48116119-1CDB-4539-87A4-46A138E310B3</string>
 			<string>0679155B-EA6E-40B3-AC20-38C84814AA2D</string>
 			<string>A86D0BC3-7558-45AB-BF57-C843184E5B9E</string>
@@ -45,10 +46,10 @@
 	<string>MavensMate</string>
 	<key>ordering</key>
 	<array>
-		<string>6FAD4C03-DFB5-4059-9663-5EEF048199F9</string>
 		<string>7FD3EAED-CC6F-4CAD-AF8B-93BBD1F7A1F7</string>
 		<string>72757B29-4893-4710-B3BB-23057D5186E2</string>
 		<string>FB4E53B8-0467-4C10-9284-1FACCEFBC427</string>
+		<string>C51B1549-9054-47AB-BF2F-65D59E8BAA0A</string>
 		<string>4BC0B467-8D75-416A-8B44-264A3290C38B</string>
 		<string>7C91126B-2F18-4DBF-BD7E-EBCAAE3E2B1E</string>
 		<string>86C3C4AA-CCE2-4CFA-A1C8-83518ECF2DDA</string>

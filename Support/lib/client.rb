@@ -268,10 +268,19 @@ module MavensMate
           mt = MavensMate::FileFactory.get_meta_type_by_suffix(ext)
           file_name_no_ext = File.basename(path, File.extname(path)) #=> "myclass" 
           types_body << "<types><members>#{file_name_no_ext}</members><name>#{mt[:xml_name]}</name></types>"
-        elsif ! options[:meta_types].nil? #grab selected
-          options[:meta_types].each { |type|  
-            types_body << "<types><members>*</members><name>"+type+"</name></types>"
-          }
+        elsif ! options[:meta_types].nil? #custom built project	
+    			options[:meta_types].each { |meta_type, selected_children| 
+    			    types_body << "<types>"
+    			    if selected_children.length == 0
+    			      types_body << "<members>*</members>"
+    			    else
+    			      selected_children.each { |child|  
+      			      types_body << "<members>#{child}</members>"
+    			      }
+    			    end
+    			    types_body << "<name>"+meta_type+"</name>"
+    			    types_body << "</types>"
+    			}    			
         else #grab from default package
           PACKAGE_TYPES.each { |type|  
             types_body << "<types><members>*</members><name>"+type+"</name></types>"

@@ -103,7 +103,7 @@ class ProjectController < ApplicationController
       kill_server unless ! result[:is_success]
       render "_project_result", :locals => { :message => result[:error_message], :success => result[:is_success] }
     rescue Exception => e
-      TextMate::UI.alert(:warning, "MavensMate", e.message + "\n" + e.backtrace.join("\n"))
+      #TextMate::UI.alert(:warning, "MavensMate", e.message)
     end
   end
   

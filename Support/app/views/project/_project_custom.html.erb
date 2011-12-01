@@ -9,7 +9,7 @@
 	</div>
 	<ul class="tabs">
 		<li class="active"><a href="#form">Project Details</a></li>
-		<li><a href="#metadata">Metadata</a></li>
+		<li><a href="#metadata">Project Metadata</a></li>
 	</ul>
 	
 	<div class="pill-content">
@@ -48,16 +48,7 @@
 						<input class="xlarge" size="100" type="text" id="svn_url">
 					</div>								
 				
-					<div class="actions">					
-						<% if user_action == "new" %>
-							<input type="button" class="btn primary" value="Create Project"  onclick='$("#result_output").html(dispatch({controller: "project", action: "new_custom_project", pn: $("#pn").val(), un: $("#un").val(), pw: $("#pw").val(), server_url: $("#server_url").val(), svn_un: $("#svn_un").val(), svn_pw: $("#svn_pw").val(), svn_url: $("#svn_url").val(), tree: get_tree_json() }));'>
-						<% end %>
-						<% if user_action == "checkout" %>
-							<input type="button" class="btn primary" value="Checkout Project"  onclick="$('#result_output').html(dispatch({controller: 'project', action: 'checkout', pn: $('#pn').val(), un: $('#un').val(), pw: $('#pw').val(), server_url: $('#server_url').val(), svn_un: $('#svn_un').val(), svn_pw: $('#svn_pw').val(), svn_url: $('#svn_url').val() }));">
-						<% end %>
-						&nbsp;
-						<button type="reset" class="btn" onclick="window.close();">Cancel</button>
-					</div>
+					
 				</fieldset>
 			</form>
 		</div>
@@ -68,6 +59,22 @@
 				<div id="info"></div>
 			</div>
 		</div>
+		
+		<form class="form-stacked">
+			<fieldset style="padding-top:0px;">
+				<div class="actions">					
+					<% if user_action == "new" %>
+						<input type="button" class="btn primary" value="Create Project"  onclick='$("#result_output").html(dispatch({controller: "project", action: "new_custom_project", pn: $("#pn").val(), un: $("#un").val(), pw: $("#pw").val(), server_url: $("#server_url").val(), svn_un: $("#svn_un").val(), svn_pw: $("#svn_pw").val(), svn_url: $("#svn_url").val(), tree: get_tree_json() }));'>
+					<% end %>
+					<% if user_action == "checkout" %>
+						<input type="button" class="btn primary" value="Checkout Project"  onclick="$('#result_output').html(dispatch({controller: 'project', action: 'checkout', pn: $('#pn').val(), un: $('#un').val(), pw: $('#pw').val(), server_url: $('#server_url').val(), svn_un: $('#svn_un').val(), svn_pw: $('#svn_pw').val(), svn_url: $('#svn_url').val() }));">
+					<% end %>
+					&nbsp;
+					<button type="reset" class="btn" onclick="window.close();">Cancel</button>
+				</div>
+			</fieldset>
+		</form>
+		
 	</div>
 	<script>
 		$(function() {
@@ -120,27 +127,59 @@
 		}
 		
 		function get_tree_json() {
+			var tree = $("#tree").dynatree("getTree");		
 			dict = $('#tree').dynatree('getTree').toDict();
-			c = dict.children;
-			var mystring = "["
-			//var myJSONText = JSON.stringify(dict);
-			//console.log(myJSONText);
-			for(var key in c) {
-				console.log(c[key]);
-				if (c[key].select) {
-					mystring += "'" + c[key].meta_type + "',"
-				}
+			types = dict.children;
+			var project_hash = "{";
+				
+			for(var t in types) {
+				//if it's selected
+				if (types[t].select) {
+					console.log("SELECTED NODE: ")
+					console.log(types[t]);
+					project_hash += "'" + types[t].meta_type + "'=>";					
+					if (types[t].children) {
+						project_hash += "["
+						for(var child in types[t].children) {
+							if (types[t].children[child].select)
+								project_hash += "'"+types[t].children[child].title+"',";
+						}
+						project_hash += "]"
+					} else {
+						project_hash += "[]";
+					}
+					project_hash += ",";
+				} else {
+					//it's not selected, but it could have selected elements
+					var node = tree.getNodeByKey(types[t].key);
+					console.log("NON SELECTED NODE: ");
+					console.log(node);
+					if (node.span.className.indexOf('dynatree-partsel') != -1) {
+						project_hash += "'" + types[t].meta_type + "'=>";	
+						if (types[t].children) {
+							project_hash += "["
+							for(var child in types[t].children) {
+								if (types[t].children[child].select)
+									project_hash += "'"+types[t].children[child].title+"',";
+							}
+							project_hash += "]"
+						} else {
+							project_hash += "[]";
+						}
+						project_hash += ",";
+					}				
+				}						
 			}
-			mystring += "]";
-			mystring = mystring.replace(",]","]")
-			return mystring;
-			//return myJSONText.replace(/"/g, "\\\"");
+			project_hash += "}";
+			project_hash = project_hash.replace(/,]/g,"]")
+			project_hash = project_hash.replace(/,}/g,"}")
+			return project_hash;
 		}
-			
+					
 	</script>
 	<style>
 		#treewrapper {
-			height:480px;
+			height:399px;
 			overflow-y:auto;
 			width:98%;
 			border:1px solid #f2f2f2;
@@ -148,6 +187,10 @@
 		
 		ul.dynatree-container {
 			border:none !important;
+		}
+		
+		.form-stacked fieldset {
+			padding-top:0px !important;
 		}
 	</style>
 </div>

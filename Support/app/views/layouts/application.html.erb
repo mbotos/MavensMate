@@ -35,7 +35,11 @@
 		</div>
 		<script>
 			//window.resizeTo(document.getElementById('wrapper').offsetWidth, document.getElementById('wrapper').offsetHeight+22);
+			//window.resizeTo(325, document.getElementById('wrapper').offsetHeight+22);
 			window.resizeTo(325, document.getElementById('wrapper').offsetHeight+22);
+			try {
+				$("#deploy_output").height(document.getElementById('wrapper').offsetHeight);
+			} catch(e) { }
 			window.moveTo((screen.width-325)/2,(screen.height-document.getElementById('wrapper').offsetHeight-400)/2);
 		</script>
 </body>

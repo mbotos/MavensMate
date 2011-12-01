@@ -94,6 +94,7 @@ module MavensMate
       puts "</div>"
       FileUtils.rm_rf("#{project_folder}#{project_name}")
       #TextMate::UI.alert(:warning, "MavensMate", e.message + "\n" + e.backtrace.join("\n"))
+      #return { :is_success => false, :error_message => e.message + "\n" + e.backtrace.join("\n"), :project_name => project_name } 
       return { :is_success => false, :error_message => e.message, :project_name => project_name } 
     end
     puts "</div>"
@@ -194,8 +195,8 @@ module MavensMate
     end
   end
      
-  #compiles selected file(s)
-  def self.save 
+  #compiles selected file(s) or active file
+  def self.save(active_file=false) 
     if ! has_internet
       TextMate::UI.alert(:warning, "MavensMate", "You don't seem to have an active internet connection!")
       abort
@@ -206,9 +207,9 @@ module MavensMate
     end
     
     begin
-      compiling_what = (get_selected_files.length > 1) ? "Selected Metadata" : File.basename(ENV['TM_FILEPATH'])
+      compiling_what = (!active_file) ? "Selected Metadata" : File.basename(ENV['TM_FILEPATH'])
       TextMate.call_with_progress( :title => "MavensMate", :message => "Compiling #{compiling_what}" ) do
-        zip_file = MavensMate::FileFactory.put_tmp_metadata(get_metadata_hash)     
+        zip_file = MavensMate::FileFactory.put_tmp_metadata(get_metadata_hash(active_file))     
         client = MavensMate::Client.new
         result = client.deploy(zip_file)
         if ! result[:is_success]        
@@ -217,8 +218,8 @@ module MavensMate
         end
       end
     rescue Exception => e
-      TextMate::UI.alert(:warning, "MavensMate", e.message + "\n" + e.backtrace.join("\n"))
-      #TextMate::UI.alert(:warning, "MavensMate", e.message)
+      #TextMate::UI.alert(:warning, "MavensMate", e.message + "\n" + e.backtrace.join("\n"))
+      TextMate::UI.alert(:warning, "MavensMate", e.message)
     end
   end
   
@@ -382,8 +383,8 @@ module MavensMate
     end
     
     #gets metadata hash of selected files
-    def self.get_metadata_hash
-      selected_files = get_selected_files      
+    def self.get_metadata_hash(active_file=false)
+      selected_files = get_selected_files(active_file)     
       meta_hash = {}
       selected_files.each do |f|
         puts "selected file: " + f + "<br/>"
@@ -410,22 +411,26 @@ module MavensMate
     end
         
     #gets array of selected files
-    def self.get_selected_files
-      begin
-        selected_files = Shellwords.shellwords(ENV["TM_SELECTED_FILES"])
-        selected_files.each do |f|
-          next if f.include? "-meta.xml"        
-          ext = File.extname(f).gsub(".","") #=> cls
-          mt_hash = MavensMate::FileFactory.get_meta_type_by_suffix(ext)      
-          if mt_hash[:meta_file]
-            if ! selected_files.include? f + "-meta.xml" #if they didn't select the meta file, select it anyway
-              selected_files.push(f + "-meta.xml")   
+    def self.get_selected_files(active_file=false)
+      if active_file
+        return Array[ENV['TM_FILEPATH']]
+      else
+        begin
+          selected_files = Shellwords.shellwords(ENV["TM_SELECTED_FILES"])
+          selected_files.each do |f|
+            next if f.include? "-meta.xml"        
+            ext = File.extname(f).gsub(".","") #=> cls
+            mt_hash = MavensMate::FileFactory.get_meta_type_by_suffix(ext)      
+            if mt_hash[:meta_file]
+              if ! selected_files.include? f + "-meta.xml" #if they didn't select the meta file, select it anyway
+                selected_files.push(f + "-meta.xml")   
+              end
             end
           end
+          return selected_files
+        rescue
+          return Array[ENV['TM_FILEPATH']]
         end
-        return selected_files
-      rescue
-        return Array[ENV['TM_FILEPATH']]
       end
     end
         
