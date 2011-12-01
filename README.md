@@ -1,8 +1,6 @@
 <h1>MavensMate</h1>
 MavensMate is a TextMate bundle that aims to replicate the functionality of the Eclipse-based Force.com IDE. In its current state, MavensMate enables developers to create Salesforce.com projects, connect them to SVN, create certain types of metadata, and compile and retrieve metadata, all from TextMate.
 
-<b>MavensMate has been recently updated to utilize keychain for security and direct calls to the Salesforce.com metadata API (instead of ANT) for performance</b>
-
 <P>
 <h2>Installation</h2>
 <h3>Preparing TextMate for Ruby 1.9+</h3>
@@ -72,50 +70,19 @@ osascript -e 'tell app "TextMate" to reload bundles'
 
 </P> 
 
-
 <P>
-<h2>Current Features</h2>
+<h2>MavensMate Shortcut Keys (configurable)</h2>
 <UL>
-	<LI>Create a new Salesforce.com project (and import to SVN & checkout working copy in the same step [Optional])
-	<LI>Checkout a Salesforce.com project from SVN (adds "Force.com Nature" to the project as well (for you Eclipse converters))
-	<LI>Create a new Apex Classes, Apex Triggers, Visualforce Pages, & Visualforce Components
-	<LI>Compile your Salesforce.com metadata (obviously)
-	<LI>Refresh your project from the server
-	<LI>Apex/Visualforce Syntax Highlighting (thanks @quintonwall)
-	<LI>Fantastic keyboard shortcut support: use control + option + command + M to bring up MavensMate features
+	<LI>Open MavensMate: ````Command + Option + Command + M````
+	<LI>Compile: ````Command + Option + Command + C````
 </UL>
 </P>
 
 <P>
 <h2>Some extra goodies</h2>
-
 <P>We recommend the following to augment MavensMate:</P>
 <UL>
 	<LI>ProjectPlus TextMate plugin >>> adds nifty SVN/Git icons to project folder/file icons
 	<A HREF="http://ciaranwal.sh/projectplus">http://ciaranwal.sh/projectplus</A>
-</UL>
-</P>
-
-<P>
-	<img src="http://joe-ferraro.com/images/mavensmate2.png"/>
-</P>
-
-<P>
-<H1>Quick Start</H1>
-<OL>
-	<LI>Open TextMate
-	<LI>Choose the MavensMate Bundle and click "New Project" (or you can simply use control+option+command+M and selected "New Project") (**please note:TextMate requires a textfile be open in order to perform bundle operations, so if the MavensMate bundle options are grayed out under Bundles --> MavensMate, simply open a blank text file [command+N])
-	<LI>Enter your project information (SVN information is optional)
-	<LI>Click "Create Project"
-	<LI>Sit back and enjoy TextMate not eating up 800mb of your RAM	
-</OL>
-</P>
-
-<P>
-<h2>Current Limitations</h2>
-<UL>
-	<LI>MavensMate currently utilizes the most basic developer-friendly package.xml manifest: Apex Classes, VF Components, VF Pages, Static Resources, and Apex Triggers. On the roadmap is the ability to create a custom package.xml by selecting the elements of metadata you'd like to be part of your Salesforce.com project.
-	<LI>Running tests from MavensMate is currently not possible (but on the roadmap)
-	<LI>Force.com IDE's "Deploy to Server" functionality that enables easy deployment from sandbox --> prod, with diff support is not available in MavensMate *at this time*
 </UL>
 </P>
