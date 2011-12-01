@@ -16,7 +16,7 @@ MavensMate.save</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>
-	<string>@C</string>
+	<string>^~@c</string>
 	<key>name</key>
 	<string>Save Selected Metadata</string>
 	<key>output</key>
