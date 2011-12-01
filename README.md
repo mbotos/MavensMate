@@ -46,7 +46,7 @@ gem install rubyzip
 ```
 <p><b>*Note:</b> DO NOT use sudo to work with RVM gems (http://beginrescueend.com/rubies/rubygems)</p>
 
-</p>6. Finally, we need to create a TextMate shell variable that tells MavensMate where to put your projects. Create a shell variable named FM_PROJECT_FOLDER and set it the location of your choice: </p>
+<p>6. Finally, we need to create a TextMate shell variable that tells MavensMate where to put your projects. Create a shell variable named FM_PROJECT_FOLDER and set it the location of your choice:</p>
 ```
 /Users/username/development/projects
 ```
