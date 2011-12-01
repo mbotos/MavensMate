@@ -73,8 +73,8 @@ osascript -e 'tell app "TextMate" to reload bundles'
 <P>
 <h2>MavensMate Shortcut Keys (configurable)</h2>
 <UL>
-	<LI>Open MavensMate: ````Command + Option + Command + M````
-	<LI>Compile: ````Command + Option + Command + C````
+	<LI>Open MavensMate:</LI> ````Command + Option + Command + M````
+	<LI>Compile:</LI> ```Command + Option + Command + C```
 </UL>
 </P>
 
