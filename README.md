@@ -5,23 +5,22 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 
 <P>
 <h2>Installation</h2>
-<p><b>MavensMate requires Ruby 1.9.2</b></p>
 <h3>Preparing TextMate for Ruby 1.9+</h3>
 
 <p>In order for TextMate to run Ruby 1.9+, we'll need to do a little legwork:</p>  
 
-1. Install rvm (Ruby Version Manager) if you have not already:
+<p>1. Install rvm (Ruby Version Manager) if you have not already:</p>
 ```
 bash < <(curl -s https://raw.github.com/wayneeseguin/rvm/master/binscripts/rvm-installer )
 ```
 
-2. Install Ruby 1.9.2:
+<p>2. Install Ruby 1.9.2:</p>
 ```
 rvm install 1.9.2
 rvm use 1.9.2 --default 
 ```
 
-3. Update TextMate's osx-plist for Ruby 1.9:
+<p>3. Update TextMate's osx-plist for Ruby 1.9:</p>
 ```
 git clone git://github.com/kballard/osx-plist.git
 cd osx-plist/ext/plist
@@ -29,7 +28,7 @@ ruby extconf.rb && make
 cp plist.bundle /Applications/TextMate.app/Contents/SharedSupport/Support/lib/osx/
 ```
 
-4. Make TextMate aware that we want to use Ruby 1.9.2:
+<p>4. Make TextMate aware that we want to use Ruby 1.9.2:</p>
 <ol>
 	<li>Prepend your Ruby 1.9.2 installtion to your PATH shell variable. Your PATH shell variable should look something like: 
 	````
@@ -42,14 +41,14 @@ cp plist.bundle /Applications/TextMate.app/Contents/SharedSupport/Support/lib/os
 </ol>
  
 
-5. Now, let's install a couple of gems:
+<p>5. Now, let's install a couple of gems:</p>
 ```
 gem install savon
 gem install rubyzip
 ```
 <p><b>*Note:</b> DO NOT use sudo to work with RVM gems (http://beginrescueend.com/rubies/rubygems)</p>
 
-6. Finally, we need to create a TextMate shell variable that tells MavensMate where to put your projects. Create a shell variable named FM_PROJECT_FOLDER and set it the location of your choice: 
+</p>6. Finally, we need to create a TextMate shell variable that tells MavensMate where to put your projects. Create a shell variable named FM_PROJECT_FOLDER and set it the location of your choice: </p>
 	````
 	/Users/username/development/projects
 	````
