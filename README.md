@@ -90,3 +90,9 @@ $ osascript -e 'tell app "TextMate" to reload bundles'
 	<A HREF="http://ciaranwal.sh/projectplus">http://ciaranwal.sh/projectplus</A>
 </UL>
 </P>
+
+<P>
+<h2>Screenshots</h2>
+<P><img src="http://wearemavens.com/images/mm/project.png"/></P>
+<P><img src="http://wearemavens.com/images/mm/options.png"/></P>
+</p>
