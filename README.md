@@ -30,11 +30,11 @@ cp plist.bundle /Applications/TextMate.app/Contents/SharedSupport/Support/lib/os
 
 <p>4. Make TextMate aware that we want to use Ruby 1.9.2:</p>
 
->>>Prepend your Ruby 1.9.2 installation to your PATH shell variable. Your PATH shell variable should look something like:
+><p>Prepend your Ruby 1.9.2 installation to your PATH shell variable. Your PATH shell variable should look something like:</p>
 	````
 	/Users/username/.rvm/rubies/ruby-1.9.2-p290/usr/bin:/usr/sbin
 	````
->>>Create a shell variable named GEM_PATH and set it to the path of your newly installed 1.9.2 gems. Something like:
+><p>Create a shell variable named GEM_PATH and set it to the path of your newly installed 1.9.2 gems. Something like:</p>
 	````
 	/Users/username/.rvm/gems/ruby-1.9.2-p290
 	````
