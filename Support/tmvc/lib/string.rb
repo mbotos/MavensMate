@@ -1,6 +1,22 @@
 class String
-  def constantize
-    Object.module_eval("::" + self)
+  def constantize   
+    # require "logger"
+    # log = Logger.new(STDOUT)
+    # log.level = Logger::DEBUG
+    # log.debug("CLASS IS: " + c.inspect)
+    begin
+      Object.module_eval("::#{self}")
+    rescue     
+      begin
+        Object.module_eval("::#{self}", __FILE__, __LINE__)
+      rescue
+        begin
+          Object.module_eval(self)
+        rescue
+          eval(self)
+        end  
+      end
+    end
   end
   
   def underscore
