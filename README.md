@@ -26,13 +26,13 @@ $ ruby extconf.rb && make
 $ cp plist.bundle /Applications/TextMate.app/Contents/SharedSupport/Support/lib/osx/
 ```
 
-<p>4. Make TextMate aware that we want to use Ruby 1.9.2:</p>
+<p>4. Make TextMate aware that we want to use Ruby 1.9.2 via File &gt; Preferences &gt; Advanced &gt; Shell Variables:</p>
 
-><p>Prepend your Ruby 1.9.2 installation location to your TextMate PATH shell variable. Your PATH shell variable should look something like:</p>
+<p>Prepend your Ruby 1.9.2 installation location to your TextMate PATH shell variable. Your PATH shell variable should look something like:</p>
 
 	/Users/username/.rvm/rubies/ruby-1.9.2-p290/bin:/usr/bin:/usr/sbin
 
-><p>Create a TextMate shell variable named GEM_PATH and set it to the path of your newly installed 1.9.2 gems. Should look something like:</p>
+<p>Create a TextMate shell variable named GEM_PATH and set it to the path of your newly installed 1.9.2 gems. Should look something like:</p>
 
 	/Users/username/.rvm/gems/ruby-1.9.2-p290
 
@@ -56,7 +56,7 @@ $ gem install rubyzip
 ```
 $ mkdir -p ~/Library/Application\ Support/TextMate/Bundles
 $ cd ~/Library/Application\ Support/TextMate/Bundles
-$ git clone git://github.com/joeferraro/MavensMate.tmbundle.git "MavensMate.tmbundle"
+$ git clone git://github.com/joeferraro/MavensMate.git "MavensMate.tmbundle"
 $ osascript -e 'tell app "TextMate" to reload bundles'
 ```
 
