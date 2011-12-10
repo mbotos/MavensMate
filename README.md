@@ -39,6 +39,7 @@ $ cp plist.bundle /Applications/TextMate.app/Contents/SharedSupport/Support/lib/
 
 <p>5. Now, let's install a couple of gems:</p>
 ```
+$ gem install builder
 $ gem install savon
 $ gem install rubyzip
 ```
