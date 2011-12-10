@@ -37,7 +37,7 @@ $ cp plist.bundle /Applications/TextMate.app/Contents/SharedSupport/Support/lib/
 	/Users/username/.rvm/gems/ruby-1.9.2-p290
 
 
-<p>5. Now, let's install a couple of gems:</p>
+<p>5. Now, let's install a few gems:</p>
 ```
 $ gem install builder
 $ gem install savon
@@ -91,6 +91,11 @@ $ osascript -e 'tell app "TextMate" to reload bundles'
 	<A HREF="http://ciaranwal.sh/projectplus">http://ciaranwal.sh/projectplus</A>
 </UL>
 </P>
+
+<p>
+<h2>Screencast</h2>
+<iframe src="http://player.vimeo.com/video/33363307?title=0&amp;byline=0&amp;portrait=0" width="440" height="330" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
+</p>	
 
 <P>
 <h2>Screenshots</h2>
