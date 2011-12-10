@@ -10,6 +10,8 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 <p>1. Install rvm (Ruby Version Manager) if you have not already:</p>
 ```
 $ bash < <(curl -s https://raw.github.com/wayneeseguin/rvm/master/binscripts/rvm-installer )
+$ echo '[[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # Load RVM function' >> ~/.bash_profile
+$ source .bash_profile
 ```
 
 <p>2. Install Ruby 1.9.2:</p>
