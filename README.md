@@ -94,7 +94,7 @@ $ osascript -e 'tell app "TextMate" to reload bundles'
 
 <p>
 <h2>Screencast</h2>
-<object width="440" height="330"><param name="allowfullscreen" value="true" /><param name="allowscriptaccess" value="always" /><param name="movie" value="http://vimeo.com/moogaloop.swf?clip_id=33363307&amp;server=vimeo.com&amp;show_title=0&amp;show_byline=0&amp;show_portrait=0&amp;color=00adef&amp;fullscreen=1&amp;autoplay=0&amp;loop=0" /><embed src="http://vimeo.com/moogaloop.swf?clip_id=33363307&amp;server=vimeo.com&amp;show_title=0&amp;show_byline=0&amp;show_portrait=0&amp;color=00adef&amp;fullscreen=1&amp;autoplay=0&amp;loop=0" type="application/x-shockwave-flash" allowfullscreen="true" allowscriptaccess="always" width="440" height="330"></embed></object>
+<p><a href="http://vimeo.com/mavens/review/33363307/c072a3df51">http://vimeo.com/mavens/review/33363307/c072a3df51</a></p>
 </p>	
 
 <P>
