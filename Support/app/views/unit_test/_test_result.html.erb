@@ -46,7 +46,7 @@
 			results_normal[failure[:name]] = arr.push(failure) #file name with no extension
     else #key is there, let's add metadata to it
     	arr = results_normal[failure[:name]] #get the existing array
-      arr.push(success) #add the new piece of metadata
+      arr.push(failure) #add the new piece of metadata
       results_normal[failure[:name]] = arr #replace the key
     end
 	end
