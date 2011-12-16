@@ -11,17 +11,17 @@ if RUBY_VERSION.include? "1.8"
 	TextMate::UI.alert(:warning, "MavensMate", "Hm, it looks like you're running Ruby 1.8.7. MavensMate requires Ruby 1.9+.")
 	abort
 end
-require ENV['TM_BUNDLE_SUPPORT'] + '/environment.rb'
-dispatch :controller =&gt; "create", :action =&gt; "index", :meta_type =&gt; "ApexClass", :message =&gt; ""</string>
+require "#{ENV['TM_BUNDLE_SUPPORT']}/lib/mavensmate"
+MavensMate.clean_project</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>
 	<string>^~@m</string>
 	<key>name</key>
-	<string>New Apex Class</string>
+	<string>Clean Project</string>
 	<key>output</key>
-	<string>showAsHTML</string>
+	<string>discard</string>
 	<key>uuid</key>
-	<string>86C3C4AA-CCE2-4CFA-A1C8-83518ECF2DDA</string>
+	<string>097DB842-C59F-4C81-898F-639FC8119D63</string>
 </dict>
 </plist>

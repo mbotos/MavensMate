@@ -1,3 +1,6 @@
+MM_ROOT = File.dirname(__FILE__)
+ENV['TM_BUNDLE_SUPPORT'] = MM_ROOT + "/.."
+
 SUPPORT = ENV['TM_SUPPORT_PATH']
 BUNDLESUPPORT = ENV['TM_BUNDLE_SUPPORT']
 require SUPPORT + '/lib/exit_codes'
@@ -15,8 +18,6 @@ require BUNDLESUPPORT + '/lib/exceptions'
 require BUNDLESUPPORT + '/lib/metadata_helper'
 
 STDOUT.sync = true
-TM_ANT = (ENV['TM_ANT'] == nil) ? 'ant' : ENV['TM_ANT']
-TextMate.require_cmd "#{TM_ANT}"
 TextMate.min_support 10895
 
 module MavensMate
@@ -25,25 +26,17 @@ module MavensMate
    
   #creates new local project from salesforce metadata 
   def self.new_project(params)    
-    if ! has_internet
-      TextMate::UI.alert(:warning, "MavensMate", "You don't seem to have an active internet connection!")
-      abort
-    end
-    
-    if (ENV['FM_PROJECT_FOLDER'].nil?)
-      TextMate::UI.alert(:warning, "MavensMate", "Please specify your projects folder by setting the 'FM_PROJECT_FOLDER' shell variable in TextMate preferences")
-      abort
-    end
-    
+    validate [:internet, :mm_project_folder]
+      
     if (params[:pn].nil? || params[:un].nil? || params[:pw].nil?)
-      TextMate::UI.alert(:warning, "MavensMate", "Project Name, Salesforce Username, and Salesforce Password are all required fields!")
+      alert "Project Name, Salesforce Username, and Salesforce Password are all required fields!"
       abort
     end
        
     project_folder = get_project_folder
     project_name = params[:pn]
   	if File.directory?("#{project_folder}#{project_name}")
-  	  TextMate::UI.alert(:warning, "MavensMate", "Hm, it looks like this project already exists in your project folder.")
+  	  alert "Hm, it looks like this project already exists in your project folder."
       abort
   	end
   	
@@ -102,17 +95,9 @@ module MavensMate
   end
   
   #checks out salesforce.com project from svn, applies MavensMate nature
-  def self.checkout_project(params)
-    if ! has_internet
-      TextMate::UI.alert(:warning, "MavensMate", "You don't seem to have an active internet connection!")
-      abort
-    end
-    
-    if (ENV['FM_PROJECT_FOLDER'].nil?)
-      TextMate::UI.alert(:warning, "MavensMate", "Please specify your projects folder by setting the 'FM_PROJECT_FOLDER' shell variable in TextMate preferences")
-      abort
-    end
-    
+  def self.checkout_project(params)        
+    validate [:internet, :mm_project_folder]
+        
     if (params[:pn].nil? || params[:un].nil? || params[:pw].nil? || params[:svn_url].nil? || params[:svn_un].nil? || params[:svn_pw].nil?)
       TextMate::UI.alert(:warning, "MavensMate", "All fields are required to check out a project from SVN")
       abort
@@ -160,15 +145,8 @@ module MavensMate
   end
     
   #creates new metadata (ApexClass, ApexTrigger, ApexPage, ApexComponent)
-  def self.new_metadata(meta_type, api_name, object_api_name) 
-    if ! has_internet
-      TextMate::UI.alert(:warning, "MavensMate", "You don't seem to have an active internet connection!")
-      abort
-    end
-    if ! is_mm_project
-      TextMate::UI.alert(:warning, "MavensMate", "This doesn't seem to be a valid MavensMate project")
-      abort
-    end
+  def self.new_metadata(meta_type, api_name, object_api_name)     
+    validate [:internet, :mm_project]
     
     begin
       puts '<div id="mm_logger">'
@@ -176,7 +154,7 @@ module MavensMate
       TextMate.call_with_progress( :title => 'MavensMate', :message => 'Compiling New Metadata' ) do
         zip_file = MavensMate::FileFactory.put_local_metadata(:api_name => api_name, :meta_type => meta_type, :object_name => object_name, :dir => "tmp")
         client = MavensMate::Client.new
-        result = client.deploy(zip_file) 
+        result = client.deploy({:zip_file => zip_file}) 
         puts "result of new metadata is: " + result.inspect
         puts "</div>"
         if ! result[:is_success]        
@@ -197,46 +175,28 @@ module MavensMate
      
   #compiles selected file(s) or active file
   def self.save(active_file=false) 
-    if ! has_internet
-      TextMate::UI.alert(:warning, "MavensMate", "You don't seem to have an active internet connection!")
-      abort
-    end
-    if ! is_mm_project
-      TextMate::UI.alert(:warning, "MavensMate", "This doesn't seem to be a valid MavensMate project")
-      abort
-    end
+    validate [:internet, :mm_project]
     
     begin
       compiling_what = (!active_file) ? "Selected Metadata" : File.basename(ENV['TM_FILEPATH'])
       TextMate.call_with_progress( :title => "MavensMate", :message => "Compiling #{compiling_what}" ) do
         zip_file = MavensMate::FileFactory.put_tmp_metadata(get_metadata_hash(active_file))     
         client = MavensMate::Client.new
-        result = client.deploy(zip_file)
+        result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"})
         if ! result[:is_success]        
           TextMate.go_to :file => ENV['TM_FILEPATH'], :line => result[:line_number], :column => result[:column_number]  
           TextMate::UI.alert(:warning, "Compile Failed", get_error_message(result))
         end
       end
     rescue Exception => e
-      #TextMate::UI.alert(:warning, "MavensMate", e.message + "\n" + e.backtrace.join("\n"))
-      TextMate::UI.alert(:warning, "MavensMate", e.message)
+      #alert e.message + "\n" + e.backtrace.join("\n")
+      alert e.message
     end
   end
   
   #refreshes the selected file from the server
-  def self.refresh_selected_file 
-    if ! has_internet
-      TextMate::UI.alert(:warning, "MavensMate", "You don't seem to have an active internet connection!")
-      abort
-    end
-    if ! is_mm_project
-      TextMate::UI.alert(:warning, "MavensMate", "This doesn't seem to be a valid MavensMate project")
-      abort
-    end
-    if ENV['TM_FILEPATH'].nil?
-      TextMate::UI.alert(:warning, "MavensMate", "Please select a file to refresh from the server")
-      abort
-    end
+  def self.refresh_selected_file     
+    validate [:internet, :mm_project, :file_selected]
 
     begin
       TextMate.call_with_progress( :title => 'MavensMate', :message => 'Refreshing '+File.basename(ENV['TM_FILEPATH']+' from the server') ) do
@@ -246,27 +206,20 @@ module MavensMate
         TextMate.rescan_project
       end
     rescue Exception => e
-      TextMate::UI.alert(:warning, "MavensMate", e.message)
+      alert e.message
     end
   end
     
   #deletes selected file(s) from the server (and locally)
   def self.delete_selected_files
-    if ! has_internet
-      TextMate::UI.alert(:warning, "MavensMate", "You don't seem to have an active internet connection!")
-      abort
-    end
-    if ! is_mm_project
-      TextMate::UI.alert(:warning, "MavensMate", "This doesn't seem to be a valid MavensMate project")
-      abort
-    end
+    validate [:internet, :mm_project]
         
     begin
       deleting_what = (get_selected_files.length > 1) ? "Selected Metadata" : File.basename(ENV['TM_FILEPATH'])
       TextMate.call_with_progress( :title => "MavensMate", :message => "Deleting #{deleting_what}" ) do
         zip_file = MavensMate::FileFactory.put_delete_metadata(get_metadata_hash)     
         client = MavensMate::Client.new
-        result = client.deploy(zip_file)
+        result = client.deploy({:zip_file => zip_file})
         if ! result[:is_success]        
           TextMate.go_to :file => ENV['TM_FILEPATH'], :line => result[:line_number], :column => result[:column_number]  
           TextMate::UI.alert(:warning, "Delete Failed", get_error_message(result))
@@ -278,40 +231,35 @@ module MavensMate
         end
       end
     rescue Exception => e
-     TextMate::UI.alert(:warning, "MavensMate", e.message)
+      alert e.message
     end
   end
   
   #compiles entire project
-  def self.compile_project
-    if ! has_internet
-      TextMate::UI.alert(:warning, "MavensMate", "You don't seem to have an active internet connection!")
-      abort
-    end
-    if ! is_mm_project
-      TextMate::UI.alert(:warning, "MavensMate", "This doesn't seem to be a valid MavensMate project")
-      abort
-    end
+  def self.compile_project    
+    validate [:internet, :mm_project]
     
     begin
       TextMate.call_with_progress( :title => 'MavensMate', :message => 'Compiling Project' ) do
         zip_file = MavensMate::FileFactory.copy_project_to_tmp 
         client = MavensMate::Client.new
-        result = client.deploy(zip_file) 
+        result = client.deploy({:zip_file => zip_file}) 
         if ! result[:is_success]        
           TextMate::UI.alert(:warning, "Compile Failed", get_error_message(result))
         end
       end
     rescue Exception => e
-      TextMate::UI.alert(:warning, "MavensMate", e.message)
+      alert e.message
     end
   end
         
-  #TODO: wipes local project and rewrites with server copies        
-  def self.clean_project
+  #wipes local project and rewrites with server copies based on current project's package.xml, preserves svn/git      
+  def self.clean_project    
+    validate [:internet, :mm_project]
+       
     confirmed = TextMate::UI.request_confirmation(
       :title => "Salesforce Project Cleaner",
-      :prompt => "Your Salesforce project will be emptied and refreshed. Any local metadata (not on the Salesforce.com server) will be lost forever",
+      :prompt => "Your Salesforce project will be emptied and refreshed according to package.xml. Any local metadata (not on the Salesforce.com server) will be lost forever.",
       :button1 => "Clean")
     
     begin
@@ -326,34 +274,65 @@ module MavensMate
               FileUtils.rm_r "#{pd}/src/#{entry}/#{subentry}"
             end
           end
-          #end local cleanup
-          #fetching server stuff
-          TextMate.rescan_project
           client = MavensMate::Client.new
-          project_zip = client.retrieve
-          arr = ENV['TM_PROJECT_DIRECTORY'].split('/')
-          project_name = arr[arr.length - 1]
-          MavensMate::FileFactory.put_project_metadata(project_name, project_zip) #put the metadata in the project directory    
+          project_zip = client.retrieve({ :package => "#{ENV['TM_PROJECT_DIRECTORY']}/src/package.xml" })
+          MavensMate::FileFactory.finish_clean(get_project_name, project_zip) #put the metadata in the project directory    
           TextMate.rescan_project
         end
       end
     rescue Exception => e
-      TextMate::UI.alert(:warning, "MavensMate", e.message)
-      #TextMate::UI.alert(:warning, "MavensMate", e.message + "\n" + e.backtrace.join("\n"))
+      alert e.message
+      #alert e.message + "\n" + e.backtrace.join("\n")
     end
     
   end
-  
-  #TODO: refreshes current project from server
-  def self.refresh_project
-    puts html_head( :window_title => "Refreshing Salesforce Project", :page_title => "Refresh Project from the Server" );
-    ant_build_file = ENV['TM_PROJECT_DIRECTORY'] + '/build.xml'
-    TextMate.call_with_progress( :title => 'Project Refresh', :message => 'Refreshing Project Metadata' ) do
-    	TextMate::Process.run("ant -buildfile '#{ant_build_file}' retrieve", :interactive_input => false) do |str|
-      		STDOUT << htmlize(str, :no_newline_after_br => true)
-    	end
+    
+  #deploys project metadata to a salesforce.com server
+  def self.deploy_to_server(params)
+    validate [:internet, :mm_project]
+    
+    begin
+      #TextMate.call_with_progress( :title => "MavensMate", :message => "Deploying to the server") do
+        endpoint = (params[:server_url].include? "test") ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"
+        zip_file = MavensMate::FileFactory.put_tmp_metadata(params[:selected_types])     
+        client = MavensMate::Client.new({ :username => params[:un], :password => params[:pw], :endpoint => endpoint })
+        result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"})
+        if ! result[:is_success]        
+          TextMate.go_to :file => ENV['TM_FILEPATH'], :line => result[:line_number], :column => result[:column_number]  
+          TextMate::UI.alert(:warning, "Compile Failed", get_error_message(result))
+        end
+      #end
+    rescue Exception => e
+      alert e.message + "\n" + e.backtrace.join("\n")
+      #alert e.message
     end
-    TextMate.rescan_project
+  end
+  
+  #runs apex tests in selected class
+  def self.run_tests(tests)
+    validate [:internet, :mm_project, :run_test]
+    
+    run_test_body = ""
+    tests.each do |t|
+      run_test_body << "<runTests>#{t}</runTests>"
+    end
+    
+    run_test_body << "<rollbackOnError>true</rollbackOnError>"
+    
+    begin
+      TextMate.call_with_progress( :title => "MavensMate", :message => "Running Apex unit tests" ) do
+        zip_file = MavensMate::FileFactory.put_empty_metadata    
+        client = MavensMate::Client.new
+        puts '<div id="mm_logger">'
+        result = client.deploy({:zip_file => zip_file, :deploy_options => run_test_body })
+        puts '</div>'
+        return result      
+      end
+    rescue Exception => e
+      #alert e.message + "\n" + e.backtrace.join("\n")
+      alert e.message
+    end
+    
   end
    
   #TODO 
@@ -362,9 +341,53 @@ module MavensMate
   end
   
   #TODOs:
-  #refresh files, refresh project, clean project
+  #refresh files, refresh project
      
   private
+    
+    #validates textmate command
+    def self.validate(options=[])
+      if options.include?(:internet)
+        if ! has_internet
+          alert "You don't seem to have an active internet connection!"
+          abort
+        end
+      end
+      if options.include?(:mm_project)
+        if ! is_mm_project
+          alert "This doesn't seem to be a valid MavensMate project"
+          abort
+        end
+      end
+      if options.include?(:run_test)
+        if ! File.extname(".cls")
+          alert "This doesn't seem to be a valid Apex Class file" 
+          abort
+        end
+      end
+      if options.include?(:file_selected)
+        if ENV['TM_FILEPATH'].nil?
+          alert "Please select a file to refresh from the server"
+          abort
+        end
+      end
+      if options.include?(:mm_project_folder)
+        if ENV['FM_PROJECT_FOLDER'].nil?
+          alert "Please specify your projects folder by setting the 'FM_PROJECT_FOLDER' shell variable in TextMate preferences"
+          abort
+        end
+      end
+    end
+    
+    #creates a UI alert with the specified message
+    def self.alert(message)
+      TextMate::UI.alert(:warning, "MavensMate", message)
+    end
+    
+    #returns the name of a file without its extension
+    def self.get_name_no_extension(name)
+      return name.split(".")[0]
+    end
     
     #parses and returns error message in friendly format
     def self.get_error_message(result)
@@ -382,7 +405,7 @@ module MavensMate
       return error_message + line_message + column_message
     end
     
-    #gets metadata hash of selected files
+    #returns metadata hash of selected files
     def self.get_metadata_hash(active_file=false)
       selected_files = get_selected_files(active_file)     
       meta_hash = {}
@@ -410,7 +433,7 @@ module MavensMate
       return meta_hash
     end
         
-    #gets array of selected files
+    #returns array of selected files
     def self.get_selected_files(active_file=false)
       if active_file
         return Array[ENV['TM_FILEPATH']]
@@ -475,5 +498,11 @@ module MavensMate
     	  return false
       end
       return true
+    end
+    
+    #returns the project name
+    def self.get_project_name
+      yml = YAML::load(File.open(ENV['TM_PROJECT_DIRECTORY'] + "/config/settings.yaml"))
+      project_name = yml['project_name']
     end
 end

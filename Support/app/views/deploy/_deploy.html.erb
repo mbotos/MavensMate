@@ -3,25 +3,191 @@
 	<div id="result_output">
 
 	</div>
+	<div class="alert-message error" style="display:none;" data-alert="alert" id="cred_alert">
+		<a class="close" href="#">×</a>
+		<p><strong>Error!</strong> You need to provide valid Salesforce.com credentials in Project Details.</p>
+	</div>
 	
-	<div id="form">
+	<ul class="tabs">
+		<li class="active"><a href="#form">Destination Details</a></li>
+		<li><a href="#metadata">Deployment Metadata</a></li>
+	</ul>
+	
+	<div class="pill-content">
+		<div id="form" class="active">
+			<form class="form-stacked">
+				<fieldset>
+					<div class="clearfix">
+						<label for="un">Salesforce Username</label> 
+						<input class="xlarge" size="100" type="text" id="un">
+					</div>
+					<div class="clearfix">
+						<label for="pw">Salesforce Password</label> 
+						<input class="xlarge" size="100" type="password" id="pw">
+					</div>
+					<div class="clearfix">
+						<label for="server_url">Server URL</label> 
+						<select id="server_url">
+							<option>https://www.salesforce.com</option>
+							<option>https://test.salesforce.com</option>
+						</select>
+					</div>				
+				</fieldset>
+			</form>
+		</div>
+		
+		<div id="metadata">
+			<div id="treewrapper">
+				<div id="filter">
+					<input type="text" id="txtFilter"/>
+				</div>
+				<div id="tree"></div>
+				<div id="info"></div>
+			</div>
+		</div>
+		
 		<form class="form-stacked">
-			<fieldset>
-				<div class="clearfix">
-					<label for="apiName"><%= meta_label %> Name</label> 
-					<input class="xlarge" size="100" type="text" id="apiName">
-				</div>
-				<div class="clearfix" style="display:<% if meta_type != "ApexTrigger" %>none<% end %>">
-					<label for="objectName">Object API Name</label> 
-					<input class="xlarge" size="100" type="text" id="objectName">
-				</div>
-				
-				<div class="actions">	
-					<input type="button" class="btn primary" value="Deploy"  onclick="$('#result_output').html(dispatch({controller: 'deploy', action: 'deploy_metadata', meta_type: '<%= meta_type %>' , api_name: $('#apiName').val(), object_api_name: $('#objectName').val()  }));">
+			<fieldset style="padding-top:0px;">
+				<div class="actions">					
+						<input type="button" class="btn primary" value="Deploy to Server"  onclick='$("#result_output").html(dispatch({controller: "deploy", action: "deploy_metadata", pn: $("#pn").val(), un: $("#un").val(), pw: $("#pw").val(), server_url: $("#server_url").val(), tree: get_tree_json() }));'>
 					&nbsp;
 					<button type="reset" class="btn" onclick="window.close();">Cancel</button>
 				</div>
 			</fieldset>
 		</form>
+		
 	</div>
+	<script>
+		$(function() {
+			$('.tabs').tabs();
+							
+	    $("#tree").dynatree({
+          onQueryExpand: function(node) {
+							console.log($('#sid'))
+							if ( $('#sid').val() == null || $('#sid').val() == "") {
+
+							}
+          },
+				 dataType: "jsonp",
+          persist: false,
+				 checkbox: true,
+				 selectMode: 3,
+				children: <%= project_json %>
+      	});
+
+				$.expr[':'].Contains = function(a,i,m){
+					return (a.textContent || a.innerText || "").toUpperCase().indexOf(m[3].toUpperCase())>=0;
+				};
+	
+				$("#txtFilter")
+		      .change( function () {
+		        var filter = $(this).val();
+		        if(filter) {
+		          // this finds all links in a list that contain the input,
+		          // and hide the ones not containing the input while showing the ones that do
+		          $(".custom1").find("a:not(:Contains(" + filter + "))").parent().parent().hide();
+		          $(".custom1").find("a:Contains(" + filter + ")").parent().parent().show();
+							$(".custom1").parent().parent().prev().each(function() {
+								var node = $.ui.dynatree.getNode(this);
+								console.log(node);
+							});
+		        } else {
+		          $(".custom1").parent().show();
+		        }
+		        return false;
+		      })
+		    .keyup( function () {
+		        // fire the above change event after every letter
+		        $(this).change();
+		    });
+		
+				$("#tree").dynatree("getRoot").visit(function(node){
+				    node.expand(false);
+				});
+		
+		
+			});
+				
+			$(function() {
+						// 			    $('.tabs a').bind('change', function (e) {
+						// console.log(e.target.href.indexOf("metadata"))
+						// if (e.target.href.indexOf("metadata") != -1 && ($('#sid').val() == null || $('#sid').val() == "")) {
+						// 	console.log('no creds');
+						// 	$('#result_output').html(dispatch({controller: 'project', action: 'login', un: $('#un').val(), pw: $('#pw').val(), server_url: $('#server_url').val() }));
+						// }
+						// 			    });
+			});
+		
+		function showCredAlert() {
+			$("#cred_alert").show();
+			window.resizeTo(325, document.getElementById('wrapper').offsetHeight+30);
+		}
+		
+		function get_tree_json() {
+			var tree = $("#tree").dynatree("getTree");		
+			dict = $('#tree').dynatree('getTree').toDict();
+			types = dict.children;
+			var project_hash = "{";
+				
+			for(var t in types) {
+				//if it's selected
+				if (types[t].select) {
+					console.log("SELECTED NODE: ")
+					console.log(types[t]);
+					project_hash += "'" + types[t].meta_type + "'=>";					
+					if (types[t].children) {
+						project_hash += "["
+						for(var child in types[t].children) {
+							if (types[t].children[child].select)
+								project_hash += "'"+types[t].children[child].title+"',";
+						}
+						project_hash += "]"
+					} else {
+						project_hash += "[]";
+					}
+					project_hash += ",";
+				} else {
+					//it's not selected, but it could have selected elements
+					var node = tree.getNodeByKey(types[t].key);
+					console.log("NON SELECTED NODE: ");
+					console.log(node);
+					if (node.span.className.indexOf('dynatree-partsel') != -1) {
+						project_hash += "'" + types[t].meta_type + "'=>";	
+						if (types[t].children) {
+							project_hash += "["
+							for(var child in types[t].children) {
+								if (types[t].children[child].select)
+									project_hash += "'"+types[t].children[child].title+"',";
+							}
+							project_hash += "]"
+						} else {
+							project_hash += "[]";
+						}
+						project_hash += ",";
+					}				
+				}						
+			}
+			project_hash += "}";
+			project_hash = project_hash.replace(/,]/g,"]")
+			project_hash = project_hash.replace(/,}/g,"}")
+			return project_hash;
+		}
+									
+	</script>
+	<style>
+		#treewrapper {
+			height:399px;
+			overflow-y:auto;
+			width:98%;
+			border:1px solid #f2f2f2;
+		}
+		
+		ul.dynatree-container {
+			border:none !important;
+		}
+		
+		.form-stacked fieldset {
+			padding-top:0px !important;
+		}
+	</style>
 </div>

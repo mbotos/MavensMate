@@ -59,6 +59,29 @@ module MavensMate
         FileUtils.mv project_folder+"/"+project_name+"/unpackaged", project_folder+"/"+project_name+"/src"        
       end
       
+      def finish_clean(project_name, project_zip)
+        project_folder = ENV['FM_PROJECT_FOLDER']
+        Dir.chdir(project_folder+"/"+project_name)
+        File.open('metadata.zip', 'wb') {|f| f.write(Base64.decode64(project_zip))}
+        Zip::ZipFile.open('metadata.zip') { |zip_file|
+            zip_file.each { |f|
+              f_path=File.join(project_folder+"/"+project_name, f.name)
+              FileUtils.mkdir_p(File.dirname(f_path))
+              zip_file.extract(f, f_path) unless File.exist?(f_path)
+            }
+          }
+        FileUtils.rm_r project_folder+"/"+project_name+"/metadata.zip"
+        
+        Dir.foreach("#{project_folder}/#{project_name}/unpackaged") do |meta_folder| #iterate the retrieve data
+          next if meta_folder.include? "." #ignore hidden items or package.xml
+          Dir.foreach("#{project_folder}/#{project_name}/unpackaged/#{meta_folder}") do |meta_file| #iterate the 
+            next if meta_file == '.' || meta_file == '..'
+            FileUtils.mv "#{project_folder}/#{project_name}/unpackaged/#{meta_folder}/#{meta_file}", "#{project_folder}/#{project_name}/src/#{meta_folder}/#{meta_file}"
+          end
+        end
+        FileUtils.rm_rf "#{project_folder}/#{project_name}/unpackaged"
+      end
+      
       def replace_file(file_path, project_zip)
         Dir.chdir(ENV['TM_PROJECT_DIRECTORY'])
         File.open('metadata.zip', 'wb') {|f| f.write(Base64.decode64(project_zip))}
@@ -85,6 +108,12 @@ module MavensMate
       def put_delete_metadata(hash)
         cleanup_tmp        
         put_package(Dir.getwd, binding, true)
+        put_empty_package(Dir.getwd)        
+        return zip_tmp_directory
+      end
+      
+      def put_empty_metadata
+        cleanup_tmp        
         put_empty_package(Dir.getwd)        
         return zip_tmp_directory
       end

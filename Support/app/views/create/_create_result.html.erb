@@ -1,12 +1,11 @@
 <div id="result_foo" style="padding:10px;">
 	<% if ! success %>
 		<div class="alert-message error">
-			<p><strong>Error!</strong> The creation of your new project failed.</p>
+			<p><strong>Error!</strong> Your deployment failed.</p>
 		</div>
 		<div class="alert-message block-message error">
 			<p><strong><%= message %></p>
 	  </div>
-		<script>window.resizeTo(325, document.getElementById('wrapper').offsetHeight+22);</script>
 	<% end %>
 	<% if success %>
 		<script>window.close();</script>

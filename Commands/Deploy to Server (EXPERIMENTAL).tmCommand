@@ -12,16 +12,16 @@ if RUBY_VERSION.include? "1.8"
 	abort
 end
 require ENV['TM_BUNDLE_SUPPORT'] + '/environment.rb'
-dispatch :controller =&gt; "create", :action =&gt; "index", :meta_type =&gt; "ApexClass", :message =&gt; ""</string>
+dispatch :controller =&gt; "deploy", :action =&gt; "index"</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>
-	<string>^~@m</string>
+	<string>^~@d</string>
 	<key>name</key>
-	<string>New Apex Class</string>
+	<string>Deploy to Server (EXPERIMENTAL)</string>
 	<key>output</key>
 	<string>showAsHTML</string>
 	<key>uuid</key>
-	<string>86C3C4AA-CCE2-4CFA-A1C8-83518ECF2DDA</string>
+	<string>4A80DF76-B8A7-4248-ABE2-71CFE0DC7313</string>
 </dict>
 </plist>

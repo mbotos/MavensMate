@@ -108,31 +108,33 @@ module MavensMate
     end
     
     #deploy/delete base64 encoded metadata to salesforce    
-    def deploy(base64Resource)
-      self.mclient = get_metadata_client
+    def deploy(options={})
+      self.mclient = get_metadata_client      
+      soapbody = "<zipFile>#{options[:zip_file]}</zipFile>"
+      soapbody << "<DeployOptions>#{options[:deploy_options]}</DeployOptions>" unless options[:deploy_options].nil?
       begin
         response = self.mclient.request :deploy do |soap|
           soap.header = get_soap_header
-          soap.body = '<zipFile>'+base64Resource+'</zipFile>'
+          soap.body = soapbody
         end
       rescue Savon::SOAP::Fault => fault
         raise Exception.new(fault.to_s)
       end
       
-      puts "<br/><br/> deploy response: " + response.to_hash.inspect
+      #puts "<br/><br/> deploy response: " + response.to_hash.inspect
       create_hash = response.to_hash
 
       update_id = create_hash[:deploy_response][:result][:id]
       is_finished = false
 
       while ! is_finished
-        sleep 2
+        sleep 1
         response = self.mclient.request :check_status do |soap|
           soap.header = get_soap_header
           soap.body = { :id => update_id  }
         end
         check_status_hash = response.to_hash
-        puts "<br/><br/>status is: " + check_status_hash.inspect + "<br/><br/>"
+        #puts "<br/><br/>status is: " + check_status_hash.inspect + "<br/><br/>"
         is_finished = check_status_hash[:check_status_response][:result][:done]         
       end
             
@@ -142,7 +144,11 @@ module MavensMate
       end
       
       status_hash = response.to_hash
-      puts "<br/><br/>deploy status is: " + status_hash.inspect + "<br/><br/>"
+      puts "<br/><br/>deploy result is: " + status_hash.inspect + "<br/><br/>"
+      
+      if options[:deploy_options] and options[:deploy_options].include? "runTests"
+        return status_hash
+      end
       
       if status_hash[:check_deploy_status_response][:result][:messages].kind_of? Array
         status_hash[:check_deploy_status_response][:result][:messages].each { |message| 
@@ -261,32 +267,50 @@ module MavensMate
       
       #returns body for soap calls with requested metadata specified
       def get_retrieve_body(options)
-        types_body = ""        
-        if ! options[:path].nil? #grab path only
-          path = options[:path]
-          ext = File.extname(path).gsub(".","") #=> "cls"
-          mt = MavensMate::FileFactory.get_meta_type_by_suffix(ext)
-          file_name_no_ext = File.basename(path, File.extname(path)) #=> "myclass" 
-          types_body << "<types><members>#{file_name_no_ext}</members><name>#{mt[:xml_name]}</name></types>"
-        elsif ! options[:meta_types].nil? #custom built project	
-    			options[:meta_types].each { |meta_type, selected_children| 
-    			    types_body << "<types>"
-    			    if selected_children.length == 0
-    			      types_body << "<members>*</members>"
-    			    else
-    			      selected_children.each { |child|  
-      			      types_body << "<members>#{child}</members>"
-    			      }
-    			    end
-    			    types_body << "<name>"+meta_type+"</name>"
-    			    types_body << "</types>"
-    			}    			
-        else #grab from default package
-          PACKAGE_TYPES.each { |type|  
-            types_body << "<types><members>*</members><name>"+type+"</name></types>"
-          }
-        end     
-        return "<RetrieveRequest><unpackaged>#{types_body}</unpackaged><apiVersion>#{MM_API_VERSION}</apiVersion></RetrieveRequest>"
+        types_body = ""
+        if ! options[:package].nil?
+          require 'rexml/document'
+          xml_data = File.read(options[:package])
+          doc = REXML::Document.new(xml_data)
+          types_body = ""
+          doc.elements.each('Package/types') do |el|
+            types_body << "<types>"
+            types_body << "<name>#{el.elements["name"].text}</name>"
+            el.each_element do |member|
+              if member.to_s.include? "<members>"
+                types_body << "<members>#{member.text}</members>"
+              end
+            end
+            types_body << "</types>"
+          end
+          return "<RetrieveRequest><unpackaged>#{types_body}</unpackaged><apiVersion>#{MM_API_VERSION}</apiVersion></RetrieveRequest>"
+        else        
+          if ! options[:path].nil? #grab path only
+            path = options[:path]
+            ext = File.extname(path).gsub(".","") #=> "cls"
+            mt = MavensMate::FileFactory.get_meta_type_by_suffix(ext)
+            file_name_no_ext = File.basename(path, File.extname(path)) #=> "myclass" 
+            types_body << "<types><members>#{file_name_no_ext}</members><name>#{mt[:xml_name]}</name></types>"
+          elsif ! options[:meta_types].nil? #custom built project	
+      			options[:meta_types].each { |meta_type, selected_children| 
+      			    types_body << "<types>"
+      			    if selected_children.length == 0
+      			      types_body << "<members>*</members>"
+      			    else
+      			      selected_children.each { |child|  
+        			      types_body << "<members>#{child}</members>"
+      			      }
+      			    end
+      			    types_body << "<name>"+meta_type+"</name>"
+      			    types_body << "</types>"
+      			}    			
+          else #grab from default package
+            PACKAGE_TYPES.each { |type|  
+              types_body << "<types><members>*</members><name>"+type+"</name></types>"
+            }
+          end     
+          return "<RetrieveRequest><unpackaged>#{types_body}</unpackaged><apiVersion>#{MM_API_VERSION}</apiVersion></RetrieveRequest>"
+        end
       end
       
       #returns salesforce credentials from keychain
