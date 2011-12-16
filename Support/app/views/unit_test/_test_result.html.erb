@@ -151,20 +151,23 @@
 			onclick="toggleSourceButton(this, <%= i + 1 %>)" style="padding: 3px 5px;font-size: .9em;">View Coverage</a>
   </div>
 </div>
-<table class='code' id="code_result_<%= i + 1 %>">
-	<tbody>
-	<% File.open("#{ENV['TM_PROJECT_DIRECTORY']}/src/#{directory}/#{result[:name]}.#{extension}").each_with_index do |line, index| %>
-		<% 
-			td_class = locations_not_covered_result.detect {|loc| loc[:line].to_i == index + 1 } ? "not_covered" : "covered" 
-		%>
-		<tr>
-	    <td class="line_numbers"><%= index + 1 %></td>
-	    <td class="code <%= td_class %>"><%= htmlize(line) %></td>
-		</tr>
-	<% end %>
-	</body>
-</table>
 
+	<% if File.exist? "#{ENV['TM_PROJECT_DIRECTORY']}/src/#{directory}/#{result[:name]}.#{extension}" %>
+		<table class='code' id="code_result_<%= i + 1 %>">
+			<tbody>
+				<% 
+					File.open("#{ENV['TM_PROJECT_DIRECTORY']}/src/#{directory}/#{result[:name]}.#{extension}").each_with_index do |line, index| 
+						td_class = locations_not_covered_result.detect {|loc| loc[:line].to_i == index + 1 } ? "not_covered" : "covered" 
+				%>
+				<tr>
+			    <td class="line_numbers"><%= index + 1 %></td>
+			    <td class="code <%= td_class %>"><%= htmlize(line) %></td>
+				</tr>
+			<% end%>
+			</tbody>
+		</table>
+	<% end%>
+	
 <% end %>
 </div>
 <script>

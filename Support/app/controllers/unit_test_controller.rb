@@ -30,8 +30,12 @@ class UnitTestController < ApplicationController
       pd = ENV['TM_PROJECT_DIRECTORY']
       Dir.foreach("#{pd}/src/classes") do |cls| 
         next if cls == "." or cls == ".." or cls.include? "-meta.xml" or cls == ".svn"
-        if File.readlines("#{pd}/src/classes/#{cls}").grep(/istest/i).size > 0 or File.readlines("#{pd}/src/classes/#{cls}").grep(/testmethod/i).size > 0
-          classes.push(cls.split(".")[0])
+        begin
+          if File.readlines("#{pd}/src/classes/#{cls}").grep(/istest/i).size > 0 or File.readlines("#{pd}/src/classes/#{cls}").grep(/testmethod/i).size > 0
+            classes.push(cls.split(".")[0])
+          end
+        rescue
+          next
         end
       end
       return classes
