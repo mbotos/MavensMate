@@ -3,7 +3,7 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 
 <P>
 <h2>Installation</h2>
-
+<p></p>
 ```
 $ gem install builder
 $ gem install savon
