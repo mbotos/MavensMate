@@ -2,14 +2,14 @@
 MavensMate is a TextMate bundle that aims to replicate the functionality of the Eclipse-based Force.com IDE. In its current state, MavensMate enables developers to create Salesforce.com projects, connect them to SVN, create certain types of metadata, and compile and retrieve metadata, all from TextMate.
 
 <P>
-<h2>Installation</h2>
+<h2>Clean Install</h2>
 <p></p>
 ```
 $ gem install builder
 $ gem install savon
 $ gem install rubyzip
 ```
-<p></p>
+<p>Clean Install</p>
 ```
 $ mkdir -p ~/Library/Application\ Support/TextMate/Bundles
 $ cd ~/Library/Application\ Support/TextMate/Bundles
@@ -22,6 +22,15 @@ $ osascript -e 'tell app "TextMate" to reload bundles'
 /Users/username/development/projects
 ```
 <P><img src="http://wearemavens.com/images/mm/path.png"/></P>
+
+<h2>Update</h2>
+<p></p>
+```
+$ cd ~/Library/Application\ Support/TextMate/Bundles
+$ rm -r ~/Library/Application\ Support/TextMate/Bundles/MavensMate.tmbundle
+$ git clone git://github.com/joeferraro/MavensMate.git "MavensMate.tmbundle"
+$ osascript -e 'tell app "TextMate" to reload bundles'
+```
 
 </P> 
 
