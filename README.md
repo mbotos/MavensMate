@@ -9,7 +9,7 @@ $ gem install builder
 $ gem install savon
 $ gem install rubyzip
 ```
-<p>Clean Install</p>
+<p></p>
 ```
 $ mkdir -p ~/Library/Application\ Support/TextMate/Bundles
 $ cd ~/Library/Application\ Support/TextMate/Bundles
