@@ -3,58 +3,19 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 
 <P>
 <h2>Installation</h2>
-<h3>Preparing TextMate for Ruby 1.9+</h3>
-
-<p>In order for TextMate to run Ruby 1.9+, we'll need to do a little legwork:</p>  
-
-<p>1. Install rvm (Ruby Version Manager) if you have not already:</p>
-```
-$ bash < <(curl -s https://raw.github.com/wayneeseguin/rvm/master/binscripts/rvm-installer )
-$ echo '[[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # Load RVM function' >> ~/.bash_profile
-$ source .bash_profile
-```
-
-<p>2. Install Ruby 1.9.2:</p>
-```
-$ rvm install 1.9.2
-$ rvm use 1.9.2 --default 
-```
-
-<p>3. Update TextMate's osx-plist for Ruby 1.9:</p>
-```
-$ git clone git://github.com/kballard/osx-plist.git
-$ cd osx-plist/ext/plist
-$ ruby extconf.rb && make
-$ cp plist.bundle /Applications/TextMate.app/Contents/SharedSupport/Support/lib/osx/
-```
-
-<p>4. Make TextMate aware that we want to use Ruby 1.9.2 via File &gt; Preferences &gt; Advanced &gt; Shell Variables:</p>
-
-<p>Prepend your Ruby 1.9.2 installation location to your TextMate PATH shell variable. Your PATH shell variable should look something like:</p>
-
-	/Users/username/.rvm/rubies/ruby-1.9.2-p290/bin:/usr/bin:/usr/sbin
-
-<p>Create a TextMate shell variable named GEM_PATH and set it to the path of your newly installed 1.9.2 gems. Should look something like:</p>
-
-	/Users/username/.rvm/gems/ruby-1.9.2-p290
-
-
-<p>5. Now, let's install a few gems:</p>
 ```
 $ gem install builder
 $ gem install savon
 $ gem install rubyzip
 ```
-<p><b>*Note:</b> DO NOT use sudo to work with RVM gems (<a href="http://beginrescueend.com/rubies/rubygems">http://beginrescueend.com/rubies/rubygems</a>)</p>
 
-<p>6. Finally, we need to create a TextMate shell variable that tells MavensMate where to put your projects. Create a shell variable named FM_PROJECT_FOLDER and set it the location of your choice:</p>
+<p>Create a TextMate shell variable that tells MavensMate where to put your projects. Create a shell variable named FM_PROJECT_FOLDER and set it the location of your choice:</p>
 ```
 /Users/username/development/projects
 ```
 
 <P><img src="http://wearemavens.com/images/mm/path.png"/></P>
 
-<h3>Finally! Installing MavensMate</h3>
 <p>Installing MavensMate via Git (recommended)</p>
 ```
 $ mkdir -p ~/Library/Application\ Support/TextMate/Bundles

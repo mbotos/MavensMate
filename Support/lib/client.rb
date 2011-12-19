@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'savon'
+require 'httpi'
 require 'fileutils'
 require 'base64'
 require 'yaml'

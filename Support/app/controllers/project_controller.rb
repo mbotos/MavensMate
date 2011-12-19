@@ -45,11 +45,9 @@ class ProjectController < ApplicationController
       webserver = TCPServer.new('127.0.0.1', 7125)
       while (session = webserver.accept)
          session.print "HTTP/1.1 200/OK\r\nContent-type:application/json\r\n\r\n"
-         #session.print "Request: #{session.gets.inspect}"
          request = session.gets
          tr = request.gsub(/GET\ \//, '').gsub(/\ HTTP.*/, '')
          params = tr[tr.index("?")+1,tr.length-1]
-         #session.print "PARAMS: #{params.inspect}\n"
          ps = params.split("&")
          sid = ""
          murl = ""
@@ -66,22 +64,13 @@ class ProjectController < ApplicationController
          }
          cleanmurl = URI.unescape(murl)
          begin
-         #session.print "sid: #{sid.inspect}\n"
-         #session.print "cleanmurl: #{cleanmurl.inspect}\n"
-         #session.print "meta_type: #{meta_type.inspect}\n"
-         client = MavensMate::Client.new({ :sid => sid, :metadata_server_url => cleanmurl })
-         meta_list = client.list(meta_type)
-         #session.print "RESPONSE IS: " + meta_list.inspect
-         session.puts meta_list
+           client = MavensMate::Client.new({ :sid => sid, :metadata_server_url => cleanmurl })
+           meta_list = client.list(meta_type)
+           session.puts meta_list
          rescue Exception => e
            session.print e.message + "\n" + e.backtrace.join("\n")
            session.close
          end
-         # begin
-         #    session.print "REQUEST IS: " + requested_meta_type
-         # rescue Errno::ENOENT
-         #    session.print "ERROR"
-         # end
          session.close
       end
     end   
@@ -103,7 +92,7 @@ class ProjectController < ApplicationController
       kill_server unless ! result[:is_success]
       render "_project_result", :locals => { :message => result[:error_message], :success => result[:is_success] }
     rescue Exception => e
-      #TextMate::UI.alert(:warning, "MavensMate", e.message)
+      TextMate::UI.alert(:warning, "MavensMate", e.message)
     end
   end
   

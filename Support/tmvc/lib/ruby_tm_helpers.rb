@@ -140,6 +140,9 @@ end
 
 class Object
   def blank?
-    nil? || empty?
+    begin
+      nil? || empty?
+    rescue
+    end
   end
 end
