@@ -10,14 +10,7 @@ $ gem install savon
 $ gem install rubyzip
 ```
 
-<p>Create a TextMate shell variable that tells MavensMate where to put your projects. Create a shell variable named FM_PROJECT_FOLDER and set it the location of your choice:</p>
-```
-/Users/username/development/projects
-```
-
-<P><img src="http://wearemavens.com/images/mm/path.png"/></P>
-
-<p>Installing MavensMate via Git (recommended)</p>
+<p>Installing MavensMate via Git</p>
 ```
 $ mkdir -p ~/Library/Application\ Support/TextMate/Bundles
 $ cd ~/Library/Application\ Support/TextMate/Bundles
@@ -25,13 +18,11 @@ $ git clone git://github.com/joeferraro/MavensMate.git "MavensMate.tmbundle"
 $ osascript -e 'tell app "TextMate" to reload bundles'
 ```
 
-<p>Installing MavensMate manually</p>
-<OL>
-	<LI><A HREF="https://github.com/joeferraro/MavensMate/tarball/master">Download this project</A>
-	<LI>Unzip and rename the parent directory to "MavensMate.tmbundle"
-	<LI>Double click "MavensMate.tmbundle". TextMate will automatically install the bundle
-	<LI>Open TextMate, go to Preferences --> Advanced --> Shell Variables and add a Shell Variable called "FM_PROJECT_FOLDER" with the value being the location where you'd like your Salesforce.com projects to reside (for example: '/Users/joe/Projects') [*notice the absolute path*] 
-</OL>
+<p>Open TextMate, go to Preferences --> Advanced --> Shell Variables and add a Shell Variable called "FM_PROJECT_FOLDER" with the value being the location where you'd like your Salesforce.com projects to reside (for example: '/Users/joe/Projects') [*notice the absolute path*]</p>
+```
+/Users/username/development/projects
+```
+<P><img src="http://wearemavens.com/images/mm/path.png"/></P>
 
 </P> 
 
