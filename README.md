@@ -64,7 +64,7 @@ $ osascript -e 'tell app "TextMate" to reload bundles'
 <h2>Project Wizard</h2>
 <P><img src="http://wearemavens.com/images/mm/wizard.png"/></P>
 <h2>Apex Test Runner</h2>
-<P><img src="http://wearemavens.com/images/mm/test.png"/></P>
+<P><img src="http://wearemavens.com/images/mm/test2.png"/></P>
 <h2>Options Dialog</h2>
 <P><img src="http://wearemavens.com/images/mm/options.png"/></P>
 </p>
