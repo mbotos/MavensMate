@@ -21,7 +21,7 @@ $ osascript -e 'tell app "TextMate" to reload bundles'
 ```
 /Users/username/development/projects
 ```
-<P><img src="http://wearemavens.com/images/mm/path2.png"/></P>
+<P><img src="http://wearemavens.com/images/mm/path3.png"/></P>
 
 <h2>Update</h2>
 <p></p>
