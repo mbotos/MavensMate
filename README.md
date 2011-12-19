@@ -9,8 +9,7 @@ $ gem install builder
 $ gem install savon
 $ gem install rubyzip
 ```
-
-<p>Installing MavensMate via Git</p>
+<p></p>
 ```
 $ mkdir -p ~/Library/Application\ Support/TextMate/Bundles
 $ cd ~/Library/Application\ Support/TextMate/Bundles
