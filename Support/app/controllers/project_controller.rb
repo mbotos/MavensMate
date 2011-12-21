@@ -65,7 +65,7 @@ class ProjectController < ApplicationController
          cleanmurl = URI.unescape(murl)
          begin
            client = MavensMate::Client.new({ :sid => sid, :metadata_server_url => cleanmurl })
-           meta_list = client.list(meta_type)
+           meta_list = client.list(meta_type, false)
            session.puts meta_list
          rescue Exception => e
            session.print e.message + "\n" + e.backtrace.join("\n")

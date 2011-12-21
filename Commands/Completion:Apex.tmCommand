@@ -3,20 +3,22 @@
 <plist version="1.0">
 <dict>
 	<key>beforeRunningCommand</key>
-	<string>nop</string>
+	<string>saveActiveFile</string>
 	<key>command</key>
 	<string>#!/usr/bin/env ruby -W0
-require ENV['TM_BUNDLE_SUPPORT'] + '/environment.rb'
-dispatch :controller =&gt; "create", :action =&gt; "index", :meta_type =&gt; "ApexClass", :message =&gt; ""</string>
+require ENV['TM_BUNDLE_SUPPORT'] + '/lib/mavensmate'
+MavensMate.complete
+
+</string>
 	<key>input</key>
-	<string>none</string>
+	<string>selection</string>
 	<key>keyEquivalent</key>
-	<string>^~@m</string>
+	<string>$	</string>
 	<key>name</key>
-	<string>New Apex Class</string>
+	<string>Completion:Apex</string>
 	<key>output</key>
-	<string>showAsHTML</string>
+	<string>discard</string>
 	<key>uuid</key>
-	<string>86C3C4AA-CCE2-4CFA-A1C8-83518ECF2DDA</string>
+	<string>434CA73C-BDFC-4C37-9CFC-3AD57E7D2295</string>
 </dict>
 </plist>

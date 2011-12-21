@@ -59,6 +59,22 @@ module MavensMate
         FileUtils.mv project_folder+"/"+project_name+"/unpackaged", project_folder+"/"+project_name+"/src"        
       end
       
+      def put_object_metadata(project_name, object_zip)
+        project_folder = ENV['FM_PROJECT_FOLDER']
+        Dir.chdir(project_folder+"/"+project_name+"/config")
+        File.open('metadata.zip', 'wb') {|f| f.write(Base64.decode64(object_zip))}
+        Zip::ZipFile.open('metadata.zip') { |zip_file|
+            zip_file.each { |f|
+              f_path=File.join(project_folder+"/"+project_name+"/config", f.name)
+              FileUtils.mkdir_p(File.dirname(f_path))
+              zip_file.extract(f, f_path) unless File.exist?(f_path)
+            }
+          }
+        FileUtils.rm_r project_folder+"/"+project_name+"/config/metadata.zip"
+        FileUtils.mv project_folder+"/"+project_name+"/config/unpackaged/objects", project_folder+"/"+project_name+"/config"
+        FileUtils.rm_r project_folder+"/"+project_name+"/config/unpackaged"
+      end
+      
       def finish_clean(project_name, project_zip)
         project_folder = ENV['FM_PROJECT_FOLDER']
         Dir.chdir(project_folder+"/"+project_name)

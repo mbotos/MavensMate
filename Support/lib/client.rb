@@ -217,7 +217,7 @@ module MavensMate
     end
     
     #list metadata for a specific type
-    def list(type="")
+    def list(type="",raw=false)
       self.mclient = get_metadata_client
       begin
         response = self.mclient.request :list_metadata do |soap|
@@ -228,6 +228,7 @@ module MavensMate
         raise Exception.new(fault.to_s)
       end
       begin
+        return response unless ! raw
         hash = response.to_hash
         els = Array.new
         if hash[:list_metadata_response].nil?

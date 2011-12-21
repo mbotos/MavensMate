@@ -28,17 +28,33 @@
 			padding:10px;
 			border:1px solid #f2f2f2;
 		}
+		
+		body {
+			padding-top:50px;
+		}
+		
+		.container {
+			width: 100%;
+			margin-left: 15px;
+		}
 	</style>
 </head>
 <body id='body'>
-  	<div id='debug'></div>
+  	<div data-scrollspy="scrollspy" class="topbar">
+      <div class="topbar-inner">
+        <div class="container">
+          <a href="#" class="brand">MavensMate</a>
+        </div>
+      </div>
+    </div>
+		<div id='debug'></div>
   	<div id='wrapper'>
 			<% yield %>
 		</div>
 		<script>
 			//window.resizeTo(document.getElementById('wrapper').offsetWidth, document.getElementById('wrapper').offsetHeight+22);
 			//window.resizeTo(325, document.getElementById('wrapper').offsetHeight+22);
-			window.resizeTo(325, document.getElementById('wrapper').offsetHeight+22);
+			window.resizeTo(325, document.getElementById('wrapper').offsetHeight+72);
 			try {
 				$("#deploy_output").height(document.getElementById('wrapper').offsetHeight);
 			} catch(e) { }

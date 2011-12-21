@@ -64,6 +64,18 @@ module MavensMate
         MavensMate::FileFactory.put_project_metadata(project_name, project_zip) #put the metadata in the project directory    
         add_to_keychain(project_name, pw)
         MavensMate::FileFactory.put_project_config(un, project_name, server_url)
+        
+        #put object metadata
+        object_response = client.list("CustomObject", true)
+        object_list = []
+        object_response[:list_metadata_response][:result].each do |obj|
+          object_list.push(obj[:full_name])
+        end 
+        object_hash = { "CustomObject" => object_list }               
+        options = { :meta_types => object_hash }
+        object_zip = client.retrieve(options) #get selected metadata
+        MavensMate::FileFactory.put_object_metadata(project_name, object_zip)
+      
         open_project(project_name) if ! is_svn            
       end 
 
@@ -292,7 +304,7 @@ module MavensMate
     validate [:internet, :mm_project]
     
     begin
-      #TextMate.call_with_progress( :title => "MavensMate", :message => "Deploying to the server") do
+      TextMate.call_with_progress( :title => "MavensMate", :message => "Deploying to the server") do
         endpoint = (params[:server_url].include? "test") ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"
         zip_file = MavensMate::FileFactory.put_tmp_metadata(params[:selected_types])     
         client = MavensMate::Client.new({ :username => params[:un], :password => params[:pw], :endpoint => endpoint })
@@ -301,10 +313,10 @@ module MavensMate
           TextMate.go_to :file => ENV['TM_FILEPATH'], :line => result[:line_number], :column => result[:column_number]  
           TextMate::UI.alert(:warning, "Compile Failed", get_error_message(result))
         end
-      #end
+      end
     rescue Exception => e
-      alert e.message + "\n" + e.backtrace.join("\n")
-      #alert e.message
+      #alert e.message + "\n" + e.backtrace.join("\n")
+      alert e.message
     end
   end
   
@@ -334,16 +346,84 @@ module MavensMate
     end
     
   end
-   
+     
+  #displays autocomplete dialog based on current word. supports object fields & apex primitive methods
+  def self.complete
+    require ENV['TM_SUPPORT_PATH'] + '/lib/ui'
+    require ENV['TM_SUPPORT_PATH'] + '/lib/current_word'
+    #current_word = ENV['TM_CURRENT_WORD']
+    current_word = Word.current_word(/\.([-a-zA-Z0-9_]+)/,:left)
+    puts current_word
+    abort if current_word.nil?
+    suggestions = []
+        
+    if File.exist?("#{ENV['TM_BUNDLE_SUPPORT']}/lib/apex/#{current_word.downcase!}.yaml")
+      apex_methods({:method_type => "static_methods", :object => current_word}).each do |m|
+        suggestions.push({ "display" => m })
+      end
+      selection = TextMate::UI.complete(suggestions, {:case_insensitive => true})
+      prints suggestions[selection] if not selection.nil?
+    else
+      current_object = ""
+      lines=[]
+      File.open(ENV['TM_FILEPATH']) do |file|
+         file.each_line do |line| 
+             lines.push(line)
+         end
+      end
+      lines = lines[0, ENV['TM_LINE_NUMBER'].to_i - 1]
+      lines.reverse!
+      lines.each_with_index do |line, index| 
+        next if not line.include?(" #{current_word} ")
+        line = line.slice(0, line.index(" #{current_word} "))
+        line.reverse!
+        line = line.slice(0, line.index(/[\[\]\(\)\s]/))
+        current_object = line.reverse
+        break
+      end
+    
+      abort if current_object.nil?
+    
+      if File.exist?("#{ENV['TM_PROJECT_DIRECTORY']}/config/objects/#{current_object}.object")
+        require 'rubygems'
+        require 'nokogiri'
+        doc = Nokogiri::XML(File.open("#{ENV['TM_PROJECT_DIRECTORY']}/config/objects/#{current_object}.object"))
+        doc.remove_namespaces!
+        doc.xpath("//fields/fullName").each do |node|
+          suggestions.push({ "display" => node.text })
+        end
+        selection = TextMate::UI.complete(suggestions, {:case_insensitive => true})
+        prints suggestions[selection] if not selection.nil?    
+      else
+        current_object.downcase!
+        if File.exist?("#{ENV['TM_BUNDLE_SUPPORT']}/lib/apex/#{current_object}.yaml")
+          apex_methods({:method_type => "instance_methods", :object => current_object}).each do |m|
+            suggestions.push({ "display" => m })
+          end
+          selection = TextMate::UI.complete(suggestions, {:case_insensitive => true})
+          prints suggestions[selection] if not selection.nil?
+        end
+      end
+    end
+  end
+  
   #TODO 
   def self.describe
 
   end
-  
-  #TODOs:
-  #refresh files, refresh project
-     
+ 
   private
+    
+    #returns a list of apex methods based on the object and method type supplied    
+    def self.apex_methods(options={})
+      require 'yaml'
+      methods = []
+      yml = YAML::load(File.open("#{ENV['TM_BUNDLE_SUPPORT']}/lib/apex/#{options[:object]}.yaml"))
+      yml[options[:method_type]].each do |method|
+        methods.push(method)
+      end
+      return methods
+    end
     
     #validates textmate command
     def self.validate(options=[])
