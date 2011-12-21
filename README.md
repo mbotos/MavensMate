@@ -1,5 +1,13 @@
 <h1>MavensMate</h1>
-MavensMate is a TextMate bundle that aims to replicate the functionality of the Eclipse-based Force.com IDE. In its current state, MavensMate enables developers to create Salesforce.com projects, connect them to SVN, create certain types of metadata, and compile and retrieve metadata, all from TextMate.
+MavensMate is a TextMate bundle that aims to replicate the functionality of the Eclipse-based Force.com IDE.
+<UL>
+	<LI>Create Salesforce.com projects with specific package metadata (and import to SVN)
+	<LI>Checkout Salesforce.com projects from SVN
+	<LI>Create & compile Apex Classes, Apex Trigger, Visualforce Pages, and Visualforce Components
+	<LI>Compile and retrieve other Salesforce.com metadata
+	<LI>Run Apex test methods and visualize test successes/failures & coverage
+	<LI>Supports code completion for SObject fields & Apex primitive methods
+</UL> 
 
 <P>
 <h2>Clean Install</h2>
@@ -65,6 +73,8 @@ $ osascript -e 'tell app "TextMate" to reload bundles'
 <P><img src="http://wearemavens.com/images/mm/wizard.png"/></P>
 <h2>Apex Test Runner</h2>
 <P><img src="http://wearemavens.com/images/mm/test2.png"/></P>
+<h2>Code Completion</h2>
+<P><img src="http://wearemavens.com/images/mm/completion2.png"/></P>
 <h2>Options Dialog</h2>
 <P><img src="http://wearemavens.com/images/mm/options.png"/></P>
 </p>
