@@ -277,7 +277,6 @@ module MavensMate
     begin
       if confirmed
         TextMate.call_with_progress( :title => "MavensMate", :message => "Cleaning Project" ) do
-          require 'fileutils'
           pd = ENV['TM_PROJECT_DIRECTORY']
           Dir.foreach("#{pd}/src") do |entry| #iterate the metadata folders
             next if entry.include? "."
@@ -286,9 +285,24 @@ module MavensMate
               FileUtils.rm_r "#{pd}/src/#{entry}/#{subentry}"
             end
           end
+          require 'fileutils'   
+          FileUtils.rm_r "#{pd}/config/objects" if File.directory? "#{pd}/config/objects"
+          
           client = MavensMate::Client.new
           project_zip = client.retrieve({ :package => "#{ENV['TM_PROJECT_DIRECTORY']}/src/package.xml" })
-          MavensMate::FileFactory.finish_clean(get_project_name, project_zip) #put the metadata in the project directory    
+          MavensMate::FileFactory.finish_clean(get_project_name, project_zip) #put the metadata in the project directory 
+          
+          #put object metadata
+          object_response = client.list("CustomObject", true)
+          object_list = []
+          object_response[:list_metadata_response][:result].each do |obj|
+            object_list.push(obj[:full_name])
+          end 
+          object_hash = { "CustomObject" => object_list }               
+          options = { :meta_types => object_hash }
+          object_zip = client.retrieve(options) #get selected metadata
+          MavensMate::FileFactory.put_object_metadata(get_project_name, object_zip)
+                 
           TextMate.rescan_project
         end
       end
