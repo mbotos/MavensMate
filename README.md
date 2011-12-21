@@ -6,7 +6,7 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 	<LI>Create & compile Apex Classes, Apex Trigger, Visualforce Pages, and Visualforce Components
 	<LI>Compile and retrieve other Salesforce.com metadata
 	<LI>Run Apex test methods and visualize test successes/failures & coverage
-	<LI>Supports code completion for SObject fields & Apex primitive methods
+	<LI>Supports code completion for SObject fields & Apex primitive methods (Alpha)
 </UL> 
 
 <P>
@@ -52,6 +52,9 @@ $ osascript -e 'tell app "TextMate" to reload bundles'
 
 	Control + Option + Command + C
 
+<P>Code Completion:</P>
+
+	Shift + Tab
 </P>
 
 <P>
