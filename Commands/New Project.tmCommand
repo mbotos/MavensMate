@@ -6,6 +6,10 @@
 	<string>nop</string>
 	<key>command</key>
 	<string>#!/usr/bin/env ruby -W0
+require 'rubygems'
+require 'savon'
+require 'builder'
+require 'zip/zipfilesystem'
 require ENV['TM_BUNDLE_SUPPORT'] + '/environment.rb'
 dispatch :controller =&gt; "project", :action =&gt; "index_custom_project", :user_action =&gt; "new"</string>
 	<key>input</key>
