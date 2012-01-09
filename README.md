@@ -36,7 +36,7 @@ $ osascript -e 'tell app "TextMate" to reload bundles'
 <p></p>
 ```
 $ cd ~/Library/Application\ Support/TextMate/Bundles
-$ rm -r ~/Library/Application\ Support/TextMate/Bundles/MavensMate.tmbundle
+$ rm -rf ~/Library/Application\ Support/TextMate/Bundles/MavensMate.tmbundle
 $ git clone git://github.com/joeferraro/MavensMate.git "MavensMate.tmbundle"
 $ osascript -e 'tell app "TextMate" to reload bundles'
 ```
