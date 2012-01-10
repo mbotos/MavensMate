@@ -1,13 +1,23 @@
 <div id="result_foo" style="padding:10px;">
 	<% if ! success %>
-		<div class="alert-message error">
-			<p><strong>Error!</strong> Your deployment failed.</p>
+		<div id="error_message" class="alert-message error">
+			<a class="close" href="#" onclick="$('#error_message').remove()">×</a>
+			<p><strong>Error!</strong></p>
+			<% result[:messages].each { |message| %>
+				<p><%= message[:problem] %></p>
+			<% } %>
+			<% result[:failures].each { |failure| %>
+				<p>
+					<%= failure[:name] %><br/>
+					<%= failure[:message] %><br/>
+					<%= failure[:stack_trace] %>
+				</p>
+			<% } %>
 		</div>
-		<div class="alert-message block-message error">
-			<p><strong><%= message %></p>
-	  </div>
 	<% end %>
 	<% if success %>
-		<script>window.close();</script>
+		<div class="alert-message success">
+			<p><strong>Success!</strong> Your deployment completed successfully.</p>
+		</div>
 	<% end %>
 </div>

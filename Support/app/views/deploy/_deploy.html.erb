@@ -14,7 +14,7 @@
 	</ul>
 	
 	<div class="pill-content">
-		<div id="form" class="active">
+		<div id="form" class="active" style="height:401px;">
 			<form class="form-stacked">
 				<fieldset>
 					<div class="clearfix">
@@ -34,6 +34,16 @@
 					</div>				
 				</fieldset>
 			</form>
+			<form>
+				<fieldset style="margin:0;padding-top:0px;">
+					<div class="clearfix">
+						<label for="check_only" style="width:100px;font-weight:bold;">Validate Only</label> 
+						<div class="input" style="margin-left: 120px;">
+							<input type="checkbox" id="check_only" style="margin:0px;width:32px;"/>
+						</div>
+					</div>
+				</fieldset>
+			</form>
 		</div>
 		
 		<div id="metadata">
@@ -49,7 +59,7 @@
 		<form class="form-stacked">
 			<fieldset style="padding-top:0px;">
 				<div class="actions">					
-						<input type="button" class="btn primary" value="Deploy to Server"  onclick='$("#result_output").html(dispatch({controller: "deploy", action: "deploy_metadata", pn: $("#pn").val(), un: $("#un").val(), pw: $("#pw").val(), server_url: $("#server_url").val(), tree: get_tree_json() }));'>
+						<input type="button" class="btn primary" value="Deploy to Server"  onclick='$("#result_output").html(dispatch({controller: "deploy", action: "deploy_metadata", pn: $("#pn").val(), un: $("#un").val(), pw: $("#pw").val(), server_url: $("#server_url").val(), check_only:isValidateOnly(), tree: get_tree_json() }));'>
 					&nbsp;
 					<button type="reset" class="btn" onclick="window.close();">Cancel</button>
 				</div>
@@ -58,8 +68,19 @@
 		
 	</div>
 	<script>
+		function isValidateOnly() {
+			if ($("#check_only").is(":checked")) {
+				return "1";
+			} else {
+				return "0";
+			}
+		}
+		
 		$(function() {
 			$('.tabs').tabs();
+			
+			//$("#form").height($("#treewrapper").height());
+			//window.resizeTo(window.width, $("#treewrapper").height());
 							
 	    $("#tree").dynatree({
           onQueryExpand: function(node) {

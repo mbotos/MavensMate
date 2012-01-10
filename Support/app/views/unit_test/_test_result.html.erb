@@ -74,7 +74,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			<% tests.each do |test| %>
+			<% tests.each_with_index do |test, index| %>
 				<tr>
 					<td style="width:210px;"><%= test[:method_name] %></td>
 					<td style="width:45px;">
@@ -84,7 +84,26 @@
 							<span class="label important">Failed</span>
 						<% end %>
 					</td>
-					<td><%= test[:message] ? test[:message] : "" %></td>
+					<td>
+						<%= test[:message] ? test[:message] : "" %> 
+						<% if test[:stack_trace] %>
+							<a onclick="$('#modal_<%= index %>').modal('toggle')" href="#">[Stack Trace]</a>
+							<div class="modal" style="display:none;" id="modal_<%= index %>">
+								<div class="modal-header">
+					            	<a href="#" class="close">×</a>
+					            	<h3>Stack Trace</h3>
+					          	</div>
+								<div class="modal-body">
+									<div style="height:400px;overflow-y:auto;">
+										<%= test[:stack_trace] %>
+									</div>
+					          	</div>
+								<div class="modal-footer">
+									<a href="#" onclick="$('#modal_<%= index %>').modal('hide')" class="btn primary">OK</a>
+								</div>
+							</div>
+						<% end %>
+					</td>
 				</tr>
 			<% end %>
 		</tbody>

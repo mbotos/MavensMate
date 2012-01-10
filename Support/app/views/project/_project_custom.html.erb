@@ -8,7 +8,7 @@
 		<p><strong>Error!</strong> You need to provide valid Salesforce.com credentials in Project Details.</p>
 	</div>
 	<ul class="tabs">
-		<li class="active"><a href="#form">Project Details</a></li>
+		<li class="active"><a id="project_details_tab" href="#form">Project Details</a></li>
 		<li><a href="#metadata">Project Metadata</a></li>
 	</ul>
 	
@@ -64,10 +64,10 @@
 			<fieldset style="padding-top:0px;">
 				<div class="actions">					
 					<% if user_action == "new" %>
-						<input type="button" class="btn primary" value="Create Project"  onclick='$("#result_output").html(dispatch({controller: "project", action: "new_custom_project", pn: $("#pn").val(), un: $("#un").val(), pw: $("#pw").val(), server_url: $("#server_url").val(), svn_un: $("#svn_un").val(), svn_pw: $("#svn_pw").val(), svn_url: $("#svn_url").val(), tree: get_tree_json() }));'>
+						<input type="button" id="btnSubmit" class="btn primary" value="Create Project"  onclick='$("#result_output").html(dispatch({controller: "project", action: "new_custom_project", pn: $("#pn").val(), un: $("#un").val(), pw: $("#pw").val(), server_url: $("#server_url").val(), svn_un: $("#svn_un").val(), svn_pw: $("#svn_pw").val(), svn_url: $("#svn_url").val(), tree: get_tree_json() }));'>
 					<% end %>
 					<% if user_action == "checkout" %>
-						<input type="button" class="btn primary" value="Checkout Project"  onclick="$('#result_output').html(dispatch({controller: 'project', action: 'checkout', pn: $('#pn').val(), un: $('#un').val(), pw: $('#pw').val(), server_url: $('#server_url').val(), svn_un: $('#svn_un').val(), svn_pw: $('#svn_pw').val(), svn_url: $('#svn_url').val() }));">
+						<input type="button" id="btnSubmit" class="btn primary" value="Checkout Project"  onclick="$('#result_output').html(dispatch({controller: 'project', action: 'checkout', pn: $('#pn').val(), un: $('#un').val(), pw: $('#pw').val(), server_url: $('#server_url').val(), svn_un: $('#svn_un').val(), svn_pw: $('#svn_pw').val(), svn_url: $('#svn_url').val() }));">
 					<% end %>
 					&nbsp;
 					<button type="reset" class="btn" onclick="window.close();">Cancel</button>
@@ -78,6 +78,25 @@
 	</div>
 	<script>
 		$(function() {
+			
+			$( "body" ).bind(
+				"DOMNodeRemoved",
+				function( event ) {
+					if (event.target.id == "result_wrapper") {
+						window.resizeTo(325, document.getElementById('wrapper').offsetHeight+72);
+						$("#project_details_tab").click();
+					}
+				}
+			);
+			
+			$("#deploy_output").bind('keyup', function(e) {
+				var code = (e.keyCode ? e.keyCode : e.which);
+				 if(code == 13) { //enter pressed
+				 	if ($('#un').val() && $('#pw').val() && $('#pn').val())
+						$("#btnSubmit").click();
+				 }
+			});
+			
 			$('.tabs').tabs();
 							
 	    $("#tree").dynatree({

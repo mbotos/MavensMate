@@ -31,6 +31,7 @@ class ProjectController < ApplicationController
       end
     rescue Exception => e
       TextMate::UI.alert(:warning, "MavensMate", e.message)
+      return
     end
   end
   
@@ -89,6 +90,7 @@ class ProjectController < ApplicationController
       tree = eval((params[:tree]))
       params[:selected_types] = tree
       result = MavensMate.new_project(params)
+      return if result.nil?
       kill_server unless ! result[:is_success]
       render "_project_result", :locals => { :message => result[:error_message], :success => result[:is_success] }
     rescue Exception => e

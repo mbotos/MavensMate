@@ -11,17 +11,39 @@
 					<label for="apiName"><%= meta_label %> Name</label> 
 					<input class="xlarge" size="100" type="text" id="apiName">
 				</div>
+				<div class="clearfix" style="display:<% if meta_type != "ApexClass" %>none<% end %>">
+					<label for="apiName">Apex Class Type</label> 
+					<select size="1" id="apexClassType">
+						<option value="public" selected="selected">Public (Default)</option>
+						<option value="test">Test</option>
+						<option value="batch">Batch</option>
+						<option value="schedulable">Schedulable</option>
+						<option value="email">Email Service</option>
+						<option value="url">Url Rewriter</option>
+					</select>
+				</div>
 				<div class="clearfix" style="display:<% if meta_type != "ApexTrigger" %>none<% end %>">
 					<label for="objectName">Object API Name</label> 
 					<input class="xlarge" size="100" type="text" id="objectName">
 				</div>
 				
 				<div class="actions">	
-					<input type="button" class="btn primary" value="Deploy"  onclick="$('#result_output').html(dispatch({controller: 'create', action: 'create_metadata', meta_type: '<%= meta_type %>' , api_name: $('#apiName').val(), object_api_name: $('#objectName').val()  }));">
+					<input type="button" id="btnSubmit" class="btn primary" value="Deploy"  onclick="$('#result_output').html(dispatch({controller: 'create', action: 'create_metadata', meta_type: '<%= meta_type %>' , api_name: $('#apiName').val(), object_api_name: $('#objectName').val(), apex_class_type: $('#apexClassType').val()  }));">
 					&nbsp;
 					<button type="reset" class="btn" onclick="window.close();">Cancel</button>
 				</div>
 			</fieldset>
 		</form>
 	</div>
+	
+	<script>	
+		$("#form").bind('keyup', function(e) {
+			var code = (e.keyCode ? e.keyCode : e.which);
+			 if(code == 13) { //enter pressed
+			 	if ($('#apiName').val())
+					$("#btnSubmit").click();
+			 }
+		});
+	</script>
+	
 </div>

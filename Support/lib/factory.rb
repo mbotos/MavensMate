@@ -158,10 +158,11 @@ module MavensMate
       #puts metadata in a specified directory
       #if [:dir] is nil, it's assumed you want to put it in the project folder              
       def put_local_metadata(options = { })
-        api_name    = options[:api_name]
-        meta_type   = options[:meta_type]
-        object_name = options[:object_name]        
-        dir         = options[:dir]
+        api_name        = options[:api_name]
+        meta_type       = options[:meta_type]
+        object_name     = options[:object_name]        
+        dir             = options[:dir]
+        apex_class_type = options[:apex_class_type]
         
         if dir.nil?       
           dir = ENV['TM_PROJECT_DIRECTORY'] + "/src/" + META_DIR_MAP[meta_type]
@@ -180,7 +181,7 @@ module MavensMate
           Dir.chdir(dir)
         end
 
-        file_name = put_src_file(:api_name => api_name, :meta_type => meta_type, :object_name => object_name)
+        file_name = put_src_file(:api_name => api_name, :meta_type => meta_type, :object_name => object_name, :apex_class_type => apex_class_type)
         put_meta_file(:api_name => api_name, :meta_type => meta_type, :object_name => object_name)
         
         if ! options[:dir].nil?
@@ -312,9 +313,28 @@ module MavensMate
           api_name = options[:api_name]
           meta_type = options[:meta_type]
           object_name = options[:object_name]
+          apex_class_type = options[:apex_class_type]
           file_name = "#{api_name}" + META_EXT_MAP[meta_type]
-                
-          template = ERB.new File.new("#{ENV['TM_BUNDLE_SUPPORT']}/templates/#{meta_type}.html.erb").read, nil, "%"
+          template = nil
+          if meta_type == "ApexClass" && ! apex_class_type.nil?
+            template_name = ""
+            if apex_class_type == "test"
+              template_name = "UnitTestApexClass"
+            elsif apex_class_type == "batch"
+              template_name = "BatchApexClass"
+            elsif apex_class_type == "schedulable"
+              template_name = "SchedulableApexClass"
+            elsif apex_class_type == "email"
+              template_name = "EmailServiceApexClass"
+            elsif apex_class_type == "url"
+              template_name = "UrlRewriterApexClass"
+            else
+              template_name = "ApexClass"
+            end
+            template = ERB.new File.new("#{ENV['TM_BUNDLE_SUPPORT']}/templates/#{template_name}.html.erb").read, nil, "%"            
+          else
+            template = ERB.new File.new("#{ENV['TM_BUNDLE_SUPPORT']}/templates/#{meta_type}.html.erb").read, nil, "%"            
+          end               
           erb = template.result(binding)        
           src = File.new(file_name, "w")
           src.puts(erb)

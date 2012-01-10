@@ -30,14 +30,14 @@ module MavensMate
       
     if (params[:pn].nil? || params[:un].nil? || params[:pw].nil?)
       alert "Project Name, Salesforce Username, and Salesforce Password are all required fields!"
-      abort
+      return
     end
        
     project_folder = get_project_folder
     project_name = params[:pn]
   	if File.directory?("#{project_folder}#{project_name}")
   	  alert "Hm, it looks like this project already exists in your project folder."
-      abort
+      return
   	end
   	
     begin   
@@ -157,24 +157,25 @@ module MavensMate
   end
     
   #creates new metadata (ApexClass, ApexTrigger, ApexPage, ApexComponent)
-  def self.new_metadata(meta_type, api_name, object_api_name)     
+  def self.new_metadata(options={})
+    #meta_type, api_name, object_api_name   
     validate [:internet, :mm_project]
     
     begin
       puts '<div id="mm_logger">'
-      object_name = object_api_name || ""
+      object_name = options[:object_api_name] || ""
       TextMate.call_with_progress( :title => 'MavensMate', :message => 'Compiling New Metadata' ) do
-        zip_file = MavensMate::FileFactory.put_local_metadata(:api_name => api_name, :meta_type => meta_type, :object_name => object_name, :dir => "tmp")
+        zip_file = MavensMate::FileFactory.put_local_metadata(:api_name => options[:api_name], :meta_type => options[:meta_type], :object_name => object_name, :dir => "tmp", :apex_class_type => options[:apex_class_type])
         client = MavensMate::Client.new
-        result = client.deploy({:zip_file => zip_file}) 
-        puts "result of new metadata is: " + result.inspect
+        result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"}) 
+        #puts "result of new metadata is: " + result.inspect
         puts "</div>"
         if ! result[:is_success]        
           return result
         else
-          zip_file = MavensMate::FileFactory.put_local_metadata(:api_name => api_name, :meta_type => meta_type, :object_name => object_name)
+          zip_file = MavensMate::FileFactory.put_local_metadata(:api_name => options[:api_name], :meta_type => options[:meta_type], :object_name => object_name, :apex_class_type => options[:apex_class_type])
           TextMate.rescan_project    
-          TextMate.go_to :file => ENV['TM_PROJECT_DIRECTORY'] + "/src/#{META_DIR_MAP[meta_type]}/#{api_name}#{META_EXT_MAP[meta_type]}" 
+          TextMate.go_to :file => ENV['TM_PROJECT_DIRECTORY'] + "/src/#{META_DIR_MAP[options[:meta_type]]}/#{options[:api_name]}#{META_EXT_MAP[options[:meta_type]]}" 
           return result
         end
       end
@@ -195,9 +196,16 @@ module MavensMate
         zip_file = MavensMate::FileFactory.put_tmp_metadata(get_metadata_hash(active_file))     
         client = MavensMate::Client.new
         result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"})
+        puts result.inspect
         if ! result[:is_success]        
-          TextMate.go_to :file => ENV['TM_FILEPATH'], :line => result[:line_number], :column => result[:column_number]  
-          TextMate::UI.alert(:warning, "Compile Failed", get_error_message(result))
+          begin
+          if result[:messages]
+            TextMate.go_to :file => ENV['TM_FILEPATH'], :line => result[:messages][0][:line_number], :column => result[:messages][0][:column_number]  
+          end
+          rescue
+            #ok with this
+          end
+          TextMate::UI.alert(:warning, "Compile Failed", parse_error_message(result))
         end
       end
     rescue Exception => e
@@ -318,18 +326,22 @@ module MavensMate
     validate [:internet, :mm_project]
     
     begin
+      puts '<div id="mm_logger">'
       TextMate.call_with_progress( :title => "MavensMate", :message => "Deploying to the server") do
         endpoint = (params[:server_url].include? "test") ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"
         zip_file = MavensMate::FileFactory.put_tmp_metadata(params[:selected_types])     
         client = MavensMate::Client.new({ :username => params[:un], :password => params[:pw], :endpoint => endpoint })
-        result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"})
-        if ! result[:is_success]        
-          TextMate.go_to :file => ENV['TM_FILEPATH'], :line => result[:line_number], :column => result[:column_number]  
-          TextMate::UI.alert(:warning, "Compile Failed", get_error_message(result))
-        end
+        result = client.deploy({:zip_file => zip_file, :deploy_options => "<checkOnly>#{params[:check_only]}</checkOnly><rollbackOnError>true</rollbackOnError>"})
+        puts "</div>"
+        return result
+        # if ! result[:is_success]        
+        #   TextMate.go_to :file => ENV['TM_FILEPATH'], :line => result[:line_number], :column => result[:column_number]  
+        #   TextMate::UI.alert(:warning, "Compile Failed", get_error_message(result))
+        # end
       end
     rescue Exception => e
       #alert e.message + "\n" + e.backtrace.join("\n")
+      puts "</div>"
       alert e.message
     end
   end
@@ -481,6 +493,35 @@ module MavensMate
     #returns the name of a file without its extension
     def self.get_name_no_extension(name)
       return name.split(".")[0]
+    end
+    
+    #parses and returns error message in friendly format
+    def self.parse_error_message(result)
+      full_message = ""
+      if result[:messages] && result[:messages].size > 0
+        result[:messages].each { |message|
+          next if message[:file_name].include? "package.xml"
+          file_name_array = message[:file_name].split('/')
+          file_name = file_name_array[file_name_array.length - 1]
+          error_message = "#{file_name}\nError: #{message[:problem]}"
+          line_message = ""
+          column_message = ""
+          if ! message[:line_number].nil?
+            line_message << "\nLine: #{message[:line_number]}"
+          end
+          if ! message[:column_number].nil?
+            column_message << "\nColumn: #{message[:column_number]}"
+          end       
+          full_message << error_message + line_message + column_message
+        }
+      end
+      if result[:failures] && result[:failures].size > 0
+        result[:failures].each { |failure|
+          #full_message << "#{failure.inspect}\n\n"
+          full_message << "#{failure[:name]}\n#{failure[:message]}\n#{failure[:stack_trace]}\n\n"
+        }
+      end
+      return full_message
     end
     
     #parses and returns error message in friendly format

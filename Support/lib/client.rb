@@ -118,13 +118,12 @@ module MavensMate
           soap.header = get_soap_header
           soap.body = soapbody
         end
+        puts "<br/><br/> deploy response: " + response.inspect
+        create_hash = response.to_hash
       rescue Savon::SOAP::Fault => fault
         raise Exception.new(fault.to_s)
       end
-      
-      #puts "<br/><br/> deploy response: " + response.to_hash.inspect
-      create_hash = response.to_hash
-
+            
       update_id = create_hash[:deploy_response][:result][:id]
       is_finished = false
 
@@ -147,10 +146,37 @@ module MavensMate
       status_hash = response.to_hash
       puts "<br/><br/>deploy result is: " + status_hash.inspect + "<br/><br/>"
       
+      #return full response on a test run
       if options[:deploy_options] and options[:deploy_options].include? "runTests"
         return status_hash
       end
       
+      #tests have failed preventing a successful deployment
+      if status_hash[:check_deploy_status_response][:result][:success] == false
+        failures = []
+        messages = []
+        if status_hash[:check_deploy_status_response][:result][:run_test_result][:failures]
+          if ! status_hash[:check_deploy_status_response][:result][:run_test_result][:failures].kind_of? Array
+            failures.push(status_hash[:check_deploy_status_response][:result][:run_test_result][:failures])
+          else
+            failures = status_hash[:check_deploy_status_response][:result][:run_test_result][:failures]
+          end
+        end
+        if status_hash[:check_deploy_status_response][:result][:messages]
+          if ! status_hash[:check_deploy_status_response][:result][:messages].kind_of? Array
+            messages.push(status_hash[:check_deploy_status_response][:result][:messages])
+          else
+            messages = status_hash[:check_deploy_status_response][:result][:messages]
+          end
+        end
+        return { 
+          :is_success => false,
+          :failures => failures,
+          :messages => messages
+        }
+      end
+      
+      #deployment is "successful", but there are compile issues with the metadata
       if status_hash[:check_deploy_status_response][:result][:messages].kind_of? Array
         status_hash[:check_deploy_status_response][:result][:messages].each { |message| 
           if ! message[:success]

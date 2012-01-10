@@ -17,14 +17,14 @@ class DeployController < ApplicationController
     tree = eval((params[:tree]))
     params[:selected_types] = tree
     
-    require 'logger'
-    log = Logger.new(STDOUT)
-    log.level = Logger::INFO
+    #require 'logger'
+    #log = Logger.new(STDOUT)
+    #log.level = Logger::INFO
 
-    log.info "TREE: " + params[:selected_types].inspect + "<br/>"
-    log.info "PARAMS: " + params.inspect
+    #log.info "TREE: " + params[:selected_types].inspect + "<br/>"
+    #log.info "PARAMS: " + params.inspect
     result = MavensMate.deploy_to_server(params)
-    render "_deploy_result", :locals => { :message => result[:error_message], :success => result[:is_success] }
+    render "_deploy_result", :locals => { :result => result, :message => result[:error_message], :success => result[:is_success] }
   end
   
   private
@@ -35,6 +35,7 @@ class DeployController < ApplicationController
       Dir.foreach("#{ENV['TM_PROJECT_DIRECTORY']}/src") {|item| 
         next if item.include? "." or item.include? ".."
         mt = MavensMate::FileFactory.get_meta_type_by_dir(item)
+        #puts mt.inspect
         children = ''
         Dir.foreach("#{ENV['TM_PROJECT_DIRECTORY']}/src/#{item}") {|child| 
           next if child == "." or child == ".." or child == ".svn" or child == ".git"

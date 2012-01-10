@@ -13,8 +13,24 @@ class CreateController < ApplicationController
   end
   
   def create_metadata  
-    result = MavensMate.new_metadata(params[:meta_type], params[:api_name], params[:object_api_name])
-    render "_create_result", :locals => { :message => result[:error_message], :success => result[:is_success] }
+    #TODO - fix issue where failed deploy breaks form
+    
+    if params[:api_name].nil?
+      TextMate::UI.alert(:warning, "MavensMate", "Please enter the API name")
+      abort
+    end
+    if params[:api_name].include?(" ")
+      TextMate::UI.alert(:warning, "MavensMate", "Your API name cannot contain spaces")
+      abort
+    end
+    
+    result = MavensMate.new_metadata({
+      :meta_type => params[:meta_type], 
+      :api_name => params[:api_name], 
+      :object_api_name => params[:object_api_name],
+      :apex_class_type => params[:apex_class_type]
+    })
+    render "_create_result", :locals => { :messages => result[:messages], :success => result[:is_success] }
   end
   
 end
