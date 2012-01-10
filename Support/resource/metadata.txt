@@ -23,6 +23,8 @@
 {:directory_name=>"permissionsets", :in_folder=>false, :meta_file=>false, :suffix=>"permissionset", :xml_name=>"PermissionSet"}, 
 {:directory_name=>"datacategorygroups", :in_folder=>false, :meta_file=>false, :suffix=>"datacategorygroup", :xml_name=>"DataCategoryGroup"}, 
 {:directory_name=>"analyticSnapshots", :in_folder=>false, :meta_file=>false, :suffix=>"snapshot", :xml_name=>"AnalyticSnapshot"}, 
-{:directory_name=>"remoteSiteSettings", :in_folder=>false, :meta_file=>false, :suffix=>"remoteSite", :xml_name=>"RemoteSiteSetting"}
+{:directory_name=>"remoteSiteSettings", :in_folder=>false, :meta_file=>false, :suffix=>"remoteSite", :xml_name=>"RemoteSiteSetting"},
+{:directory_name=>"portals", :in_folder=>false, :meta_file=>false, :suffix=>"portal", :xml_name=>"Portal"},
+{:directory_name=>"sites", :in_folder=>false, :meta_file=>false, :suffix=>"site", :xml_name=>"CustomSite"}
 ]
 
