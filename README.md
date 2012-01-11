@@ -13,9 +13,10 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 <h2>Clean Install</h2>
 <p></p>
 ```
-$ sudo gem install builder -i /Library/Ruby/Gems/1.8/
-$ sudo gem install savon -i /Library/Ruby/Gems/1.8/
-$ sudo gem install rubyzip -i /Library/Ruby/Gems/1.8/
+$ sudo gem install rails
+$ sudo gem install builder
+$ sudo gem install savon
+$ sudo gem install rubyzip
 ```
 <p></p>
 ```
@@ -31,6 +32,9 @@ $ osascript -e 'tell app "TextMate" to reload bundles'
 ```
 <P>*FM_PROJECT_FOLDER is the only TextMate shell variable required by MavensMate*</P>
 <P><img src="http://wearemavens.com/images/mm/path3.png"/></P>
+
+<h3>IMPORTANT</h3>
+<P>If you get a ruby "constantize" exception when trying to create or checkout a project, it's likely a gem dependency issue. Ensure you've installed rails, builder, savon, and rubyzip.</P>
 
 <h2>Update</h2>
 <p></p>
