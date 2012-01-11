@@ -192,21 +192,23 @@ module MavensMate
     
     begin
       compiling_what = (!active_file) ? "Selected Metadata" : File.basename(ENV['TM_FILEPATH'])
+      result = nil
       TextMate.call_with_progress( :title => "MavensMate", :message => "Compiling #{compiling_what}" ) do
         zip_file = MavensMate::FileFactory.put_tmp_metadata(get_metadata_hash(active_file))     
         client = MavensMate::Client.new
         result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"})
-        puts result.inspect
-        if ! result[:is_success]        
-          begin
+        #puts result.inspect
+      end
+      
+      if ! result[:is_success]        
+        begin
           if result[:messages]
             TextMate.go_to :file => ENV['TM_FILEPATH'], :line => result[:messages][0][:line_number], :column => result[:messages][0][:column_number]  
           end
-          rescue
-            #ok with this
-          end
-          TextMate::UI.alert(:warning, "Compile Failed", parse_error_message(result))
+        rescue
+          #ok with this exception
         end
+        TextMate::UI.simple_notification({:title => "MavensMate", :summary => "Compile Failed", :log => parse_error_message(result)})
       end
     rescue Exception => e
       #alert e.message + "\n" + e.backtrace.join("\n")
