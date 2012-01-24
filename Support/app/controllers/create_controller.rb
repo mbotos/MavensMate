@@ -6,7 +6,7 @@ class CreateController < ApplicationController
   
   include MetadataHelper  
   
-  layout "application"
+  layout "base"
           
   def index
     render "_create", :locals => {:meta_type => params[:meta_type], :meta_label => META_LABEL_MAP[params[:meta_type]],  :message => ""}

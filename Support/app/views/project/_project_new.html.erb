@@ -1,0 +1,195 @@
+<div id="result_output">
+	
+</div>
+
+<div class="content">
+	
+	<div class="alert-message error" style="display:none;" data-alert="alert" id="cred_alert">
+		<a class="close" href="#">×</a>
+		<p><strong>Error!</strong> You need to provide valid Salesforce.com credentials in Project Details.</p>
+	</div>
+	 
+	<ul class="tabs">
+		<li class="active"><a id="project_details_tab" href="#form">Project Details</a></li>
+		<li><a href="#metadata">Project Metadata</a></li>
+	</ul>
+	
+	<div class="pill-content">
+		<div id="form" class="active">
+			<form class="form-stacked">
+				<fieldset>
+					<div class="clearfix">
+						<label for="pn">Project Name</label> 
+						<input class="xlarge" size="100" type="text" id="pn">
+					</div>
+					<div class="clearfix">
+						<label for="un">Salesforce Username</label> 
+						<input class="xlarge" size="100" type="text" id="un">
+					</div>
+					<div class="clearfix">
+						<label for="pw">Salesforce Password</label> 
+						<input class="xlarge" size="100" type="password" id="pw">
+					</div>
+					<div class="clearfix">
+						<label for="server_url">Server URL</label> 
+						<select id="server_url">
+							<option>https://www.salesforce.com</option>
+							<option>https://test.salesforce.com</option>
+						</select>
+					</div>
+					<div class="clearfix">
+						<label for="svn_un">SVN Username</label> 
+						<input class="xlarge" size="100" type="text" id="svn_un">
+					</div>				
+					<div class="clearfix">
+						<label for="svn_pw">SVN Password</label> 
+						<input class="xlarge" size="100" type="password" id="svn_pw">
+					</div>
+					<div class="clearfix">
+						<label for="svn_url">SVN URL</label> 
+						<input class="xlarge" size="100" type="text" id="svn_url">
+					</div>								
+				
+					
+				</fieldset>
+			</form>
+		</div>
+		
+		<div id="metadata">
+			<div id="project_wrapper">
+				<div id="treewrapper">
+					<div id="tree"></div>
+					<div id="info"></div>
+				</div> 
+			</div>
+		</div>
+				
+	</div>
+	
+</div>
+
+<form class="form-stacked" id="action_buttons">
+	<fieldset style="padding-top:0px;">
+		<div class="actions">					
+			<% if user_action == "new" %>
+				<input type="button" id="btnSubmit" class="btn primary" value="Create Project"  onclick='$("#result_output").html(dispatch({controller: "project", action: "new_custom_project", pn: $("#pn").val(), un: $("#un").val(), pw: $("#pw").val(), server_url: $("#server_url").val(), svn_un: $("#svn_un").val(), svn_pw: $("#svn_pw").val(), svn_url: $("#svn_url").val(), tree: get_tree() }));'>
+			<% end %>
+			<% if user_action == "checkout" %>
+				<input type="button" id="btnSubmit" class="btn primary" value="Checkout Project"  onclick="$('#result_output').html(dispatch({controller: 'project', action: 'checkout', pn: $('#pn').val(), un: $('#un').val(), pw: $('#pw').val(), server_url: $('#server_url').val(), svn_un: $('#svn_un').val(), svn_pw: $('#svn_pw').val(), svn_url: $('#svn_url').val() }));">
+			<% end %>
+			&nbsp;
+			<button type="reset" class="btn" onclick="window.close();">Cancel</button>
+		</div>
+	</fieldset>
+</form>
+
+
+	<script>
+		var user_action = "<%= user_action %>";
+		
+		var child_def = {}
+        <% child_metadata_definition.each do |child| %>
+        	child_def['<%= child[:tag_name] %>'] = '<%= child[:xml_name] %>';
+	   	<% end %>
+	
+		$(function() {
+						
+			var resizeHeight = $("#form").height(); 
+		    resizeAndCenterWindowByHeight(resizeHeight+50);
+			
+			$(window).resize(function() {
+				$("#project_wrapper").height($(window).height() - 175)
+			});
+			
+			//resize window if dom element is removed (in this case error message)
+			$( "body" ).bind(
+				"DOMNodeRemoved",
+				function( event ) {
+					if (event.target.id == "result_wrapper") {
+						window.resizeTo(325, document.getElementById('wrapper').offsetHeight+72);
+						$("#project_details_tab").click();
+					}
+				}
+			);
+						
+			//submit form on enter
+			$("#deploy_output").bind('keyup', function(e) {
+				var code = (e.keyCode ? e.keyCode : e.which);
+				 if(code == 13) { //enter pressed
+				 	if ($('#un').val() && $('#pw').val() && $('#pn').val())
+						$("#btnSubmit").click();
+				 }
+			});
+			
+			//instantiate tabs for NEW projects only
+			if (user_action != "checkout") { 
+				$('.tabs').tabs();
+			}
+			
+			//submit form on enter
+			$(".content").bind('keyup', function(e) {
+				var code = (e.keyCode ? e.keyCode : e.which);
+				 if(code == 13) { //enter pressed
+				 	if ($('#un').val() && $('#pw').val() && $('#pn').val())
+						$("#btnSubmit").click();
+				 }
+			});  
+			
+			//instantiate and populate metadata tree				
+	    	$("#tree").dynatree({
+          		onQueryExpand: function(node) {
+					//console.log($('#sid'))
+					if ( $('#sid').val() == null || $('#sid').val() == "") {
+						showCredAlert();
+						return false;
+					}
+         		},
+			 	dataType: "jsonp",
+			 	onLazyRead: function(node) {
+					node.appendAjax({url: "http://127.0.0.1:7125",
+			  			data: {
+							"key": node.data.meta_type,
+							"sid": $("#sid").val(),
+							"murl": $("#murl").val()
+						},
+						dataFilter: function (data, type) {
+							//console.log("before")
+							//console.log(data);
+							if (data.indexOf('[') != -1) {
+								data = data.substring(data.indexOf('['));
+							} else {
+								data = []
+							}
+							//console.log("after")
+							//console.log(data);
+							return data;
+						}
+					});
+			 	},
+         		persist: false,
+			 	checkbox: true,
+			 	selectMode: 3,
+				children: <%= my_json %>
+      		});
+			
+			//when user changes tab to metadata selection, use provided creds to login and get session id
+			$('.tabs a').bind('change', function (e) {
+				console.log(e.target.href.indexOf("metadata"))
+				if (e.target.href.indexOf("metadata") != -1 && user_action == "checkout") {
+					//return;
+				} else if (e.target.href.indexOf("metadata") != -1 && ($('#sid').val() == null || $('#sid').val() == "")) {
+					console.log('no creds');
+					$('#result_output').html(dispatch({controller: 'project', action: 'login', un: $('#un').val(), pw: $('#pw').val(), server_url: $('#server_url').val() }));
+				}
+		    });
+			
+			//start TCP server to handle json interaction with page
+			dispatch({controller: 'project', action: 'start_server' });	
+		});
+		
+		//shows an error if the user has not entered creds		
+		function showCredAlert() {
+			$("#cred_alert").show();
+			window.resizeTo(325, document.getElementById('wrapper').offsetHeight+30);
+		} 			
+	</script>

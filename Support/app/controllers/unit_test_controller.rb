@@ -19,7 +19,7 @@ class UnitTestController < ApplicationController
       result = MavensMate.run_tests(selected_tests)
       render "_test_result", :locals => { :result => result }
     rescue Exception => e
-      TextMate::UI.alert(:warning, "MavensMate", e.message)
+      TextMate::UI.alert(:warning, "MavensMate", e.message + e.backtrace.join("\n"))
     end
   end
   
@@ -31,7 +31,7 @@ class UnitTestController < ApplicationController
       Dir.foreach("#{pd}/src/classes") do |cls| 
         next if cls == "." or cls == ".." or cls.include? "-meta.xml" or cls == ".svn"
         begin
-          if File.readlines("#{pd}/src/classes/#{cls}").grep(/istest/i).size > 0 or File.readlines("#{pd}/src/classes/#{cls}").grep(/testmethod/i).size > 0
+          if File.readlines("#{pd}/src/classes/#{cls}").grep(/@istest/i).size > 0 or File.readlines("#{pd}/src/classes/#{cls}").grep(/testmethod/i).size > 0
             classes.push(cls.split(".")[0])
           end
         rescue

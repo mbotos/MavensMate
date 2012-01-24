@@ -23,6 +23,7 @@ class Lsof
     end
 
     def find_pids_cmd(port)
+      #lsof -i tcp:7125 | grep '(LISTEN)' | awk '{print $2}'
       "lsof -i tcp:#{port} | grep '(LISTEN)' | awk '{print $2}'"
     end
   end

@@ -2384,7 +2384,28 @@ DynaTree.prototype = {
 		});
 		return nodeList;
 	},
-
+	
+	getSelectedAndPartselNodes: function() { 
+		  var nodeList = []; 
+		  this.tnRoot.visit(function(dtnode){ 
+		          if( dtnode.bSelected || dtnode.hasSubSel) { 
+		                  nodeList.push(dtnode); 
+		          } 
+		  }); 
+		  return nodeList; 
+	},
+	
+	getSelectedAndPartselNodesByLevel: function(level) { 
+		  var nodeList = []; 
+		  this.tnRoot.visit(function(dtnode){ 
+		          if( dtnode.bSelected || dtnode.hasSubSel) { 
+		          	if (dtnode.data.level == level || dtnode.getLevel() == level)
+									nodeList.push(dtnode); 
+		          } 
+		  }); 
+		  return nodeList; 
+	},
+	
 	activateKey: function(key) {
 		var dtnode = (key === null) ? null : this.getNodeByKey(key);
 		if( !dtnode ) {

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
 <%- include MetadataHelper -%>
-<%- hash.each { |key, value| -%>
+<%- hash.each { |key, value| next if value.length == 0 -%>
 	<types>
-		<%- value.each do |f| -%>
-		<members><%= f %></members>
-		<%- end -%>
+	<%- value.each do |f| -%>
+		<members><%= f['name'] || f %></members>
+	<%- end -%>
 		<name><%= key %></name>
 	</types>
 <%- } -%>

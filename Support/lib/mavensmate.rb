@@ -22,6 +22,14 @@ TextMate.min_support 10895
 
 module MavensMate
   
+  #TODO   
+  #-modify package.xml when new metadata is created from MavensMate    
+  #-create project from package 
+  #-explore svn/git repo
+  #-changesets
+  #-add git support
+  #-list sobjects in picklist when creating trigger
+
   include MetadataHelper
    
   #creates new local project from salesforce metadata 
@@ -51,34 +59,42 @@ module MavensMate
       endpoint = (server_url.include? "test") ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"
     
       is_svn = (svn_url.length > 0 && svn_un.length > 0 && svn_pw.length > 0) || false
-        
+      Thread.abort_on_exception = true
+      threads = []  
       TextMate.call_with_progress( :title => 'MavensMate', :message => 'Retrieving Project Metadata' ) do          
         MavensMate::FileFactory.put_project_directory(project_name) #put project directory in the filesystem 
         client = MavensMate::Client.new({ :username => un, :password => pw, :endpoint => endpoint })
-        if ! params[:selected_types].nil?
-          options = { :meta_types => params[:selected_types]}
-          project_zip = client.retrieve(options) #get selected metadata
-        else
-          project_zip = client.retrieve #get metadata in zip file
-        end  
-        MavensMate::FileFactory.put_project_metadata(project_name, project_zip) #put the metadata in the project directory    
-        add_to_keychain(project_name, pw)
-        MavensMate::FileFactory.put_project_config(un, project_name, server_url)
-        
-        #put object metadata
-        object_response = client.list("CustomObject", true)
-        object_list = []
-        object_response[:list_metadata_response][:result].each do |obj|
-          object_list.push(obj[:full_name])
-        end 
-        object_hash = { "CustomObject" => object_list }               
-        options = { :meta_types => object_hash }
-        object_zip = client.retrieve(options) #get selected metadata
-        MavensMate::FileFactory.put_object_metadata(project_name, object_zip)
+        threads << Thread.new {          
+          thread_client = MavensMate::Client.new({ :sid => client.sid, :metadata_server_url => client.metadata_server_url })
+          hash = params[:package]
+          require 'fileutils'
+          tmp_dir = Dir.tmpdir 
+          MavensMate::FileFactory.put_package("#{tmp_dir}/mmpackage", binding, false)
+          project_zip = thread_client.retrieve({ :package => "#{tmp_dir}/mmpackage/package.xml" })            
+          MavensMate::FileFactory.put_project_metadata(project_name, project_zip) #put the metadata in the project directory    
+          add_to_keychain(project_name, pw)
+          MavensMate::FileFactory.put_project_config(un, project_name, server_url)
+          FileUtils.rm_rf "#{tmp_dir}/mmpackage" 
+        }
+        threads << Thread.new {
+          #put object metadata 
+          thread_client = MavensMate::Client.new({ :sid => client.sid, :metadata_server_url => client.metadata_server_url })
+          object_response = thread_client.list("CustomObject", true)
+          object_list = []
+          object_response[:list_metadata_response][:result].each do |obj|
+            object_list.push(obj[:full_name])
+          end 
+          object_hash = { "CustomObject" => object_list }               
+          options = { :meta_types => object_hash }
+          object_zip = thread_client.retrieve(options) #get selected metadata
+          Dir.mkdir(project_folder+project_name+"/config") unless File.exists?(project_folder+project_name+"/config") 
+          MavensMate::FileFactory.put_object_metadata(project_name, object_zip)
+        } 
+        threads.each { |aThread|  aThread.join }
+        open_project(project_name) if ! is_svn 
+        TextMate.go_to :file => "#{project_folder}#{project_name}/src/package.xml"           
+      end
       
-        open_project(project_name) if ! is_svn            
-      end 
-
       if is_svn
       	TextMate.call_with_progress( :title => 'MavensMate', :message => 'Importing to SVN Repository' ) do
       		Dir.chdir("#{project_folder}#{project_name}")	
@@ -92,6 +108,7 @@ module MavensMate
         			STDOUT << htmlize(str, :no_newline_after_br => true)
       		end
       		open_project(project_name)
+          TextMate.go_to :file => "#{project_folder}#{project_name}/src/package.xml"           
       	end
       end
       
@@ -132,18 +149,36 @@ module MavensMate
       svn_pw = params[:svn_pw] || ""
       svn_url = params[:svn_url] || ""
       endpoint = (server_url.include? "test") ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"
-   
+         
+      Thread.abort_on_exception = true
+      threads = []
     	TextMate.call_with_progress( :title => 'MavensMate', :message => 'Checking out from Repository' ) do
         Dir.mkdir(project_folder) unless File.exists?(project_folder)
-    		#checkout project
     		Dir.mkdir("#{project_folder}#{project_name}") unless File.exists?("#{project_folder}#{project_name}")
-    		Dir.chdir("#{project_folder}")	
-    		TextMate::Process.run("svn checkout '#{svn_url}' '#{project_name}' --username #{svn_un} --password #{svn_pw}", :interactive_input => false) do |str|
-      			#STDOUT << htmlize(str, :no_newline_after_br => true)
-    		end
-    		#add force.com nature if it's not there already
-        MavensMate::FileFactory.put_project_config(un, project_name, server_url)
-    		add_to_keychain(project_name, pw)
+    		Dir.chdir("#{project_folder}")
+        threads << Thread.new {  
+      		TextMate::Process.run("svn checkout '#{svn_url}' '#{project_name}' --username #{svn_un} --password #{svn_pw}", :interactive_input => false) do |str|
+        			#STDOUT << htmlize(str, :no_newline_after_br => true)
+      		end                                            
+  		  } 
+  		  threads << Thread.new { 
+      		#add force.com nature if it's not there already
+          MavensMate::FileFactory.put_project_config(un, project_name, server_url)
+      		add_to_keychain(project_name, pw)      		
+      		#put object metadata 
+          client = MavensMate::Client.new({ :username => un, :password => pw, :endpoint => endpoint })
+          object_response = client.list("CustomObject", true)
+          object_list = []
+          object_response[:list_metadata_response][:result].each do |obj|
+            object_list.push(obj[:full_name])
+          end 
+          object_hash = { "CustomObject" => object_list }               
+          options = { :meta_types => object_hash }
+          object_zip = client.retrieve(options) #get selected metadata
+          Dir.mkdir(project_folder+project_name+"/config") unless File.exists?(project_folder+project_name+"/config") 
+          MavensMate::FileFactory.put_object_metadata(project_name, object_zip)      
+  		  }
+  		  threads.each { |aThread|  aThread.join }
     		open_project(project_name)
     	end
     
@@ -189,11 +224,13 @@ module MavensMate
   #compiles selected file(s) or active file
   def self.save(active_file=false) 
     validate [:internet, :mm_project]
-    
+    puts "start"
     begin
       compiling_what = (!active_file) ? "Selected Metadata" : File.basename(ENV['TM_FILEPATH'])
       result = nil
-      TextMate.call_with_progress( :title => "MavensMate", :message => "Compiling #{compiling_what}" ) do
+      TextMate.call_with_progress( 
+        :title => "MavensMate", 
+        :message => "Compiling #{compiling_what}") do |dialog|
         zip_file = MavensMate::FileFactory.put_tmp_metadata(get_metadata_hash(active_file))     
         client = MavensMate::Client.new
         result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"})
@@ -201,19 +238,29 @@ module MavensMate
       end
       
       if ! result[:is_success]        
+        message = nil
         begin
           if result[:messages]
-            TextMate.go_to :file => ENV['TM_FILEPATH'], :line => result[:messages][0][:line_number], :column => result[:messages][0][:column_number]  
+            result[:messages].each do |m|
+              next if m[:success] == true
+              message = m
+              break 
+            end
           end
-        rescue
+        rescue Exception => e
           #ok with this exception
-        end
+        end 
+        m_arr = message[:file_name].split("/")
+        TextMate.go_to :file => "#{ENV['TM_PROJECT_DIRECTORY']}/src/#{m_arr[m_arr.length - 2]}/#{m_arr[m_arr.length - 1]}", :line => message[:line_number], :column => message[:column_number]        
         TextMate::UI.simple_notification({:title => "MavensMate", :summary => "Compile Failed", :log => parse_error_message(result)})
       end
     rescue Exception => e
+      #puts e.message + "\n" + e.backtrace.join("\n")
       #alert e.message + "\n" + e.backtrace.join("\n")
       alert e.message
     end
+    #STDOUT.flush
+    #TextMate.exit_show_html(parse_error_message(result))
   end
   
   #refreshes the selected file from the server
@@ -276,51 +323,77 @@ module MavensMate
   end
         
   #wipes local project and rewrites with server copies based on current project's package.xml, preserves svn/git      
-  def self.clean_project    
+  def self.clean_project(options={}) 
     validate [:internet, :mm_project]
-       
-    confirmed = TextMate::UI.request_confirmation(
-      :title => "Salesforce Project Cleaner",
-      :prompt => "Your Salesforce project will be emptied and refreshed according to package.xml. Any local metadata (not on the Salesforce.com server) will be lost forever.",
-      :button1 => "Clean")
+    confirmed = false
+    if ! options[:update_package]      
+      confirmed = TextMate::UI.request_confirmation(
+        :title => "Salesforce Project Cleaner",
+        :prompt => "Your Salesforce project will be emptied and refreshed according to package.xml. Any local metadata (not on the Salesforce.com server) will be lost forever.",
+        :button1 => "Clean")  
+    else
+       File.delete("#{ENV['TM_PROJECT_DIRECTORY']}/src/package.xml")
+       confirmed = true
+    end
     
+    return if !confirmed
+         
     begin
-      if confirmed
-        TextMate.call_with_progress( :title => "MavensMate", :message => "Cleaning Project" ) do
-          pd = ENV['TM_PROJECT_DIRECTORY']
-          Dir.foreach("#{pd}/src") do |entry| #iterate the metadata folders
-            next if entry.include? "."
-            Dir.foreach("#{pd}/src/#{entry}") do |subentry| #iterate the files inside those folders
-              next if subentry == '.' || subentry == '..' || subentry == '.svn' || subentry == '.git'
-              FileUtils.rm_r "#{pd}/src/#{entry}/#{subentry}"
-            end
+      threads = []
+      client = nil
+      TextMate.call_with_progress( :title => "MavensMate", :message => "Cleaning Project" ) do
+        pd = ENV['TM_PROJECT_DIRECTORY']
+        Dir.foreach("#{pd}/src") do |entry| #iterate the metadata folders
+          next if entry.include? "."
+          Dir.foreach("#{pd}/src/#{entry}") do |subentry| #iterate the files inside those folders
+            next if subentry == '.' || subentry == '..' || subentry == '.svn' || subentry == '.git'
+            FileUtils.rm_r "#{pd}/src/#{entry}/#{subentry}" #delete what's inside
           end
-          require 'fileutils'   
-          FileUtils.rm_r "#{pd}/config/objects" if File.directory? "#{pd}/config/objects"
-          
-          client = MavensMate::Client.new
-          project_zip = client.retrieve({ :package => "#{ENV['TM_PROJECT_DIRECTORY']}/src/package.xml" })
-          MavensMate::FileFactory.finish_clean(get_project_name, project_zip) #put the metadata in the project directory 
-          
-          #put object metadata
-          object_response = client.list("CustomObject", true)
-          object_list = []
-          object_response[:list_metadata_response][:result].each do |obj|
-            object_list.push(obj[:full_name])
-          end 
-          object_hash = { "CustomObject" => object_list }               
-          options = { :meta_types => object_hash }
-          object_zip = client.retrieve(options) #get selected metadata
-          MavensMate::FileFactory.put_object_metadata(get_project_name, object_zip)
-                 
-          TextMate.rescan_project
         end
+        require 'fileutils'   
+        FileUtils.rm_r "#{pd}/config/objects" if File.directory? "#{pd}/config/objects"
+       end 
+       TextMate.call_with_progress( :title => "MavensMate", :message => "Connecting to Salesforce" ) do
+         client = MavensMate::Client.new
+       end
+       TextMate.call_with_progress( :title => "MavensMate", :message => "Retrieving Fresh Metadata" ) do        
+        threads << Thread.new {
+          thread_client = MavensMate::Client.new({ :sid => client.sid, :metadata_server_url => client.metadata_server_url })
+          if options[:package]
+            hash = options[:package] 
+            MavensMate::FileFactory.put_package("#{ENV['TM_PROJECT_DIRECTORY']}/src", binding, false)
+          end
+          project_zip = thread_client.retrieve({ :package => "#{ENV['TM_PROJECT_DIRECTORY']}/src/package.xml" })
+          MavensMate::FileFactory.finish_clean(get_project_name, project_zip) #put the metadata in the project directory  
+        }
+        if options[:update_sobjects]
+          threads << Thread.new {
+            #put object metadata
+            thread_client = MavensMate::Client.new({ :sid => client.sid, :metadata_server_url => client.metadata_server_url })
+            object_response = thread_client.list("CustomObject", true)
+            object_list = []
+            object_response[:list_metadata_response][:result].each do |obj|
+              object_list.push(obj[:full_name])
+            end 
+            object_hash = { "CustomObject" => object_list }               
+            options = { :meta_types => object_hash }
+            object_zip = thread_client.retrieve(options) #get selected metadata 
+            Dir.mkdir("#{ENV['TM_PROJECT_DIRECTORY']}/config") unless File.exists?("#{ENV['TM_PROJECT_DIRECTORY']}/config") 
+            MavensMate::FileFactory.put_object_metadata(get_project_name, object_zip)   
+          }
+        end                                      
+        
+        threads.each { |aThread|  aThread.join }                  
+        TextMate.rescan_project
+        if options[:update_package]   
+           return { :success => true }
+        end 
       end
     rescue Exception => e
       alert e.message
+      return { :success => false, :message => e.message }  
       #alert e.message + "\n" + e.backtrace.join("\n")
-    end
-    
+    end   
   end
     
   #deploys project metadata to a salesforce.com server
@@ -440,6 +513,16 @@ module MavensMate
 
   end
  
+  #returns the project name
+  def self.get_project_name
+    yml = YAML::load(File.open(ENV['TM_PROJECT_DIRECTORY'] + "/config/settings.yaml"))
+    project_name = yml['project_name']
+  end
+  
+  def self.get_project_config
+    return YAML::load(File.open(ENV['TM_PROJECT_DIRECTORY'] + "/config/settings.yaml"))
+  end
+ 
   private
     
     #returns a list of apex methods based on the object and method type supplied    
@@ -500,9 +583,11 @@ module MavensMate
     #parses and returns error message in friendly format
     def self.parse_error_message(result)
       full_message = ""
+      return result[:message] if result[:message]
       if result[:messages] && result[:messages].size > 0
         result[:messages].each { |message|
           next if message[:file_name].include? "package.xml"
+          next if message[:success] == true
           file_name_array = message[:file_name].split('/')
           file_name = file_name_array[file_name_array.length - 1]
           error_message = "#{file_name}\nError: #{message[:problem]}"
@@ -514,12 +599,11 @@ module MavensMate
           if ! message[:column_number].nil?
             column_message << "\nColumn: #{message[:column_number]}"
           end       
-          full_message << error_message + line_message + column_message
+          full_message << error_message + line_message + column_message + "\n\n"
         }
       end
       if result[:failures] && result[:failures].size > 0
         result[:failures].each { |failure|
-          #full_message << "#{failure.inspect}\n\n"
           full_message << "#{failure[:name]}\n#{failure[:message]}\n#{failure[:stack_trace]}\n\n"
         }
       end
@@ -542,35 +626,53 @@ module MavensMate
       return error_message + line_message + column_message
     end
     
-    #returns metadata hash of selected files
+    #returns metadata hash of selected files  #=> {"ApexClass" => ["aclass", "anotherclass"], "ApexTrigger" => ["atrigger", "anothertrigger"]}
     def self.get_metadata_hash(active_file=false)
       selected_files = get_selected_files(active_file)     
       meta_hash = {}
       selected_files.each do |f|
-        puts "selected file: " + f + "<br/>"
+        puts "selected file: " + f + "\n\n"
         next if ! f.include? "." #need files only, not directories
         next if f.include? "-meta.xml" #dont need meta files
         ext = File.extname(f) #=> .cls
         ext_no_period = File.extname(f).gsub(".","") #=> cls
-        puts "ext_no_period: " + ext_no_period + "<br/>"
-        mt_hash = MavensMate::FileFactory.get_meta_type_by_suffix(ext_no_period)      
-        meta_type = mt_hash[:xml_name]
+        metadata_definition = MavensMate::FileFactory.get_meta_type_by_suffix(ext_no_period)      
+        meta_type = metadata_definition[:xml_name]
         puts "meta_type: " + meta_type.inspect + "<br/>"
 
         if ! meta_hash.key? meta_type #key isn't there yet, put it in        
-          meta_hash[meta_type] = [File.basename(f, ext)] #file name with no extension
+          if metadata_definition[:in_folder]
+            arr = f.split("/")
+            if arr[arr.length-2] != metadata_definition[:directory_name]
+              meta_hash[meta_type] = [arr[arr.length-2]+"/"+File.basename(f, ext)] #file name with no extension
+            else
+              meta_hash[meta_type] = [File.basename(f, ext)] #file name with no extension
+            end
+          else
+            meta_hash[meta_type] = [File.basename(f, ext)] #file name with no extension
+          end
         else #key is there, let's add metadata to it
           meta_array = meta_hash[meta_type] #get the existing array
-          meta_array.push(File.basename(f, ext)) #add the new piece of metadata
+          if metadata_definition[:in_folder]
+            arr = f.split("/")
+            if arr[arr.length-2] != metadata_definition[:directory_name]
+              meta_array.push(arr[arr.length-2]+"/"+File.basename(f, ext)) #file name with no extension
+            else
+              meta_array.push(File.basename(f, ext)) #add the new piece of metadata
+            end
+          else
+            meta_array.push(File.basename(f, ext)) #file name with no extension
+          end
+          #meta_array.push(File.basename(f, ext)) #add the new piece of metadata
           meta_hash[meta_type] = meta_array #replace the key
         end 
       end
-      
-      puts "hash is: "+meta_hash.inspect
+            
+      puts "hash is: "+meta_hash.inspect      
       return meta_hash
     end
         
-    #returns array of selected files
+    #returns array of selected files #=> ["/users/username/projects/foo/classes/myclass123.cls", /users/username/projects/foo/classes/myclass345.cls"]
     def self.get_selected_files(active_file=false)
       if active_file
         return Array[ENV['TM_FILEPATH']]
@@ -636,10 +738,5 @@ module MavensMate
       end
       return true
     end
-    
-    #returns the project name
-    def self.get_project_name
-      yml = YAML::load(File.open(ENV['TM_PROJECT_DIRECTORY'] + "/config/settings.yaml"))
-      project_name = yml['project_name']
-    end
+
 end

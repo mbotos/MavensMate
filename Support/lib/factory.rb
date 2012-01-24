@@ -90,11 +90,22 @@ module MavensMate
         
         Dir.foreach("#{project_folder}/#{project_name}/unpackaged") do |meta_folder| #iterate the retrieve data
           next if meta_folder.include? "." #ignore hidden items or package.xml
-          Dir.foreach("#{project_folder}/#{project_name}/unpackaged/#{meta_folder}") do |meta_file| #iterate the 
-            next if meta_file == '.' || meta_file == '..'
+          
+          #create the metadata folder if it's new to the project
+          FileUtils.mkdir "#{project_folder}/#{project_name}/src/#{meta_folder}" unless File.directory? "#{project_folder}/#{project_name}/src/#{meta_folder}"
+          
+          #iterate each metadata folder
+          Dir.foreach("#{project_folder}/#{project_name}/unpackaged/#{meta_folder}") do |meta_file|
+            next if meta_file == '.' || meta_file == '..'            
             FileUtils.mv "#{project_folder}/#{project_name}/unpackaged/#{meta_folder}/#{meta_file}", "#{project_folder}/#{project_name}/src/#{meta_folder}/#{meta_file}"
           end
         end
+        
+        Dir.foreach("#{project_folder}/#{project_name}/src") do |meta_folder| #iterate the fresh project folder
+          next if meta_folder.include? "." #ignore hidden items or package.xml
+          FileUtils.rm_rf "#{project_folder}/#{project_name}/src/#{meta_folder}" if Dir["#{project_folder}/#{project_name}/src/#{meta_folder}/*"].empty?
+        end
+        
         FileUtils.rm_rf "#{project_folder}/#{project_name}/unpackaged"
       end
       
@@ -231,6 +242,22 @@ module MavensMate
       def get_meta_type_by_name(name)
         return META_DICTIONARY.detect {|f| f[:xml_name] == name }
       end
+      
+      def get_child_meta_type_by_name(name)
+        return CHILD_META_DICTIONARY.detect {|f| f[:xml_name] == name }
+      end
+      
+      def put_package(where, binding, delete=false)
+        Dir.mkdir(where) unless File.exists?(where)
+        Dir.chdir(where)
+        #File.delete("#{ENV['TM_PROJECT_DIRECTORY']}/src/package.xml")
+        file_name = delete ? "destructiveChanges.xml" : "package.xml"
+        template = ERB.new File.new("#{ENV['TM_BUNDLE_SUPPORT']}/templates/package.html.erb").read, nil, "-"
+        erb = template.result(binding)        
+        src = File.new(file_name, "w")
+        src.puts(erb)
+        src.close
+      end
             
       private
                 
@@ -261,9 +288,17 @@ module MavensMate
         end
       
         def put_tmp_directories(hash)
-          hash.each_key { |key|
+          hash.each { |key, value|
             mt = get_meta_type_by_name(key)
             Dir.mkdir("#{Dir.tmpdir}/mmzip/unpackaged/#{mt[:directory_name]}")
+            if mt[:in_folder]
+              value.each do |v|
+                arr = v.split("/")
+                if arr.length && arr.length == 2
+                  Dir.mkdir("#{Dir.tmpdir}/mmzip/unpackaged/#{mt[:directory_name]}/#{arr[0]}") unless File.exists?("#{Dir.tmpdir}/mmzip/unpackaged/#{mt[:directory_name]}/#{arr[0]}")
+                end
+              end
+            end
           }
         end
       
@@ -289,17 +324,7 @@ module MavensMate
           src.puts(erb)
           src.close
         end
-        
-        def put_package(where, binding, delete=false)
-          Dir.chdir(where)
-          file_name = delete ? "destructiveChanges.xml" : "package.xml"
-          template = ERB.new File.new("#{ENV['TM_BUNDLE_SUPPORT']}/templates/package.html.erb").read, nil, "-"
-          erb = template.result(binding)        
-          src = File.new(file_name, "w")
-          src.puts(erb)
-          src.close
-        end
-              
+                      
         def put_empty_package(where)
           Dir.chdir(where)
           template = ERB.new File.new("#{ENV['TM_BUNDLE_SUPPORT']}/templates/empty_package.html.erb").read, nil, "-"

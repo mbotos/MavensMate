@@ -30,6 +30,8 @@ module MavensMate
     attr_accessor :sid
     # metadata api endpoint url
     attr_accessor :metadata_server_url
+    
+    is_retry = false
            
     def initialize(creds={})
       HTTPI.log = false
@@ -54,17 +56,38 @@ module MavensMate
     
     #logs into SFDC, sets metadata server url & sessionid
     def login
+      #puts "logging in with: "+self.password
       begin
         response = self.pclient.request :login do
           soap.body = { :username => self.username, :password => self.password }
         end
       rescue Savon::SOAP::Fault => fault
         raise Exception.new(fault.to_s)
+        # TODO: handle incorrect password gracefully
+        # if fault.to_s.include? "INVALID_LOGIN"
+        #   self.password = TextMate::UI.request_secure_string(
+        #     :title => "MavensMate", 
+        #     :prompt => 'Your login attempt failed. Please re-enter your password',
+        #     :button2 => 'Cancel'
+        #   )
+        #   TextMate.exit_discard if self.password == nil
+        #   is_retry = true
+        #   login
+        # else
+        #   raise Exception.new(fault.to_s)
+        # end 
       end
       
-      res = response.to_hash
-      self.metadata_server_url = res[:login_response][:result][:metadata_server_url]
-      self.sid = res[:login_response][:result][:session_id].to_s
+      # if is_retry == true
+      #   MavensMate.add_to_keychain(MavensMate.get_project_name, self.password)
+      # end 
+      
+      begin
+        res = response.to_hash
+        self.metadata_server_url = res[:login_response][:result][:metadata_server_url]
+        self.sid = res[:login_response][:result][:session_id].to_s
+      rescue
+      end
     end
     
     #retrieves metadata in zip format. :path => retrieve specific file  
@@ -74,7 +97,7 @@ module MavensMate
       begin
         response = mclient.request :retrieve do |soap|
           soap.header = get_soap_header
-          soap.body = get_retrieve_body(options)                       
+          soap.body = options[:body] || get_retrieve_body(options)                       
         end
       rescue Savon::SOAP::Fault => fault
         raise Exception.new(fault.to_s)
@@ -91,7 +114,7 @@ module MavensMate
           soap.body = { :id => retrieve_id  }
         end
         status_hash = response.to_hash
-        puts "<br/>status is: " + status_hash.inspect
+        #puts "<br/>status is: " + status_hash.inspect
         is_finished = status_hash[:check_status_response][:result][:done]
       end
       
@@ -126,16 +149,31 @@ module MavensMate
             
       update_id = create_hash[:deploy_response][:result][:id]
       is_finished = false
-
+      timer = 0
+      is_timeout = false
+      
       while ! is_finished
         sleep 1
+        timer += 1
         response = self.mclient.request :check_status do |soap|
           soap.header = get_soap_header
           soap.body = { :id => update_id  }
         end
         check_status_hash = response.to_hash
         #puts "<br/><br/>status is: " + check_status_hash.inspect + "<br/><br/>"
-        is_finished = check_status_hash[:check_status_response][:result][:done]         
+        is_finished = check_status_hash[:check_status_response][:result][:done]        
+
+        if timer == ENV['FM_TIMEOUT'].to_i
+          is_timeout = true
+          break
+        end
+      end
+      
+      if is_timeout == true
+        return { 
+          :is_success => false,
+          :message => "TIMEOUT"
+        }
       end
             
       response = self.mclient.request :check_deploy_status do |soap|
@@ -229,59 +267,242 @@ module MavensMate
       hash = response.to_hash
       folders = Array.new
       hash[:describe_metadata_response][:result][:metadata_objects].each { |object| 
+        children = []
+        if object[:child_xml_names] and object[:child_xml_names].kind_of? String
+          children.push(object[:child_xml_names])
+        else
+          children = object[:child_xml_names]
+        end
         folders.push({
           :title => object[:directory_name],
           :isLazy => true,
           :isFolder => true,
           :directory_name => object[:directory_name],
           :meta_type => object[:xml_name],
-          :select => PACKAGE_TYPES.include?(object[:xml_name]) ? true : false
+          :select => PACKAGE_TYPES.include?(object[:xml_name]) ? true : false,
+          :child_metadata => children,
+          :has_child_metadata => ! children.nil?,
+          :in_folder => object[:in_folder]
         })
       }
       folders.sort! { |a,b| a[:title] <=> b[:title] }
+      puts "\n\n\n\n\n"
+      puts folders.to_json
       return folders.to_json
     end
     
     #list metadata for a specific type
-    def list(type="",raw=false)
+    def list(type="",raw=false,format="json")
+      
+      metadata_type = MavensMate::FileFactory.get_meta_type_by_name(type) || {}
+      has_children_metadata = false
+      if ! metadata_type[:child_xml_names].nil? and metadata_type[:child_xml_names].kind_of? Array
+        has_children_metadata = true
+      end
+      is_folder_metadata = metadata_type[:in_folder]
+            
+      metadata_request_type = (is_folder_metadata == true) ? "#{type}Folder" : type
+      if metadata_request_type == "EmailTemplateFolder"
+        metadata_request_type = "EmailFolder"
+      end
+      
+      #puts metadata_type.inspect + "\n\n"
+      
       self.mclient = get_metadata_client
       begin
         response = self.mclient.request :list_metadata do |soap|
           soap.header = get_soap_header  
-          soap.body = "<ListMetadataQuery><type>#{type}</type></ListMetadataQuery>"
+          soap.body = "<ListMetadataQuery><type>#{metadata_request_type}</type></ListMetadataQuery>"
         end
       rescue Savon::SOAP::Fault => fault
-        raise Exception.new(fault.to_s)
-      end
+        raise Exception.new(fault.to_s) if fault.to_s.not.include? "sf:INVALID_TYPE"
+      end 
+      
       begin
+        #puts "beginning"
         return response unless ! raw
+        
+        if response.nil?
+          return []
+        end
+        
+        #puts "RESPONSE HASH: " + response.to_hash.inspect + "<br/><br/>"
+            
+        #if theres nothing there, return an empty array
+        if response.to_hash[:list_metadata_response].nil? or response.to_hash[:list_metadata_response] == nil
+          return []
+        end
+        
         hash = response.to_hash
+        
         els = Array.new
-        if hash[:list_metadata_response].nil?
-          return "[]"
-        elsif hash[:list_metadata_response][:result].kind_of? Hash
-          els.push({
-            :title => hash[:list_metadata_response][:result][:full_name],
-            :key => hash[:list_metadata_response][:result][:full_name],
-            :isLazy => true
-          })  
-          return els.to_json        
+        result_elements = []      
+        if hash[:list_metadata_response][:result].kind_of? Hash
+          result_elements.push(hash[:list_metadata_response][:result])
         else
-          hash[:list_metadata_response][:result].each { |el| 
-            els.push({
-              :title => el[:full_name],
-              :key => el[:full_name]
-            })
+          result_elements = hash[:list_metadata_response][:result]
+        end
+        #puts "result_elements: " + hash.inspect
+                
+        #if this type has children, make a retrieve request for the type
+        #parse the response as appropriate
+        object_hash = {} #=> {"Account" => [ {"fields" => ["foo", "bar"]}, "listviews" => ["foo", "bar"] ], "Contact" => ... }
+        
+        if has_children_metadata == true && result_elements.length > 0
+          #testing stuff
+          require 'zip/zipfilesystem'
+          require 'fileutils'
+          retrieve_body = "<RetrieveRequest><unpackaged><types><name>#{metadata_request_type}</name>"
+          result_elements.each { |el| 
+            retrieve_body << "<members>#{el[:full_name]}</members>"
           }
-          els.sort! { |a,b| a[:title].downcase <=> b[:title].downcase }
+          retrieve_body << "</types></unpackaged><apiVersion>#{MM_API_VERSION}</apiVersion></RetrieveRequest>"
+          zip_file = retrieve({ :body => retrieve_body })
+          
+          tmp_dir = Dir.tmpdir           
+          random = get_random_string
+          mmzip_folder = "#{tmp_dir}/.org.mavens.mavensmate.#{random}" 
+          
+          Dir.mkdir(mmzip_folder)
+          File.open("#{mmzip_folder}/metadata.zip", "wb") {|f| f.write(Base64.decode64(zip_file))}
+          Zip::ZipFile.open("#{mmzip_folder}/metadata.zip") { |zip_file|
+              zip_file.each { |f|
+              f_path=File.join(mmzip_folder, f.name)
+              FileUtils.mkdir_p(File.dirname(f_path))
+              zip_file.extract(f, f_path) unless File.exist?(f_path)
+            }
+          }
+          require 'nokogiri'
+          # [{"Account" => [ {"fields" => ["foo", "bar"]}, "listviews" => ["foo", "bar"] ] }, ]
+          
+          Dir.foreach("#{mmzip_folder}/unpackaged/#{metadata_type[:directory_name]}") do |entry| #iterate the metadata folders
+            #entry => Account.object
+            
+            next if entry == '.' || entry == '..' || entry == '.svn' || entry == '.git'
+            #puts "processing: " + entry + "\n"
+            
+            doc = Nokogiri::XML(File.open("#{mmzip_folder}/unpackaged/#{metadata_type[:directory_name]}/#{entry}"))
+            doc.remove_namespaces!
+            
+            c_hash = {}
+            metadata_type[:child_xml_names].each { |c|
+              tag_name = c[:tag_name]
+              items = []
+              doc.xpath("//#{tag_name}/fullName").each do |node|
+                items.push(node.text)
+              end 
+              c_hash[tag_name] = items
+            }
+            base_name = entry.split(".")[0]
+            object_hash[base_name] = c_hash
+          end                         
+          FileUtils.rm_rf mmzip_folder
+        end
+
+        result_elements.each { |el| 
+          #puts "RESULT ELEMENT: " + el.inspect + "<br/>"
+          #el => "Account"
+          children = []
+          full_name = el[:full_name]
+          
+          full_name = "Account" if full_name == "PersonAccount"
+          object_detail = object_hash[full_name]
+          
+          #if this type has child metadata, we need to add the details
+          if has_children_metadata == true
+            #puts "OBJECT DETAIL: " + object_detail.inspect + "<br/><br/>" 
+            next if object_detail.nil?
+            metadata_type[:child_xml_names].each { |child_xml|
+              #puts child_xml.inspect
+              #puts child_xml[:tag_name]
+              
+              tag_name = child_xml[:tag_name]
+              #puts object_detail.inspect
+              if object_detail[tag_name].size > 0
+                gchildren = []
+                object_detail[tag_name].each do |gchild_el|
+                  gchildren.push({
+                    :title => gchild_el,
+                    :key => gchild_el,
+                    :isLazy => false,
+                    :isFolder => false,
+                    :selected => false
+                  })
+                end
+                
+                children.push({
+                  :title => child_xml[:tag_name],
+                  :key => child_xml[:tag_name],
+                  :isLazy => false,
+                  :isFolder => true,
+                  :children => gchildren,
+                  :selected => false
+                })
+              end
+            } 
+          end
+          
+          #if this type has folders, run queries to grab all metadata in the folders
+          if is_folder_metadata == true          
+            next if el[:manageable_state] != "unmanaged"
+            folders = "<folder>#{el[:full_name]}</folder>"
+            begin
+              response = self.mclient.request :list_metadata do |soap|
+                soap.header = get_soap_header  
+                soap.body = "<ListMetadataQuery><type>#{type}</type>#{folders}</ListMetadataQuery>"
+              end
+            rescue Savon::SOAP::Fault => fault
+              raise Exception.new(fault.to_s)
+            end
+            
+            folder_elements = []  
+            folder_hash = response.to_hash    
+            if folder_hash[:list_metadata_response] && folder_hash[:list_metadata_response][:result]
+              if folder_hash[:list_metadata_response][:result].kind_of? Hash
+                folder_elements.push(folder_hash[:list_metadata_response][:result])
+              else
+                folder_elements = folder_hash[:list_metadata_response][:result]
+              end 
+            end
+            
+            folder_elements.each { |folder_el|
+              children.push({
+                :title => folder_el[:full_name].split("/")[1],
+                :key => folder_el[:full_name],
+                :isLazy => false,
+                :isFolder => false,
+                :selected => false
+              })
+            }           
+          end
+          
+          els.push({
+            :title => el[:full_name],
+            :key => el[:full_name],
+            :isLazy => is_folder_metadata || has_children_metadata,
+            :isFolder => is_folder_metadata || has_children_metadata,
+            :children => children,
+            :selected => false
+          })
+        }
+        els.sort! { |a,b| a[:title].downcase <=> b[:title].downcase }
+        
+        if format == "json"
           return els.to_json
+        else
+          return els
         end
       rescue Exception => e
-        return hash.inspect + "\n\n\n" + e.message + "\n" + e.backtrace.join("\n")
+        puts "\n\n\n" + e.message + "\n" + e.backtrace.join("\n")
       end
     end
-                                                            
+                                                                
     private
+      
+      def get_random_string
+        o =  [('a'..'z'),('A'..'Z')].map{|i| i.to_a}.flatten;  
+        string = (0..8).map{ o[rand(o.length)]  }.join;
+      end
       
       #ensures json is properly formatted for the dynatree control
       def to_json(what)
@@ -311,6 +532,7 @@ module MavensMate
             end
             types_body << "</types>"
           end
+          #puts types_body
           return "<RetrieveRequest><unpackaged>#{types_body}</unpackaged><apiVersion>#{MM_API_VERSION}</apiVersion></RetrieveRequest>"
         else        
           if ! options[:path].nil? #grab path only
@@ -319,7 +541,7 @@ module MavensMate
             mt = MavensMate::FileFactory.get_meta_type_by_suffix(ext)
             file_name_no_ext = File.basename(path, File.extname(path)) #=> "myclass" 
             types_body << "<types><members>#{file_name_no_ext}</members><name>#{mt[:xml_name]}</name></types>"
-          elsif ! options[:meta_types].nil? #custom built project	
+          elsif ! options[:meta_types].nil? #custom built project	(using project wizard)
       			options[:meta_types].each { |meta_type, selected_children| 
       			    types_body << "<types>"
       			    if selected_children.length == 0
@@ -370,6 +592,6 @@ module MavensMate
         #puts "<br/><br/>METADATA CLIENT ACTIONS: #{client.wsdl.soap_actions}"
         return client
       end
-  
+      
   end
 end

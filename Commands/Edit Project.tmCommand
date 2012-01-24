@@ -6,20 +6,21 @@
 	<string>nop</string>
 	<key>command</key>
 	<string>#!/usr/bin/env ruby -W0
-require "#{ENV['TM_BUNDLE_SUPPORT']}/lib/mavensmate"
-MavensMate.validate [:internet, :mm_project]
+require 'rubygems'
+require 'savon'
+require 'builder'
+require 'zip/zipfilesystem'
 require ENV['TM_BUNDLE_SUPPORT'] + '/environment.rb'
-dispatch :controller =&gt; "unit_test", :action =&gt; "index"
-exit_show_html</string>
+dispatch :controller =&gt; "project", :action =&gt; "index_edit"</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>
-	<string>^~@m</string>
+	<string>^~@e</string>
 	<key>name</key>
-	<string>Run Apex Unit Tests</string>
+	<string>Edit Project</string>
 	<key>output</key>
-	<string>discard</string>
+	<string>showAsHTML</string>
 	<key>uuid</key>
-	<string>13F4C69E-CE7F-48C1-B381-E55F331CE1FC</string>
+	<string>A53A309B-6373-42B6-BCB4-07CDB76C9A37</string>
 </dict>
 </plist>

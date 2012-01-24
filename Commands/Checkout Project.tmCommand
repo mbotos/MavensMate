@@ -11,7 +11,7 @@ require 'savon'
 require 'builder'
 require 'zip/zipfilesystem'
 require ENV['TM_BUNDLE_SUPPORT'] + '/environment.rb'
-dispatch :controller =&gt; "project", :action =&gt; "index", :user_action =&gt; "checkout"</string>
+dispatch :controller =&gt; "project", :action =&gt; "index_new", :user_action =&gt; "checkout"</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>

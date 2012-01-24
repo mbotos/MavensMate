@@ -1,0 +1,31 @@
+<% script_tag = javascript_include_tag("jquery", "jqueryui", "tabs", "rb_gateway", "toggle", "dynatree2", "alerts", "mavensmate") %>
+<% style_tag = style_include_tag("bootstrap", "mavensmate", "dynatree") %>
+<html>
+<head>
+  	<title>MavensMate</title>
+	<script>
+		<% support = ENV['TM_BUNDLE_SUPPORT'] %>
+		var TM_BUNDLE_SUPPORT = '<%= support %>';
+	</script>
+  	<% if ! @script_at_top %> 
+    	<%= script_tag %>
+  	<% end %>
+	<%= style_tag %> 
+   		
+</head>
+<body id='body'>
+  	<div data-scrollspy="scrollspy" class="topbar">
+      <div class="topbar-inner">
+        <div class="container">
+          <a href="#" class="brand">MavensMate</a>
+        </div>
+      </div>
+    </div>
+	<div id='debug'></div>
+  	<div id='wrapper'>
+		<% yield %>
+	</div>
+</body>
+
+<%= @content_for_javascript %>
+</html>

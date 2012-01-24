@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>beforeRunningCommand</key>
-	<string>nop</string>
+	<string>saveModifiedFiles</string>
 	<key>command</key>
 	<string>#!/usr/bin/env ruby -W0
 require "#{ENV['TM_BUNDLE_SUPPORT']}/lib/mavensmate"
-MavensMate.clean_project</string>
+MavensMate.clean_project({:update_sobjects =&gt; true})</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>

@@ -1,14 +1,11 @@
 <div id="result_wrapper" style="padding:0px 10px;">
 	<% if ! success %>
 		<div class="alert-message error" style="display:none;">
-			<p><strong>Error!</strong> The creation of your new project failed.</p>
+			<p><strong>Error!</strong> The edit of your project failed.</p>
 		</div>
 		<div id="error" style="margin:5px 0px 15px 0px;" class="alert-message error">
 			<p><strong><%= message %></p>
 	  </div>
-		<script>
-			setTimeout(function() { window.resizeTo(325, $(document).height() + 25); }, 1)
-		</script>
 	<% end %>
 	<% if success %>
 		<script>window.close();</script>
