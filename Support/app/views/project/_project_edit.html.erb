@@ -43,7 +43,7 @@
 				<% project_array.each do |hash| %>
 					<% 
 						next if !hash[:children]
-						next if hash[:children].size == 0
+						#next if hash[:children].size == 0
 						class_name = (hash[:children] && hash[:children].size > 0) ? "folder" : "" 
 					%>
 					<li data="level: 1, hasChildTypes: <%=hash[:hasChildTypes]%>, inFolder: <%=hash[:inFolder]%>" id="<%= hash[:key] %>" class="<%= hash[:selected] %> folder level1"><%= hash[:title] %>					
@@ -114,7 +114,12 @@
 			$("#un").val("<%= pun %>");
 			$("#pw").val("<%= ppw %>");
 			$("#server_url").val(server_url);
-				
+			
+			$("#pn").prop('disabled', true);  
+			$("#un").prop('disabled', true);  
+			$("#pw").prop('disabled', true);  
+			$("#server_url").prop('disabled', true);  
+							
 			//resize elements
 			$("#project_wrapper").height($(window).height() - 175)
 			

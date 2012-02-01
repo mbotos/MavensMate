@@ -6,16 +6,14 @@
 	<string>nop</string>
 	<key>command</key>
 	<string>#!/usr/bin/env ruby -W0
-require 'rubygems'
-require 'savon'
-require 'builder'
-require 'zip/zipfilesystem'
+require "#{ENV['TM_BUNDLE_SUPPORT']}/lib/mavensmate"
+MavensMate.validate [:internet, :mm_project]
 require ENV['TM_BUNDLE_SUPPORT'] + '/environment.rb'
 dispatch :controller =&gt; "project", :action =&gt; "index_edit"</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>
-	<string>^~@e</string>
+	<string>^~@m</string>
 	<key>name</key>
 	<string>Edit Project</string>
 	<key>output</key>
