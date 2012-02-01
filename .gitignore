@@ -4,3 +4,9 @@ Support/.DS_Store
 Support/.DS_Store
 
 .gitignore
+
+Support/tests/create_tests.rb
+
+Support/tests/project_tests.rb
+
+Support/lib/test.rb
