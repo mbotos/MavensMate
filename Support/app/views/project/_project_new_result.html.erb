@@ -1,4 +1,8 @@
-<div id="result_wrapper" style="padding:0px 10px;">
+<%  
+	class_name = ""
+	class_name = "mmcloser" if success
+%>
+<div id="result_wrapper" style="padding:0px 10px;" class="<%=class_name%>">
 	<% if ! success %>
 		<div class="alert-message error" style="display:none;">
 			<p><strong>Error!</strong> The creation of your new project failed.</p>
@@ -9,8 +13,5 @@
 		<script>
 			setTimeout(function() { window.resizeTo(325, $(document).height() + 100); }, 1)
 		</script>
-	<% end %>
-	<% if success %>
-		<script>window.close();</script>
 	<% end %>
 </div>

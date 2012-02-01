@@ -10,8 +10,11 @@
 	</div>
 	 
 	<ul class="tabs">
-		<li class="active"><a id="project_details_tab" href="#form">Project Details</a></li>
-		<li><a href="#metadata">Project Metadata</a></li>
+		<li class="active"><a id="project_details_tab" href="#form">Details</a></li>
+		<li><a href="#vc">Version Control</a></li>
+		<% if user_action == "new" %>
+		<li><a href="#metadata">Metadata</a></li>
+		<% end %>
 	</ul>
 	
 	<div class="pill-content">
@@ -30,31 +33,62 @@
 						<label for="pw">Salesforce Password</label> 
 						<input class="xlarge" size="100" type="password" id="pw">
 					</div>
-					<div class="clearfix">
+					 <div class="clearfix">
 						<label for="server_url">Server URL</label> 
 						<select id="server_url">
 							<option>https://www.salesforce.com</option>
 							<option>https://test.salesforce.com</option>
 						</select>
-					</div>
-					<div class="clearfix">
-						<label for="svn_un">SVN Username</label> 
-						<input class="xlarge" size="100" type="text" id="svn_un">
-					</div>				
-					<div class="clearfix">
-						<label for="svn_pw">SVN Password</label> 
-						<input class="xlarge" size="100" type="password" id="svn_pw">
-					</div>
-					<div class="clearfix">
-						<label for="svn_url">SVN URL</label> 
-						<input class="xlarge" size="100" type="text" id="svn_url">
-					</div>								
-				
-					
+					</div>  
 				</fieldset>
 			</form>
 		</div>
 		
+		<div id="vc">
+			<div id="form" class="active">
+				<form class="form-stacked">
+					<fieldset>					   
+						<div class="clearfix">
+							<label for="vc_type">Version Control</label> 
+							<select id="vc_type">  							
+								<option>SVN</option>
+								<option>Git</option>
+							</select>
+						</div>
+						<div class="clearfix" id="svn_un_wrapper">
+							<label for="svn_un">SVN Username</label> 
+							<input class="xlarge" size="100" type="text" id="svn_un">
+						</div>				
+						<div class="clearfix" id="svn_pw_wrapper">
+							<label for="svn_pw">SVN Password</label> 
+							<input class="xlarge" size="100" type="password" id="svn_pw">
+						</div>
+						<div class="clearfix" id="git_alias_wrapper" style="display:none;">
+							<label for="vc_alias">Git Alias</label> 
+							<input class="xlarge" size="100" type="text" id="vc_alias"> 
+						</div>   					
+						<div class="clearfix" style="position:relative;">
+							<label for="vc_url">URL</label> 
+							<input style="padding-right:65px;" class="xlarge" size="100" type="text" id="vc_url">
+                            <a href="#" id="btnExplore" onclick="get_vc_list();" class="btn small" style="position:absolute;top:24px;right:29px;padding:4px 7px 4px;">Explore</a>
+						</div>
+						<div class="clearfix" id="git_branch_wrapper" style="display:none;">
+							<label for="vc_branch">Git Branch</label> 
+							<input class="xlarge" size="100" type="text" id="vc_branch"> 
+						</div>								
+					    <div class="clearfix" style="position:relative;" id="vc_tree_wrapper">
+							<div id="vc_tree" style="margin-top:5px;width:259px;border:1px solid #CCC;border-radius:3px;height:180px;overflow-y:auto;padding:5px;">
+
+							</div>
+							<div id="tree_loader" style="">
+								<img src="file:///<%= support_folder + "resource/images/big_loading.gif" %>"/>
+							</div> 
+						</div>   
+					</fieldset>
+				</form>
+			</div>
+		</div>
+		<% if user_action == "new" %>
 		<div id="metadata">
 			<div id="project_wrapper">
 				<div id="treewrapper">
@@ -63,7 +97,7 @@
 				</div> 
 			</div>
 		</div>
-				
+		<% end %>		
 	</div>
 	
 </div>
@@ -72,10 +106,10 @@
 	<fieldset style="padding-top:0px;">
 		<div class="actions">					
 			<% if user_action == "new" %>
-				<input type="button" id="btnSubmit" class="btn primary" value="Create Project"  onclick='$("#result_output").html(dispatch({controller: "project", action: "new_custom_project", pn: $("#pn").val(), un: $("#un").val(), pw: $("#pw").val(), server_url: $("#server_url").val(), svn_un: $("#svn_un").val(), svn_pw: $("#svn_pw").val(), svn_url: $("#svn_url").val(), tree: get_tree() }));'>
+				<input type="button" id="btnSubmit" class="btn primary" value="Create Project"  onclick='$("#result_output").html(dispatch({controller: "project", action: "new_custom_project", pn: $("#pn").val(), un: $("#un").val(), pw: $("#pw").val(), server_url: $("#server_url").val(), vc_un: $("#svn_un").val(), vc_pw: $("#svn_pw").val(), vc_url: get_selected_vc_url(), vc_type: $("#vc_type").val(), vc_alias: $("#vc_alias").val(), vc_branch: $("#vc_branch").val(), tree: get_tree() }));'>
 			<% end %>
 			<% if user_action == "checkout" %>
-				<input type="button" id="btnSubmit" class="btn primary" value="Checkout Project"  onclick="$('#result_output').html(dispatch({controller: 'project', action: 'checkout', pn: $('#pn').val(), un: $('#un').val(), pw: $('#pw').val(), server_url: $('#server_url').val(), svn_un: $('#svn_un').val(), svn_pw: $('#svn_pw').val(), svn_url: $('#svn_url').val() }));">
+				<input type="button" id="btnSubmit" class="btn primary" value="Checkout Project"  onclick="$('#result_output').html(dispatch({controller: 'project', action: 'checkout', pn: $('#pn').val(), un: $('#un').val(), pw: $('#pw').val(), server_url: $('#server_url').val(), vc_un: $('#svn_un').val(), vc_pw: $('#svn_pw').val(), vc_url: get_selected_vc_url(), vc_type: $('#vc_type').val(), vc_branch: get_selected_git_branch(), vc_alias: $('#vc_alias').val()  }));">
 			<% end %>
 			&nbsp;
 			<button type="reset" class="btn" onclick="window.close();">Cancel</button>
@@ -92,10 +126,37 @@
         	child_def['<%= child[:tag_name] %>'] = '<%= child[:xml_name] %>';
 	   	<% end %>
 	
-		$(function() {
-						
+		$(function() {		   						
+			
+			$("#project_wrapper").height($(window).height() - 175)
+			
+			$('#vc_alias').popover({
+				title: function() { return 'Git Alias'},
+				content: function() { return '<em>beanstalk, heroku, etc.</em>'},
+				html: true,
+				placement: "below"
+			})
+			
+			$('#vc_url').popover({
+				title: function() { return 'URL'},
+				content: function() { 
+					return '<b>SVN:</b><br/><span style="font-size:0.9em"><em>https://company.something.com/reponame</em></span><br/><b>Git:</b><br/><span style="font-size:0.9em"><em>git@company.something.com:/gitreponame.git</em></span>'
+				} ,
+				html: true,
+				placement: "below"
+			})
+			
+			$('#vc_branch').popover({
+				title: function() { return 'Git Branch'},
+				content: function() { 
+					return '<b>Production:</b><span><em>master</em><br/><b>Sandbox:</b> <em>sandboxname</em>'
+				} ,
+				html: true,
+				placement: "below"
+			})
+			
 			var resizeHeight = $("#form").height(); 
-		    resizeAndCenterWindowByHeight(resizeHeight+50);
+		    resizeAndCenterWindowByHeight(resizeHeight+250);
 			
 			$(window).resize(function() {
 				$("#project_wrapper").height($(window).height() - 175)
@@ -111,7 +172,7 @@
 					}
 				}
 			);
-						
+									
 			//submit form on enter
 			$("#deploy_output").bind('keyup', function(e) {
 				var code = (e.keyCode ? e.keyCode : e.which);
@@ -119,12 +180,35 @@
 				 	if ($('#un').val() && $('#pw').val() && $('#pn').val())
 						$("#btnSubmit").click();
 				 }
+			}); 
+			
+			$("#vc_type").change(function() {
+				if (this.value == "SVN") {
+					$("#svn_un_wrapper").show();
+					$("#svn_pw_wrapper").show();
+					$("#btnExplore").show();
+					$("#vc_tree_wrapper").show();
+					$("#git_branch_wrapper").hide();
+					$("#vc_url").css("padding-right", "65px");
+				} else {
+					$("#svn_un_wrapper").hide();
+					$("#svn_pw_wrapper").hide();   				
+					if (user_action == "new") {
+						$("#vc_tree_wrapper").hide();
+						$("#btnExplore").hide();
+						$("#git_branch_wrapper").show();
+						$("#vc_url").css("padding-right", "5px");
+					} else {
+						$("#vc_tree_wrapper").show();
+						$("#btnExplore").show(); 
+						$("#git_branch_wrapper").hide();
+						$("#vc_url").css("padding-right", "65px");
+					}
+				}
 			});
 			
-			//instantiate tabs for NEW projects only
-			if (user_action != "checkout") { 
-				$('.tabs').tabs();
-			}
+
+			$('.tabs').tabs();
 			
 			//submit form on enter
 			$(".content").bind('keyup', function(e) {
@@ -135,42 +219,46 @@
 				 }
 			});  
 			
-			//instantiate and populate metadata tree				
-	    	$("#tree").dynatree({
-          		onQueryExpand: function(node) {
-					//console.log($('#sid'))
-					if ( $('#sid').val() == null || $('#sid').val() == "") {
-						showCredAlert();
-						return false;
-					}
-         		},
-			 	dataType: "jsonp",
-			 	onLazyRead: function(node) {
-					node.appendAjax({url: "http://127.0.0.1:7125",
-			  			data: {
-							"key": node.data.meta_type,
-							"sid": $("#sid").val(),
-							"murl": $("#murl").val()
-						},
-						dataFilter: function (data, type) {
-							//console.log("before")
-							//console.log(data);
-							if (data.indexOf('[') != -1) {
-								data = data.substring(data.indexOf('['));
-							} else {
-								data = []
-							}
-							//console.log("after")
-							//console.log(data);
-							return data;
+			if (user_action == "new") {
+				//instantiate and populate metadata tree				
+		    	$("#tree").dynatree({
+	          		onQueryExpand: function(node) {
+						//console.log($('#sid'))
+						if ( $('#sid').val() == null || $('#sid').val() == "") {
+							showCredAlert();
+							return false;
 						}
-					});
-			 	},
-         		persist: false,
-			 	checkbox: true,
-			 	selectMode: 3,
-				children: <%= my_json %>
-      		});
+	         		},
+				 	dataType: "jsonp",
+				 	onLazyRead: function(node) {
+						node.appendAjax({url: "http://127.0.0.1:7125",
+				  			data: {
+								"key": node.data.meta_type,
+								"sid": $("#sid").val(),
+								"murl": $("#murl").val()
+							},
+							dataFilter: function (data, type) {
+								//console.log("before")
+								//console.log(data);
+								if (data.indexOf('[') != -1) {
+									data = data.substring(data.indexOf('['));
+								} else {
+									data = []
+								}
+								//console.log("after")
+								//console.log(data);
+								return data;
+							}
+						});
+				 	},
+	         		persist: false,
+				 	checkbox: true,
+				 	selectMode: 3,
+					children: <%= my_json %>
+	      		}); 
+			} else if (user_action == "checkout") {
+
+			}
 			
 			//when user changes tab to metadata selection, use provided creds to login and get session id
 			$('.tabs a').bind('change', function (e) {
@@ -183,13 +271,121 @@
 				}
 		    });
 			
-			//start TCP server to handle json interaction with page
-			dispatch({controller: 'project', action: 'start_server' });	
+			dispatch({controller: 'project', action: 'start_tcp_server' });  
 		});
 		
 		//shows an error if the user has not entered creds		
 		function showCredAlert() {
 			$("#cred_alert").show();
 			window.resizeTo(325, document.getElementById('wrapper').offsetHeight+30);
+		} 
+		
+		function do_tree() {
+			//instantiate and populate metadata tree   			
+			try {
+		    	var root_node = $("#vc_tree").dynatree("getRoot")
+				root_node.removeChildren()
+				for (var i=0; i < tree_children.length; i++) {
+					root_node.addChild(tree_children[i])
+				}
+			} catch(exception) {
+				console.log(exception)
+				$("#vc_tree").dynatree({
+				 	dataType: "jsonp",
+				 	onLazyRead: function(node) {
+						node.appendAjax({url: "http://127.0.0.1:7125",
+				  			data: {
+								"vc_url": encodeURI(node.data.url),
+								"vc_type": $('#vc_type').val(),   
+								"svn_un": $('#svn_un').val(),
+								"svn_pw": $('#svn_pw').val(),
+							},
+							dataFilter: function (data, type) {
+								console.log(data)
+								if (data.indexOf('[') != -1) {
+									data = data.substring(data.indexOf('['));
+								} else {
+									data = []
+								}
+								nodes = eval(data)
+								node_array = []
+								for (var i=0; i < nodes.length; i++) {
+									node_array.push({
+										title:nodes[i].title,
+										url:nodes[i].url,
+										isFolder:true,
+										isLazy:true
+									})
+								}
+								node_array = JSON.stringify(node_array)
+								console.log(node_array)
+								return node_array;
+							}
+						});
+				 	},
+	         		persist: false,
+				 	checkbox: true,
+				 	selectMode: 1,
+					children: tree_children
+	      		});
+			}
+	
+			
+		}
+		
+		
+		var tree_children = ""
+		
+		function get_selected_vc_url() {
+			try {
+			  	if ($("#vc_type").val() == "SVN") {
+					snode = $("#vc_tree").dynatree("getSelectedNodes")
+					return snode[0].data.url 
+				} else {
+					return $("#vc_url").val()
+				}  
+			} catch (e) {
+				return ""
+			}
+		}
+		
+		function get_selected_git_branch() {
+			try {
+				snode = $("#vc_tree").dynatree("getSelectedNodes")
+				return snode[0].data.url 
+			} catch (e) {
+				return ""
+			}
+		}
+		
+		function get_vc_list() {
+			$("#tree_loader").fadeIn();
+			$.get(  
+	            "http://127.0.0.1:7125",  
+				{ vc_url: $("#vc_url").val(), vc_type: $("#vc_type").val(), svn_un: $('#svn_un').val(), svn_pw: $('#svn_pw').val() },  
+	            function(data) {  
+	                console.log(data)
+					if (data.indexOf('[') != -1) {
+						data = data.substring(data.indexOf('['));
+					} else {
+						data = []
+					}
+					console.log(data)
+					var initial_nodes = eval(data)
+					tree_children = []
+					for (var i=0; i < initial_nodes.length; i++) {
+						tree_children.push({
+							title:initial_nodes[i].title,
+							url:initial_nodes[i].url,
+							isFolder: true,
+							isLazy: $("#vc_type").val() == "Git" ? false : true
+						})
+					}
+					if (tree_children.length > 0)
+						do_tree()
+					$("#tree_loader").fadeOut()  
+	            },  
+	            "html"  
+	        );   
 		} 			
 	</script>
