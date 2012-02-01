@@ -22,13 +22,14 @@ TextMate.min_support 10895
 
 module MavensMate
   
-  #TODO   
+  #TODO
+  #-move all temporary processing to .org.mavens.mavensmate.random format
+  #-refresh selected files from server   
   #-modify package.xml when new metadata is created from MavensMate    
   #-create project from package 
-  #-explore svn/git repo
-  #-changesets
-  #-add git support
+  #-changeset - deploy
   #-list sobjects in picklist when creating trigger
+  #-quick panel (html/css/js) to replace native textmate dialog to run MavensMate commands
 
   include MetadataHelper
    
@@ -50,15 +51,20 @@ module MavensMate
   	
     begin   
       puts '<div id="mm_logger">'
-      un = params[:un]
-      pw = params[:pw]
-      server_url = params[:server_url]
-      svn_un = params[:svn_un] || ""
-      svn_pw = params[:svn_pw] || ""
-      svn_url = params[:svn_url] || ""
-      endpoint = (server_url.include? "test") ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"
-    
-      is_svn = (svn_url.length > 0 && svn_un.length > 0 && svn_pw.length > 0) || false
+      un            = params[:un]
+      pw            = params[:pw]
+      server_url    = params[:server_url]
+      vc_un         = params[:vc_un] || ""
+      vc_pw         = params[:vc_pw] || ""
+      vc_url        = params[:vc_url] || ""
+      is_vc         = vc_url != ""                                                                                                 
+      vc_alias      = params[:vc_alias] || "origin"
+      vc_url.chop! if vc_url[vc_url.length-1,1] == "/" 
+      vc_type       = params[:vc_type] || "SVN"
+      vc_branch     = params[:vc_branch] || "master"
+      vc_url        = vc_url + "/" + project_name if vc_type == "SVN" 
+      endpoint      = (server_url.include? "test") ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"    
+      
       Thread.abort_on_exception = true
       threads = []  
       TextMate.call_with_progress( :title => 'MavensMate', :message => 'Retrieving Project Metadata' ) do          
@@ -91,82 +97,118 @@ module MavensMate
           MavensMate::FileFactory.put_object_metadata(project_name, object_zip)
         } 
         threads.each { |aThread|  aThread.join }
-        open_project(project_name) if ! is_svn 
-        TextMate.go_to :file => "#{project_folder}#{project_name}/src/package.xml"           
+        open_project(project_name) if ! is_vc 
+        TextMate.go_to :file => "#{project_folder}#{project_name}/src/package.xml" if ! is_vc           
       end
       
-      if is_svn
-      	TextMate.call_with_progress( :title => 'MavensMate', :message => 'Importing to SVN Repository' ) do
-      		Dir.chdir("#{project_folder}#{project_name}")	
-      		TextMate::Process.run("svn import #{svn_url} --username #{svn_un} --password #{svn_pw} -m \"initial import\"", :interactive_input => false) do |str|
-        			STDOUT << htmlize(str, :no_newline_after_br => true)
+      if is_vc
+      	if vc_type == "SVN"
+        	TextMate.call_with_progress( :title => 'MavensMate', :message => 'Importing to SVN Repository' ) do
+        		Dir.chdir("#{project_folder}#{project_name}")	
+        		TextMate::Process.run("svn import #{vc_url} --username #{vc_un} --password #{vc_pw} -m \"initial import\"", :interactive_input => false) do |str|
+          			#STDOUT << htmlize(str, :no_newline_after_br => true)
+        		end
+        	end 
+        	TextMate.call_with_progress( :title => 'MavensMate', :message => 'Checking out from SVN Repository' ) do
+        		Dir.chdir("#{project_folder}")	
+        		TextMate::Process.run("svn checkout --force #{vc_url} '#{project_name}'", :interactive_input => false) do |str|
+          			#STDOUT << htmlize(str, :no_newline_after_br => true)
+        		end         
+        	end
+    	  elsif vc_type == "Git"
+    	    Dir.chdir("#{project_folder}#{project_name}")
+    	    #puts ">> git init"
+    	    TextMate::Process.run("git init", :interactive_input => false) do |str|
+        			#puts htmlize(str, :no_newline_after_br => true)
       		end
-      	end 
-      	TextMate.call_with_progress( :title => 'MavensMate', :message => 'Checking out from SVN Repository' ) do
-      		Dir.chdir("#{project_folder}")	
-      		TextMate::Process.run("svn checkout --force #{svn_url} '#{project_name}'", :interactive_input => false) do |str|
-        			STDOUT << htmlize(str, :no_newline_after_br => true)
+    	    #puts ">> git remote add #{vc_alias} #{vc_url}"
+    	    TextMate::Process.run("git remote add #{vc_alias} #{vc_url}", :interactive_input => false) do |str|
+        			#puts htmlize(str, :no_newline_after_br => true)
       		end
-      		open_project(project_name)
-          TextMate.go_to :file => "#{project_folder}#{project_name}/src/package.xml"           
-      	end
+    	    #puts ">> git add ."
+    	    TextMate::Process.run("git add .", :interactive_input => false) do |str|
+        			#puts htmlize(str, :no_newline_after_br => true)
+      		end
+    	    #puts ">> git commit -m \"First import\""
+      		TextMate::Process.run("git commit -m \"First import\"", :interactive_input => false) do |str|
+        			#puts htmlize(str, :no_newline_after_br => true)
+      		end                                        
+      		vc_branch = "HEAD:#{vc_branch}" if vc_branch != "master" 
+    	    #puts ">> git push #{vc_alias} #{vc_branch}"
+    	    TextMate::Process.run("git push #{vc_alias} #{vc_branch}", :interactive_input => false) do |str|
+        			#puts htmlize(str, :no_newline_after_br => true)
+      		end
+    	  end
+    	  open_project(project_name)
+        TextMate.go_to :file => "#{project_folder}#{project_name}/src/package.xml"
       end
       
     rescue Exception => e
       puts "</div>"
       FileUtils.rm_rf("#{project_folder}#{project_name}")
-      #TextMate::UI.alert(:warning, "MavensMate", e.message + "\n" + e.backtrace.join("\n"))
       #return { :is_success => false, :error_message => e.message + "\n" + e.backtrace.join("\n"), :project_name => project_name } 
       return { :is_success => false, :error_message => e.message, :project_name => project_name } 
     end
     puts "</div>"
-    return { :is_success => true, :error_message => "", :project_name => project_name } 
+    return { :is_success => true, :error_message => "", :project_name => project_name }
   end
   
   #checks out salesforce.com project from svn, applies MavensMate nature
   def self.checkout_project(params)        
     validate [:internet, :mm_project_folder]
-        
-    if (params[:pn].nil? || params[:un].nil? || params[:pw].nil? || params[:svn_url].nil? || params[:svn_un].nil? || params[:svn_pw].nil?)
-      TextMate::UI.alert(:warning, "MavensMate", "All fields are required to check out a project from SVN")
-      abort
+    
+    if params[:vc_type] == "SVN"    
+      if (params[:pn].nil? || params[:un].nil? || params[:pw].nil? || params[:vc_url].nil? || params[:vc_un].nil? || params[:vc_pw].nil?)
+        alert "All fields are required to check out a project from SVN"
+        abort
+      end
+    elsif params[:vc_type] == "Git"
+      if params[:vc_url].nil?
+        alert "Please specify the Git repository URL"
+        abort
+      end 
     end
     
     project_folder = get_project_folder
     project_name = params[:pn]
   	if File.directory?("#{project_folder}#{project_name}")
-  	  TextMate::UI.alert(:warning, "MavensMate", "Hm, it looks like this project already exists in your project folder.")
+  	  alert "Hm, it looks like this project already exists in your project folder"
       abort
   	end
     
     begin
       puts '<div id="mm_logger">'
-      puts params.inspect + "<br/>"
-      un = params[:un]
-      pw = params[:pw]
-      server_url = params[:server_url]
-      svn_un = params[:svn_un] || ""
-      svn_pw = params[:svn_pw] || ""
-      svn_url = params[:svn_url] || ""
-      endpoint = (server_url.include? "test") ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"
+      #puts params.inspect + "<br/>"
+      un          = params[:un]
+      pw          = params[:pw]
+      server_url  = params[:server_url]
+      vc_un       = params[:vc_un] || ""
+      vc_pw       = params[:vc_pw] || ""
+      vc_url      = params[:vc_url] || ""
+      vc_type     = params[:vc_type] || "SVN"
+      vc_branch   = params[:vc_branch] || "master"
+      endpoint    = (server_url.include? "test") ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"
          
       Thread.abort_on_exception = true
       threads = []
+    	object_zip = nil
     	TextMate.call_with_progress( :title => 'MavensMate', :message => 'Checking out from Repository' ) do
-        Dir.mkdir(project_folder) unless File.exists?(project_folder)
-    		Dir.mkdir("#{project_folder}#{project_name}") unless File.exists?("#{project_folder}#{project_name}")
-    		Dir.chdir("#{project_folder}")
-        threads << Thread.new {  
-      		TextMate::Process.run("svn checkout '#{svn_url}' '#{project_name}' --username #{svn_un} --password #{svn_pw}", :interactive_input => false) do |str|
-        			#STDOUT << htmlize(str, :no_newline_after_br => true)
-      		end                                            
-  		  } 
-  		  threads << Thread.new { 
-      		#add force.com nature if it's not there already
-          MavensMate::FileFactory.put_project_config(un, project_name, server_url)
-      		add_to_keychain(project_name, pw)      		
-      		#put object metadata 
-          client = MavensMate::Client.new({ :username => un, :password => pw, :endpoint => endpoint })
+    	  threads << Thread.new {      
+          Dir.mkdir(project_folder) unless File.exists?(project_folder)
+      		if vc_type == "Git"
+      		  TextMate::Process.run("git clone '#{vc_url}' -b '#{vc_branch}' '#{project_folder}#{project_name}'", :interactive_input => false) do |str|
+          	  STDOUT << htmlize(str, :no_newline_after_br => true)
+        		end
+      		elsif vc_type == "SVN"
+        		Dir.mkdir("#{project_folder}#{project_name}") unless File.exists?("#{project_folder}#{project_name}")
+        		Dir.chdir("#{project_folder}")
+        		TextMate::Process.run("svn checkout '#{vc_url}' '#{project_name}' --username #{vc_un} --password #{vc_pw}", :interactive_input => false) do |str|
+          	  STDOUT << htmlize(str, :no_newline_after_br => true)
+        		end
+      		end   
+    		}
+    		threads << Thread.new {
+    		  client = MavensMate::Client.new({ :username => un, :password => pw, :endpoint => endpoint })
           object_response = client.list("CustomObject", true)
           object_list = []
           object_response[:list_metadata_response][:result].each do |obj|
@@ -175,10 +217,13 @@ module MavensMate
           object_hash = { "CustomObject" => object_list }               
           options = { :meta_types => object_hash }
           object_zip = client.retrieve(options) #get selected metadata
-          Dir.mkdir(project_folder+project_name+"/config") unless File.exists?(project_folder+project_name+"/config") 
-          MavensMate::FileFactory.put_object_metadata(project_name, object_zip)      
-  		  }
-  		  threads.each { |aThread|  aThread.join }
+    		}
+    		threads.each { |aThread|  aThread.join }
+                                                    
+        MavensMate::FileFactory.put_project_config(un, project_name, server_url)
+    		add_to_keychain(project_name, pw)      		        
+        Dir.mkdir(project_folder+project_name+"/config") unless File.exists?(project_folder+project_name+"/config") 
+        MavensMate::FileFactory.put_object_metadata(project_name, object_zip)              
     		open_project(project_name)
     	end
     
@@ -224,7 +269,6 @@ module MavensMate
   #compiles selected file(s) or active file
   def self.save(active_file=false) 
     validate [:internet, :mm_project]
-    puts "start"
     begin
       compiling_what = (!active_file) ? "Selected Metadata" : File.basename(ENV['TM_FILEPATH'])
       result = nil
@@ -234,7 +278,7 @@ module MavensMate
         zip_file = MavensMate::FileFactory.put_tmp_metadata(get_metadata_hash(active_file))     
         client = MavensMate::Client.new
         result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"})
-        #puts result.inspect
+        puts result.inspect
       end
       
       if ! result[:is_success]        
@@ -259,11 +303,10 @@ module MavensMate
       #alert e.message + "\n" + e.backtrace.join("\n")
       alert e.message
     end
-    #STDOUT.flush
     #TextMate.exit_show_html(parse_error_message(result))
   end
   
-  #refreshes the selected file from the server
+  #refreshes the selected file from the server // TODO:selected *files*
   def self.refresh_selected_file     
     validate [:internet, :mm_project, :file_selected]
 
@@ -282,9 +325,17 @@ module MavensMate
   #deletes selected file(s) from the server (and locally)
   def self.delete_selected_files
     validate [:internet, :mm_project]
+    #puts get_selected_files
+    deleting_what = (get_selected_files.length > 1) ? "selected metadata" : File.basename(ENV['TM_FILEPATH'])    
+    confirmed = TextMate::UI.request_confirmation(
+      :title => "MavensMate",
+      :prompt => "Are you sure you want to delete #{deleting_what}?",
+      :button1 => "Delete",
+      :button2 => "Cancel")
+    
+    abort if ! confirmed
         
     begin
-      deleting_what = (get_selected_files.length > 1) ? "Selected Metadata" : File.basename(ENV['TM_FILEPATH'])
       TextMate.call_with_progress( :title => "MavensMate", :message => "Deleting #{deleting_what}" ) do
         zip_file = MavensMate::FileFactory.put_delete_metadata(get_metadata_hash)     
         client = MavensMate::Client.new
@@ -351,7 +402,8 @@ module MavensMate
           end
         end
         require 'fileutils'   
-        FileUtils.rm_r "#{pd}/config/objects" if File.directory? "#{pd}/config/objects"
+        #FileUtils.rm_r "#{pd}/config/objects" if File.directory? "#{pd}/config/objects"
+        MavensMate::FileFactory.clean_directory("#{pd}/config/objects", ".object")        
        end 
        TextMate.call_with_progress( :title => "MavensMate", :message => "Connecting to Salesforce" ) do
          client = MavensMate::Client.new
@@ -394,6 +446,26 @@ module MavensMate
       return { :success => false, :message => e.message }  
       #alert e.message + "\n" + e.backtrace.join("\n")
     end   
+  end
+  
+  #creates a local changeset
+  def self.new_changeset(options={})
+    begin
+      TextMate.call_with_progress( :title => "MavensMate", :message => "Creating changeset" ) do        
+        Dir.mkdir("#{ENV['TM_PROJECT_DIRECTORY']}/changesets") unless File.exists?("#{ENV['TM_PROJECT_DIRECTORY']}/changesets")
+        client = MavensMate::Client.new
+        where = "#{ENV['TM_PROJECT_DIRECTORY']}/changesets/#{options[:name]}"
+        hash = options[:package] 
+        MavensMate::FileFactory.put_package(where, binding, false)
+        project_zip = client.retrieve({ :package => "#{ENV['TM_PROJECT_DIRECTORY']}/changesets/#{options[:name]}/package.xml" })
+        MavensMate::FileFactory.extract(project_zip, where)
+        TextMate.rescan_project
+        FileUtils.rm_rf "#{ENV['TM_PROJECT_DIRECTORY']}/changesets/#{options[:name]}/package.xml"
+        return { :success => true, :message => "" }
+      end
+    rescue
+      return { :success => false, :message => e.message }
+    end
   end
     
   #deploys project metadata to a salesforce.com server
@@ -448,7 +520,7 @@ module MavensMate
     
   end
      
-  #displays autocomplete dialog based on current word. supports object fields & apex primitive methods
+  #displays autocomplete dialog based on current word. supports sobject fields & apex primitive methods
   def self.complete
     require ENV['TM_SUPPORT_PATH'] + '/lib/ui'
     require ENV['TM_SUPPORT_PATH'] + '/lib/current_word'
@@ -507,22 +579,88 @@ module MavensMate
       end
     end
   end
-  
-  #TODO 
-  def self.describe
-
-  end
- 
+   
   #returns the project name
   def self.get_project_name
     yml = YAML::load(File.open(ENV['TM_PROJECT_DIRECTORY'] + "/config/settings.yaml"))
     project_name = yml['project_name']
   end
   
+  #returns yaml project settings
   def self.get_project_config
     return YAML::load(File.open(ENV['TM_PROJECT_DIRECTORY'] + "/config/settings.yaml"))
   end
- 
+  
+  #builds server index and stores in .org_metadata
+  def self.build_index
+    #mhash = eval(File.read("#{ENV['TM_BUNDLE_SUPPORT']}/resource/metadata_trim.txt"))
+    mhash = eval(File.read("#{ENV['TM_BUNDLE_SUPPORT']}/resource/metadata.txt"))
+    mhash.sort! { |a,b| a[:xml_name].downcase <=> b[:xml_name].downcase } 
+    project_array = []
+    progress = 0
+    threads = []      
+    TextMate.call_with_progress(:title =>'MavensMate',
+             :summary => 'Building server metadata index',
+             :details => 'This could take a while, but it\'ll all be worth it!',
+             :indeterminate => true ) do |dialog|        
+      client = MavensMate::Client.new
+      mhash.each do |metadata|         
+        threads << Thread.new {
+          thread_client = MavensMate::Client.new({ :sid => client.sid, :metadata_server_url => client.metadata_server_url })
+          #progress = progress + 100/mhash.length
+          #dialog.parameters = {'summary' => 'Retrieving '+metadata[:xml_name],'progressValue' => progress }
+          begin   
+            project_array.push({
+              :title => metadata[:xml_name],
+              :key => metadata[:xml_name],
+              :isLazy => false,
+              :isFolder => true,
+              :selected => false,
+              :children => thread_client.list(metadata[:xml_name], false, "array"),
+              :inFolder => metadata[:in_folder],
+              :hasChildTypes => metadata[:child_xml_names] ? true : false
+            })
+          rescue  Exception => e
+            puts e.message + "\n" + e.backtrace.join("\n")  
+          end
+        }        
+      end
+      threads.each { |aThread|  aThread.join }
+    end                                            
+    project_array.sort! { |a,b| a[:title].downcase <=> b[:title].downcase }
+    File.open("#{ENV['TM_PROJECT_DIRECTORY']}/config/.org_metadata", 'w') {|f| f.write(project_array.inspect) }
+  end
+  
+  #selects all metadata in tree
+  def self.select_all(obj)
+    begin
+      obj[:children].each do |child|
+        child[:selected] = "selected"
+        next if ! child[:children]
+        child[:children].each do |grand_child|
+          grand_child[:selected] = "selected"
+          next if ! grand_child[:children]
+          grand_child[:children].each do |great_grand_child|
+            great_grand_child[:selected] = "selected"
+          end
+        end
+      end
+    rescue
+
+    end
+  end
+  
+  #runs applescript that closes all textmate html windows
+  def self.close_all_html_windows
+    pid = fork do
+      Thread.new do
+        script_path = "#{ENV['TM_BUNDLE_SUPPORT']}/osx/closewindows"
+        %x{osascript &>/dev/null '#{script_path}'}
+      end
+    end
+    Process.detach(pid)
+  end
+  
   private
     
     #returns a list of apex methods based on the object and method type supplied    
@@ -689,6 +827,7 @@ module MavensMate
               end
             end
           end
+          selected_files.uniq!
           return selected_files
         rescue
           return Array[ENV['TM_FILEPATH']]
