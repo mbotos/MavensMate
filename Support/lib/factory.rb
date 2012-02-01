@@ -14,21 +14,21 @@ module MavensMate
       
       include MetadataHelper
       
+      #puts settings.yaml in the project config directory
       def put_project_config(username, project_name, server_url)
         project_folder = ENV['FM_PROJECT_FOLDER']
         project_folder +='/' unless project_folder.end_with?("/")
         Dir.mkdir(project_folder+project_name+"/config") unless File.exists?(project_folder+project_name+"/config")
-        Dir.chdir(project_folder+project_name+"/config")
         file_name = "settings.yaml"
         if ! File.exists?(project_folder+project_name+"/config/settings.yaml")
-          src = File.new(file_name, "w")
+          src = File.new(project_folder+project_name+"/config/settings.yaml", "w")
           src.puts("project_name: " + project_name)
           src.puts("username: " + username)
           environment = (server_url.include? "test") ? "sandbox" : "production"           
           src.puts("environment: " + environment)
           src.close
         else
-          src = File.open(file_name, "w") 
+          src = File.open(project_folder+project_name+"/config/settings.yaml", "w") 
           src.puts("project_name: " + project_name)
           src.puts("username: " + username)
           environment = (server_url.include? "test") ? "sandbox" : "production"           
@@ -37,6 +37,7 @@ module MavensMate
         end
       end
       
+      #puts the base project directory on the drive
       def put_project_directory(project_name)
         project_folder = ENV['FM_PROJECT_FOLDER']
         project_folder +='/' unless project_folder.end_with?("/")
@@ -59,20 +60,31 @@ module MavensMate
         FileUtils.mv project_folder+"/"+project_name+"/unpackaged", project_folder+"/"+project_name+"/src"        
       end
       
+      #puts retrieved object metadata in "config" project directory
       def put_object_metadata(project_name, object_zip)
-        project_folder = ENV['FM_PROJECT_FOLDER']
-        Dir.chdir(project_folder+"/"+project_name+"/config")
-        File.open('metadata.zip', 'wb') {|f| f.write(Base64.decode64(object_zip))}
-        Zip::ZipFile.open('metadata.zip') { |zip_file|
-            zip_file.each { |f|
-              f_path=File.join(project_folder+"/"+project_name+"/config", f.name)
-              FileUtils.mkdir_p(File.dirname(f_path))
-              zip_file.extract(f, f_path) unless File.exist?(f_path)
-            }
-          }
-        FileUtils.rm_r project_folder+"/"+project_name+"/config/metadata.zip"
-        FileUtils.mv project_folder+"/"+project_name+"/config/unpackaged/objects", project_folder+"/"+project_name+"/config"
-        FileUtils.rm_r project_folder+"/"+project_name+"/config/unpackaged"
+        project_folder = "#{ENV['FM_PROJECT_FOLDER']}/#{project_name}" 
+        Dir.chdir("#{project_folder}/config")
+        clean_directory("#{project_folder}/config/objects", ".object") 
+        extract(object_zip, "#{project_folder}/config")  
+        if File.exist?("#{project_folder}/config/objects")
+          mv_c("#{project_folder}/config/unpackaged/objects", "#{project_folder}/config/objects")          
+        else
+          FileUtils.mv "#{project_folder}/config/unpackaged/objects", "#{project_folder}/config"          
+        end
+        FileUtils.rm_r "#{project_folder}/config/unpackaged"
+      end
+      
+      #extracts a zip file to the specified location
+      def extract(zip_file, where)
+        File.open(where+'/metadata.zip', 'wb') {|f| f.write(Base64.decode64(zip_file))}
+        Zip::ZipFile.open(where+'/metadata.zip') { |zip_file|
+          zip_file.each { |f|
+            f_path=File.join(where, f.name)
+            FileUtils.mkdir_p(File.dirname(f_path))
+            zip_file.extract(f, f_path) unless File.exist?(f_path)
+          } 
+        }
+        FileUtils.rm_r where+'/metadata.zip'
       end
       
       def finish_clean(project_name, project_zip)
@@ -217,36 +229,28 @@ module MavensMate
           
         end
       end
-    
-      def destroy_local_metadata(options = { }) 
-        api_name  = options[:api_name]
-        meta_type = options[:meta_type]
-        tmp_dir       = options[:tmp_dir]
-           
-        FileUtils.rm_r ENV['TM_PROJECT_DIRECTORY'] + "/src/" + META_DIR_MAP[meta_type] + "/#{api_name}" + META_EXT_MAP[meta_type]
-        FileUtils.rm_r ENV['TM_PROJECT_DIRECTORY'] + "/src/" + META_DIR_MAP[meta_type] + "/#{api_name}" + META_EXT_MAP[meta_type] + "-meta.xml"
-      end
-      
-      def cleanup_tmp_dir(dir)
-        FileUtils.rm_r dir
-      end
-      
+                
+      #returns the metadata definition by suffix (.cls, .trigger, .object, etc.)
       def get_meta_type_by_suffix(suffix)
         return META_DICTIONARY.detect {|f| f[:suffix] == suffix }
       end
       
+      #returns the metadata definition by directory (classes, objects, etc.)
       def get_meta_type_by_dir(dir)
         return META_DICTIONARY.detect {|f| f[:directory_name] == dir }
       end
       
+      #returns the metadata definition by name
       def get_meta_type_by_name(name)
         return META_DICTIONARY.detect {|f| f[:xml_name] == name }
       end
       
+      #returns the metadata definition by name - child types (customfield, listview, etc.)
       def get_child_meta_type_by_name(name)
         return CHILD_META_DICTIONARY.detect {|f| f[:xml_name] == name }
       end
       
+      #puts an erb generated package.xml file in the specified location
       def put_package(where, binding, delete=false)
         Dir.mkdir(where) unless File.exists?(where)
         Dir.chdir(where)
@@ -260,6 +264,20 @@ module MavensMate
       end
             
       private
+        
+        #moves files from source directory to destination directory
+        def mv_c(source, destination)
+          destination = destination + "/" unless destination.end_with?("/")
+          files = Dir.glob("#{source}/*");
+          files.each { |file|
+            FileUtils.mv(file, destination + File.basename(file))
+          }
+        end
+        
+        #removes files with the specified extension from a directory
+        def clean_directory(dir, extension="")
+          FileUtils.rm Dir.glob("#{dir}/*#{extension}") if File.exist?(dir)
+        end
                 
         def cleanup_tmp
           FileUtils.rm_rf("#{Dir.tmpdir}/mmzip")
@@ -333,7 +351,8 @@ module MavensMate
           src.puts(erb)
           src.close
         end
-            
+        
+        #puts a new source file on the drive (apexclass, apextrigger, apexpage, etc.)    
         def put_src_file(options = { })
           api_name = options[:api_name]
           meta_type = options[:meta_type]
@@ -353,6 +372,8 @@ module MavensMate
               template_name = "EmailServiceApexClass"
             elsif apex_class_type == "url"
               template_name = "UrlRewriterApexClass"
+            elsif apex_class_type == "empty"
+              template_name = "ApexClassNoConstructor"
             else
               template_name = "ApexClass"
             end
@@ -367,6 +388,7 @@ module MavensMate
           return file_name
         end
       
+        #puts a new .meta-xml file on the drive    
         def put_meta_file(options = { })
           api_name = options[:api_name]
           meta_type = options[:meta_type]
