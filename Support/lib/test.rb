@@ -17,11 +17,5 @@ require BUNDLESUPPORT + '/lib/factory'
 require BUNDLESUPPORT + '/lib/exceptions'
 require BUNDLESUPPORT + '/lib/metadata_helper'
 
-include MetadataHelper
-STDOUT.sync = true
+require 'rubygems'
 
-#client = MavensMate::Client.new({ :username => "mavens@sunovion.com.test", :password => "eventheodds1", :endpoint => "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" })  
-client = MavensMate::Client.new({ :username => "joeferraro3@force.com", :password => "352198", :endpoint => "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}" })  
-client.list("Workflow", false, "array")
-client.list("EmailTemplate", false, "array")
-client.list("CustomObject", false, "array") 

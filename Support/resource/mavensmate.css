@@ -54,4 +54,15 @@ input {
 
 ul.dynatree-container {
 	border:none !important;
+} 
+
+#tree_loader {
+	position:absolute;
+	top:0;left:0;
+	width:259px;
+	height:90%;
+	margin:0 auto;
+	text-align:center;
+	padding-top:57px;
+	display:none;
 }
