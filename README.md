@@ -1,12 +1,14 @@
 <h1>MavensMate</h1>
 MavensMate is a TextMate bundle that aims to replicate the functionality of the Eclipse-based Force.com IDE.
 <UL>
-	<LI>Create Salesforce.com projects with specific package metadata (and import to SVN)
-	<LI>Checkout Salesforce.com projects from SVN
+	<LI>Create & Edit Salesforce.com projects with specific package metadata
+	<LI>SVN & Git support
 	<LI>Create & compile Apex Classes, Apex Trigger, Visualforce Pages, and Visualforce Components
+	<LI>Create "changesets" for easy deployment (alpha)
+	<LI>Deploy Salesforce.com metadata to orgs (alpha)
 	<LI>Compile and retrieve other Salesforce.com metadata
 	<LI>Run Apex test methods and visualize test successes/failures & coverage
-	<LI>Supports code completion for SObject fields & Apex primitive methods (Alpha)
+	<LI>Supports code completion for SObject fields & Apex primitive methods (alpha)
 </UL> 
 
 <P>
@@ -82,11 +84,15 @@ $ osascript -e 'tell app "TextMate" to reload bundles'
 
 <P>
 <h2>Project Wizard</h2>
-<P><img src="http://wearemavens.com/images/mm/wizard.png"/></P>
+<P><img src="http://wearemavens.com/images/mm/project_wizard.png"/></P>
+<h2>Metadata Creation</h2>
+<P><img src="http://wearemavens.com/images/mm/metadata.png"/></P>
 <h2>Apex Test Runner</h2>
 <P><img src="http://wearemavens.com/images/mm/test2.png"/></P>
-<h2>Code Completion</h2>
-<P><img src="http://wearemavens.com/images/mm/completion2.png"/></P>
+<h2>Changesets (alpha)</h2>
+<P><img src="http://wearemavens.com/images/mm/changesets.png"/></P>
+<h2>Code Completion (alpha)</h2>
+<P><img src="http://wearemavens.com/images/mm/completion2.png"/></P> 
 <h2>Options Dialog</h2>
 <P><img src="http://wearemavens.com/images/mm/options.png"/></P>
 </p>
