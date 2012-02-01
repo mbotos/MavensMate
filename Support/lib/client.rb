@@ -114,7 +114,6 @@ module MavensMate
           soap.body = { :id => retrieve_id  }
         end
         status_hash = response.to_hash
-        #puts "<br/>status is: " + status_hash.inspect
         is_finished = status_hash[:check_status_response][:result][:done]
       end
       
