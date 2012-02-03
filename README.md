@@ -55,10 +55,6 @@ $ osascript -e 'tell app "TextMate" to reload bundles'
 
 	Control + Option + Command + M
 
-<P>Edit project metadata (alpha):</P>
-
-	Control + Option + Command + E  	
-
 <P>Compile current metadata:</P>
 
 	Control + Option + Command + C
