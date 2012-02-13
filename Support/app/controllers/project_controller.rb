@@ -16,7 +16,7 @@ class ProjectController < ApplicationController
 
   def index_new
     kill_server
-    my_json = File.read("#{ENV['TM_BUNDLE_SUPPORT']}/resource/metadata_describe.json")
+    my_json = File.read("#{ENV['TM_BUNDLE_SUPPORT']}/conf/metadata_describe.json")
     support_folder = ENV['TM_BUNDLE_SUPPORT']
     sf = support_folder.gsub(/lib\/../, "")
     render "_project_new", :locals => { :user_action => params[:user_action], :my_json => my_json, :child_metadata_definition => CHILD_META_DICTIONARY, :support_folder => sf}

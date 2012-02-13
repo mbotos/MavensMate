@@ -7,7 +7,7 @@ require SUPPORT + '/lib/exit_codes'
 require SUPPORT + '/lib/escape'
 require SUPPORT + '/lib/textmate'
 require SUPPORT + '/lib/ui'
-require SUPPORT + '/lib/tm/process'
+#require SUPPORT + '/lib/tm/process'
 require SUPPORT + '/lib/web_preview'
 require SUPPORT + '/lib/progress'
 require 'rexml/document'
@@ -16,18 +16,19 @@ require BUNDLESUPPORT + '/lib/client'
 require BUNDLESUPPORT + '/lib/factory'
 require BUNDLESUPPORT + '/lib/exceptions'
 require BUNDLESUPPORT + '/lib/metadata_helper'
+require BUNDLESUPPORT + '/lib/util'
 
 STDOUT.sync = true
 TextMate.min_support 10895
 
 module MavensMate
   
-  #TODO
+  #>>TODO
   #-move all temporary processing to .org.mavens.mavensmate.random format
   #-refresh selected files from server   
   #-modify package.xml when new metadata is created from MavensMate    
   #-create project from package 
-  #-changeset - deploy
+  #-changeset -> deploy
   #-list sobjects in picklist when creating trigger
   #-quick panel (html/css/js) to replace native textmate dialog to run MavensMate commands
 
@@ -73,7 +74,6 @@ module MavensMate
         threads << Thread.new {          
           thread_client = MavensMate::Client.new({ :sid => client.sid, :metadata_server_url => client.metadata_server_url })
           hash = params[:package]
-          require 'fileutils'
           tmp_dir = Dir.tmpdir 
           MavensMate::FileFactory.put_package("#{tmp_dir}/mmpackage", binding, false)
           project_zip = thread_client.retrieve({ :package => "#{tmp_dir}/mmpackage/package.xml" })            
@@ -102,6 +102,7 @@ module MavensMate
       end
       
       if is_vc
+        require SUPPORT + '/lib/tm/process'
       	if vc_type == "SVN"
         	TextMate.call_with_progress( :title => 'MavensMate', :message => 'Importing to SVN Repository' ) do
         		Dir.chdir("#{project_folder}#{project_name}")	
@@ -188,7 +189,8 @@ module MavensMate
       vc_type     = params[:vc_type] || "SVN"
       vc_branch   = params[:vc_branch] || "master"
       endpoint    = (server_url.include? "test") ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"
-         
+      
+      require SUPPORT + '/lib/tm/process'    
       Thread.abort_on_exception = true
       threads = []
     	object_zip = nil
@@ -274,13 +276,18 @@ module MavensMate
       result = nil
       TextMate.call_with_progress( 
         :title => "MavensMate", 
-        :message => "Compiling #{compiling_what}") do |dialog|
-        zip_file = MavensMate::FileFactory.put_tmp_metadata(get_metadata_hash(active_file))     
-        client = MavensMate::Client.new
-        result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"})
+        :message => "Compiling #{compiling_what}",
+        :indeterminate => true,
+        :cancel => lambda { Process.kill('SIGUSR1') } ) do |dialog|        
+        
+          zip_file = MavensMate::FileFactory.put_tmp_metadata(get_metadata_hash(active_file))     
+          client = MavensMate::Client.new
+          result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"})            
         puts result.inspect
-      end
+      end    
+        
       
+      #puts result.inspect  
       if ! result[:is_success]        
         message = nil
         begin
@@ -299,13 +306,12 @@ module MavensMate
         TextMate::UI.simple_notification({:title => "MavensMate", :summary => "Compile Failed", :log => parse_error_message(result)})
       end
     rescue Exception => e
-      #puts e.message + "\n" + e.backtrace.join("\n")
       #alert e.message + "\n" + e.backtrace.join("\n")
       alert e.message
     end
     #TextMate.exit_show_html(parse_error_message(result))
   end
-  
+    
   #refreshes the selected file from the server // TODO:selected *files*
   def self.refresh_selected_file     
     validate [:internet, :mm_project, :file_selected]
@@ -471,24 +477,30 @@ module MavensMate
   #deploys project metadata to a salesforce.com server
   def self.deploy_to_server(params)
     validate [:internet, :mm_project]
-    
+
     begin
       puts '<div id="mm_logger">'
       TextMate.call_with_progress( :title => "MavensMate", :message => "Deploying to the server") do
-        endpoint = (params[:server_url].include? "test") ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"
-        zip_file = MavensMate::FileFactory.put_tmp_metadata(params[:selected_types])     
+        endpoint = MavensMate::Util.get_sfdc_endpoint(params[:server_url])
+        tmp_dir = MavensMate::FileFactory.put_tmp_directory
+        hash = params[:package]
+        MavensMate::FileFactory.put_package(tmp_dir, binding, false)
+        client = MavensMate::Client.new
+        zip_file = client.retrieve({ :package => "#{tmp_dir}/package.xml" })
+                          
         client = MavensMate::Client.new({ :username => params[:un], :password => params[:pw], :endpoint => endpoint })
-        result = client.deploy({:zip_file => zip_file, :deploy_options => "<checkOnly>#{params[:check_only]}</checkOnly><rollbackOnError>true</rollbackOnError>"})
+        result = client.deploy({
+          :zip_file => zip_file,
+          :deploy_options => "<checkOnly>#{params[:check_only]}</checkOnly><rollbackOnError>true</rollbackOnError>"
+        })
+        MavensMate::FileFactory.remove_directory(tmp_dir)
         puts "</div>"
         return result
-        # if ! result[:is_success]        
-        #   TextMate.go_to :file => ENV['TM_FILEPATH'], :line => result[:line_number], :column => result[:column_number]  
-        #   TextMate::UI.alert(:warning, "Compile Failed", get_error_message(result))
-        # end
       end
     rescue Exception => e
       #alert e.message + "\n" + e.backtrace.join("\n")
       puts "</div>"
+      #MavensMate::FileFactory.remove_directory(tmp_dir)
       alert e.message
     end
   end
@@ -593,8 +605,7 @@ module MavensMate
   
   #builds server index and stores in .org_metadata
   def self.build_index
-    #mhash = eval(File.read("#{ENV['TM_BUNDLE_SUPPORT']}/resource/metadata_trim.txt"))
-    mhash = eval(File.read("#{ENV['TM_BUNDLE_SUPPORT']}/resource/metadata.txt"))
+    mhash = eval(File.read("#{ENV['TM_BUNDLE_SUPPORT']}/conf/metadata_dictionary"))
     mhash.sort! { |a,b| a[:xml_name].downcase <=> b[:xml_name].downcase } 
     project_array = []
     progress = 0
@@ -654,7 +665,7 @@ module MavensMate
   def self.close_all_html_windows
     pid = fork do
       Thread.new do
-        script_path = "#{ENV['TM_BUNDLE_SUPPORT']}/osx/closewindows"
+        script_path = "#{ENV['TM_BUNDLE_SUPPORT']}/osx/closewindows.scpt"
         %x{osascript &>/dev/null '#{script_path}'}
       end
     end
@@ -837,18 +848,14 @@ module MavensMate
         
     #adds salesforce.com creds to the keychain
     def self.add_to_keychain(project_name, pw)
-      TextMate::Process.run("security add-generic-password -a '#{project_name}-mm' -s \"MavensMate: #{project_name}\" -w #{pw} -U", :interactive_input => false) do |str|
-      		STDOUT << htmlize(str, :no_newline_after_br => true)
-      end
+      %x{security add-generic-password -a '#{project_name}-mm' -s \"MavensMate: #{project_name}\" -w #{pw} -U}
     end
     
     #opens project in textmate
     def self.open_project(project_name)
       project_folder = get_project_folder
       Dir.chdir("#{project_folder}")
-      TextMate::Process.run("find . -type d -name '#{project_name}' -exec mate {} \\;", :interactive_input => false) do |str|
-        STDOUT << htmlize(str, :no_newline_after_br => true)
-      end
+      %x{find . -type d -name '#{project_name}' -exec mate {} \\;}
     end
     
     #returns the selected location of projects

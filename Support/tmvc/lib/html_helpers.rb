@@ -49,7 +49,7 @@ protected
     file_names = []
     params = params.map {|p| p.include?(".js") ? p : "#{p}.js"}
     params.map do |p|
-      content_tag :script, "", :type => "text/javascript", :src => resource_url(p)
+      content_tag :script, "", :type => "text/javascript", :src => resource_url("js/#{p}")
     end * ""
   end
   
@@ -57,7 +57,7 @@ protected
     file_names = []
     params = params.map {|p| p.include?(".css") ? p : "#{p}.css"}
     params.map do |p|
-      content_tag :link, "", :type => "text/css", :href => resource_url(p), :rel => "stylesheet"
+      content_tag :link, "", :type => "text/css", :href => resource_url("css/#{p}"), :rel => "stylesheet"
     end * ""
   end 
   

@@ -6,6 +6,7 @@ require 'base64'
 require 'yaml'
 require 'json'
 require BUNDLESUPPORT + '/lib/factory'
+require BUNDLESUPPORT + '/lib/util'
 require BUNDLESUPPORT + '/lib/keychain'
 require BUNDLESUPPORT + '/lib/metadata_helper'
 
@@ -28,6 +29,8 @@ module MavensMate
     attr_accessor :mclient
     # session id
     attr_accessor :sid
+    # current user id
+    attr_accessor :user_id
     # metadata api endpoint url
     attr_accessor :metadata_server_url
     
@@ -86,7 +89,10 @@ module MavensMate
         res = response.to_hash
         self.metadata_server_url = res[:login_response][:result][:metadata_server_url]
         self.sid = res[:login_response][:result][:session_id].to_s
-      rescue
+        self.user_id = res[:login_response][:result][:user_id].to_s
+        self.pclient.wsdl.endpoint = res[:login_response][:result][:server_url] 
+      rescue Exception => e
+        #puts e.message 
       end
     end
     
@@ -189,7 +195,7 @@ module MavensMate
       end
       
       #tests have failed preventing a successful deployment
-      if status_hash[:check_deploy_status_response][:result][:success] == false
+      #if status_hash[:check_deploy_status_response][:result][:success] == false
         failures = []
         messages = []
         if status_hash[:check_deploy_status_response][:result][:run_test_result][:failures]
@@ -207,11 +213,11 @@ module MavensMate
           end
         end
         return { 
-          :is_success => false,
+          :is_success => status_hash[:check_deploy_status_response][:result][:success],
           :failures => failures,
           :messages => messages
         }
-      end
+      #end
       
       #deployment is "successful", but there are compile issues with the metadata
       if status_hash[:check_deploy_status_response][:result][:messages].kind_of? Array
@@ -359,14 +365,14 @@ module MavensMate
           zip_file = retrieve({ :body => retrieve_body })
           
           tmp_dir = Dir.tmpdir           
-          random = get_random_string
-          mmzip_folder = "#{tmp_dir}/.org.mavens.mavensmate.#{random}" 
+          random = MavensMate::Util.get_random_string
+          mm_tmp_dir = "#{tmp_dir}/.org.mavens.mavensmate.#{random}" 
           
-          Dir.mkdir(mmzip_folder)
-          File.open("#{mmzip_folder}/metadata.zip", "wb") {|f| f.write(Base64.decode64(zip_file))}
-          Zip::ZipFile.open("#{mmzip_folder}/metadata.zip") { |zip_file|
+          Dir.mkdir(mm_tmp_dir)
+          File.open("#{mm_tmp_dir}/metadata.zip", "wb") {|f| f.write(Base64.decode64(zip_file))}
+          Zip::ZipFile.open("#{mm_tmp_dir}/metadata.zip") { |zip_file|
               zip_file.each { |f|
-              f_path=File.join(mmzip_folder, f.name)
+              f_path=File.join(mm_tmp_dir, f.name)
               FileUtils.mkdir_p(File.dirname(f_path))
               zip_file.extract(f, f_path) unless File.exist?(f_path)
             }
@@ -374,13 +380,13 @@ module MavensMate
           require 'nokogiri'
           # [{"Account" => [ {"fields" => ["foo", "bar"]}, "listviews" => ["foo", "bar"] ] }, ]
           
-          Dir.foreach("#{mmzip_folder}/unpackaged/#{metadata_type[:directory_name]}") do |entry| #iterate the metadata folders
+          Dir.foreach("#{mm_tmp_dir}/unpackaged/#{metadata_type[:directory_name]}") do |entry| #iterate the metadata folders
             #entry => Account.object
             
             next if entry == '.' || entry == '..' || entry == '.svn' || entry == '.git'
             #puts "processing: " + entry + "\n"
             
-            doc = Nokogiri::XML(File.open("#{mmzip_folder}/unpackaged/#{metadata_type[:directory_name]}/#{entry}"))
+            doc = Nokogiri::XML(File.open("#{mm_tmp_dir}/unpackaged/#{metadata_type[:directory_name]}/#{entry}"))
             doc.remove_namespaces!
             
             c_hash = {}
@@ -395,7 +401,7 @@ module MavensMate
             base_name = entry.split(".")[0]
             object_hash[base_name] = c_hash
           end                         
-          FileUtils.rm_rf mmzip_folder
+          FileUtils.rm_rf mm_tmp_dir
         end
 
         result_elements.each { |el| 
@@ -497,12 +503,7 @@ module MavensMate
     end
                                                                 
     private
-      
-      def get_random_string
-        o =  [('a'..'z'),('A'..'Z')].map{|i| i.to_a}.flatten;  
-        string = (0..8).map{ o[rand(o.length)]  }.join;
-      end
-      
+            
       #ensures json is properly formatted for the dynatree control
       def to_json(what)
         what.to_hash.to_json
@@ -576,19 +577,18 @@ module MavensMate
       #returns partner connection
       def get_partner_client
         client = Savon::Client.new do
-          wsdl.document = File.expand_path(ENV['TM_BUNDLE_SUPPORT']+"/partner.xml", __FILE__)
+          wsdl.document = File.expand_path(ENV['TM_BUNDLE_SUPPORT']+"/wsdl/partner.xml", __FILE__)
         end
-        client.wsdl.endpoint = self.endpoint
+        client.wsdl.endpoint = self.endpoint        
         return client
       end
       
       #returns metadata connection
       def get_metadata_client
         client = Savon::Client.new do
-          wsdl.document = File.expand_path(ENV['TM_BUNDLE_SUPPORT']+"/metadata.xml", __FILE__)
+          wsdl.document = File.expand_path(ENV['TM_BUNDLE_SUPPORT']+"/wsdl/metadata.xml", __FILE__)
         end
         client.wsdl.endpoint = self.metadata_server_url
-        #puts "<br/><br/>METADATA CLIENT ACTIONS: #{client.wsdl.soap_actions}"
         return client
       end
       

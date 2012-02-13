@@ -1,23 +1,48 @@
-<div id="result_foo" style="padding:10px;">
-	<% if ! success %>
-		<div id="error_message" class="alert-message error">
-			<a class="close" href="#" onclick="$('#error_message').remove()">×</a>
-			<p><strong>Error!</strong></p>
-			<% result[:messages].each { |message| %>
-				<p><%= message[:problem] %></p>
-			<% } %>
-			<% result[:failures].each { |failure| %>
-				<p>
-					<%= failure[:name] %><br/>
-					<%= failure[:message] %><br/>
-					<%= failure[:stack_trace] %>
-				</p>
-			<% } %>
-		</div>
-	<% end %>
-	<% if success %>
+<div id="result" style="padding:10px;">
+	<% if result[:is_success] %>
 		<div class="alert-message success">
 			<p><strong>Success!</strong> Your deployment completed successfully.</p>
 		</div>
 	<% end %>
+	<% if ! result[:is_success] %>
+		<div id="error_message" class="alert-message error">
+			<a class="close" href="#" onclick="$('#error_message').remove()">×</a>
+			<p><strong>Deployment Failed!</strong></p>
+		</div> 
+	<% end %>
+	
+		<div id="result_table_wrapper" style="-webkit-border-radius: 4px 4px 4px 4px;overflow-y:auto;padding:0px;border:2px solid #ccc;">
+		<table id="result_table" class="bordered-table test_result" style="-webkit-border-radius: 4px 4px 4px 4px;border:none;margin-bottom:0px;border-bottom:1px solid #ddd">
+			<thead>
+				<tr>
+					<th>Metadata</th>
+					<th>Result</th>
+					<th>Message</th>
+				</tr>
+			</thead>
+			<tbody>
+				<% result[:messages].each do |message| %>
+					<%
+						file_name = message[:file_name]
+						fns = message[:file_name].split("/")
+						file_name = fns[fns.length - 1]
+						next if file_name == "package.xml"   					
+					%>
+					<tr>
+						<td style="width:210px;"><%= file_name %></td>
+						<td style="width:45px;">
+							<% if ! message[:success] %>
+								<span class="label important">Failed</span>
+							<% else %>
+								<span class="label success">Success</span>
+							<% end %>
+						</td>
+						<td>
+							<%- if ! message[:success] %><%= message[:problem] %> <%- if message[:line_number] %>[Line: <%= message[:line_number] %>, Column: <%= message[:column_number] %>]<%- end %><%- end %>
+						</td>
+					</tr>
+				<% end %>
+			</tbody>
+		</table> 
+		</div>
 </div>

@@ -1,5 +1,5 @@
 .ms-container{
-  background: transparent url('images/arrow.png') no-repeat 298px 83px;
+  background: transparent url('../images/arrow.png') no-repeat 298px 83px;
 }
 
 .ms-container:after{
@@ -56,13 +56,13 @@ padding-left: 22px;
 
 .ms-container .ms-optgroup-label{
   padding: 5px 0px 0px 20px;
-  background: transparent url('images/plus.png') no-repeat 5px 10px;
+  background: transparent url('../images/plus.png') no-repeat 5px 10px;
   cursor: pointer;
   color: #999;
 }
 
 .ms-container .ms-optgroup-label.collapse{
-  background-image: url('images/minus.png');
+  background-image: url('../images/minus.png');
 }
 
 .ms-container li.ms-elem-selectable:hover,
@@ -73,5 +73,5 @@ padding-left: 22px;
 }
 
 .ms-container .ms-selection li:hover{
-  background: #eee url('images/delete.png') no-repeat 3px 5px;
+  background: #eee url('../images/delete.png') no-repeat 3px 5px;
 }

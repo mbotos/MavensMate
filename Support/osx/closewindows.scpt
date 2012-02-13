@@ -3,7 +3,7 @@ tell application "System Events"
   
   if not UI elements enabled then
     try
-      tell application "TextMate" to set answer to button returned of (display dialog "This command relies on the GUI scripting architecture of Mac OS X which is currently disabled." & return & return & "You can activate it by selecting the checkbox \"Enable access for assistive devices\" in the Universal Access preference pane." buttons {"OK"} default button 1 with icon 1)
+      tell application "TextMate" to set answer to button returned of (display dialog "The command that closes MavensMate dialogs after form submission relies on the GUI scripting architecture of Mac OS X which is currently disabled." & return & return & "You can activate it by selecting the checkbox \"Enable access for assistive devices\" in the Universal Access preference pane. Otherwise, you'll need to close MavensMate dialog windows manually. Thanks!" buttons {"OK"} default button 1 with icon 1)
     on error number -128
       -- User cancelled
     end try

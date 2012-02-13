@@ -3,7 +3,8 @@ require 'zip/zipfilesystem'
 require 'fileutils'   
 require 'tmpdir'
 require 'base64'
-require ENV['TM_BUNDLE_SUPPORT'] + '/lib/metadata_helper.rb'
+require ENV['TM_BUNDLE_SUPPORT'] + '/lib/metadata_helper.rb' 
+require ENV['TM_BUNDLE_SUPPORT'] + '/lib/util.rb'
 require ENV['TM_BUNDLE_SUPPORT'] + '/environment.rb'
 require 'erb'
 
@@ -35,6 +36,7 @@ module MavensMate
           src.puts("environment: " + environment)
           src.close
         end
+        put_tm_properties(project_folder+project_name)
       end
       
       #puts the base project directory on the drive
@@ -262,7 +264,23 @@ module MavensMate
         src.puts(erb)
         src.close
       end
-            
+      
+      def put_tmp_directory
+        tmp_dir = Dir.tmpdir
+        random = MavensMate::Util.get_random_string
+        mmzip_folder = "#{tmp_dir}/.org.mavens.mavensmate.#{random}"
+        Dir.mkdir mmzip_folder
+        return mmzip_folder
+      end
+      
+      def remove_directory(dir)
+        FileUtils.rm_rf dir if File.exist?(dir)
+      end
+      
+      def put_tm_properties(project_directory)
+        File.open("#{project_directory}/.tm_properties", 'w') {|f| f.write("projectDirectory     = \"$CWD\"") }
+      end
+                  
       private
         
         #moves files from source directory to destination directory
