@@ -366,14 +366,34 @@ module MavensMate
     validate [:internet, :mm_project]
     
     begin
+      result = nil
       TextMate.call_with_progress( :title => 'MavensMate', :message => 'Compiling Project' ) do
         zip_file = MavensMate::FileFactory.copy_project_to_tmp 
         client = MavensMate::Client.new
-        result = client.deploy({:zip_file => zip_file}) 
-        if ! result[:is_success]        
-          TextMate::UI.alert(:warning, "Compile Failed", get_error_message(result))
-        end
+        result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"}) 
+        #if ! result[:is_success]        
+        #  TextMate::UI.alert(:warning, "Compile Failed", get_error_message(result))
+        #end
       end
+      
+      if ! result[:is_success]        
+        message = nil
+        begin
+          if result[:messages]
+            result[:messages].each do |m|
+              next if m[:success] == true
+              message = m
+              break 
+            end
+          end
+        rescue Exception => e
+          #ok with this exception
+        end 
+        m_arr = message[:file_name].split("/")
+        TextMate.go_to :file => "#{ENV['TM_PROJECT_DIRECTORY']}/src/#{m_arr[m_arr.length - 2]}/#{m_arr[m_arr.length - 1]}", :line => message[:line_number], :column => message[:column_number]        
+        TextMate::UI.simple_notification({:title => "MavensMate", :summary => "Compile Failed", :log => parse_error_message(result)})
+      end
+      
     rescue Exception => e
       alert e.message
     end

@@ -174,9 +174,7 @@ module MavensMate
         Dir.mkdir("#{tmp_dir}/mmzip/unpackaged")
         Dir.chdir("#{ENV['TM_PROJECT_DIRECTORY']}/src")
         unpackaged_dir = "#{tmp_dir}/mmzip/unpackaged"
-        TextMate::Process.run("cp -r * #{unpackaged_dir}", :interactive_input => false) do |str|
-          STDOUT << htmlize(str, :no_newline_after_br => true)          
-        end
+        %x{cp -r * '#{unpackaged_dir}'}
         return zip_tmp_directory
       end 
        
