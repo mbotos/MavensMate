@@ -1,3 +1,14 @@
+<style>
+	.bordered-table, .bordered-table td {
+		-webkit-border-radius: 0px !important;
+		border-radius: 0px !important;
+	}
+	
+	.bordered-table {
+		border-bottom:2px solid #ccc !important;
+	}
+   
+</style>
 <div id="result_output">
 	
 </div>
@@ -21,7 +32,19 @@
 				<fieldset>
 					<div class="clearfix">
 						<label for="un">Salesforce Username</label> 
-						<input class="xlarge" size="100" type="text" id="un">
+						<% 
+							display = connections.size == 0 ? "block" : "none"
+						%>
+						
+						<% if connections.size > 0 %>
+							<select id="un_list">
+								<% connections.each do |c| %>
+									<option><%=c[:un]%></option>
+								<% end %> 
+								<option value="new">-- Custom Connection --</option>
+							</select>	
+						<% end %>
+						<input style="margin-top:5px;display:<%= display %>" class="xlarge" size="100" type="text" id="un">
 					</div>
 					<div class="clearfix">
 						<label for="pw">Salesforce Password</label> 
@@ -39,7 +62,7 @@
 			<form>
 				<fieldset style="margin:0;padding-top:0px;">
 					<div class="clearfix">
-						<label for="check_only" style="width:100px;font-weight:bold;">Validate Only</label> 
+						<label for="check_only" id="check_only_label" style="width:100px;font-weight:bold;">Validate Only</label> 
 						<div class="input" style="margin-left: 120px;">
 							<input type="checkbox" id="check_only" style="margin:0px;width:32px;"/>
 						</div>
@@ -108,7 +131,7 @@
 <form class="form-stacked" id="action_buttons">
 	<fieldset style="padding-top:0px;">
 		<div class="actions">					
-			<input type="button" class="btn primary" value="Deploy to Server"  onclick='insertChangeset()'>
+			<input id="btnDeploy" type="button" class="btn primary" value="Deploy to Server"  onclick='insertChangeset()'>
 			&nbsp;
 			<button type="reset" class="btn" onclick="window.close();">Cancel</button>
 		</div>
@@ -120,6 +143,16 @@
 	var child_def = {}
     <%- child_metadata_definition.each do |child| -%>
     child_def['<%= child[:tag_name] %>'] = '<%= child[:xml_name] %>';
+   	<%- end -%>
+
+	var pw_def = {}
+    <%- connections.each do |c| -%>
+    pw_def['<%= c[:un] %>'] = '<%= c[:pw] %>';
+   	<%- end -%>
+	
+	var surl_def = {}
+    <%- connections.each do |c| -%>
+    surl_def['<%= c[:un] %>'] = '<%= c[:server_url] %>';
    	<%- end -%>
 	
 	function isValidateOnly() {
@@ -166,7 +199,34 @@
 				    resizeWindowAfterResult();
 				}
 			}
-		);  
+		);
+		
+		$("#check_only").change(function() {
+			if (!this.checked) {
+				$("#btnDeploy").val('Deploy to Server');
+			} else {
+				$("#btnDeploy").val('Validate Deployment');
+			}
+		});
+		
+		$("#un_list").change(function() {
+			if (this.value == 'new') {
+				$("#un").val("");
+				$("#un").show();
+				$("#pw").val(""); 
+				$("#server_url").val("https://www.salesforce.com");
+			} else {
+				$("#un").hide();
+				$("#un").val(this.value);
+				$("#pw").val(pw_def[this.value]);
+				$("#server_url").val(surl_def[this.value]);
+			}
+		});
+		
+		if ($("#un_list").val() != 'new') {
+			$("#un").val($("#un_list").val());
+			$("#pw").val(pw_def[$("#un_list").val()]);
+		}  
 	
 		$('.tabs').tabs();
 

@@ -112,6 +112,7 @@
 
 
 <% code_coverage_result.each_with_index do |result, i| %>
+<% next if ! result[:num_locations] %>
 <% next if result[:num_locations].to_i == 0 %>
 <% coverage = 100 * ((result[:num_locations].to_f - result[:num_locations_not_covered].to_f) / result[:num_locations].to_f) %>
 <% 

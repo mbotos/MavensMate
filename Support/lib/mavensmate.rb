@@ -7,7 +7,6 @@ require SUPPORT + '/lib/exit_codes'
 require SUPPORT + '/lib/escape'
 require SUPPORT + '/lib/textmate'
 require SUPPORT + '/lib/ui'
-#require SUPPORT + '/lib/tm/process'
 require SUPPORT + '/lib/web_preview'
 require SUPPORT + '/lib/progress'
 require 'rexml/document'
@@ -252,7 +251,7 @@ module MavensMate
         result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"}) 
         #puts "result of new metadata is: " + result.inspect
         puts "</div>"
-        if ! result[:is_success]        
+        if ! result[:check_deploy_status_response][:result][:success]       
           return result
         else
           zip_file = MavensMate::FileFactory.put_local_metadata(:api_name => options[:api_name], :meta_type => options[:meta_type], :object_name => object_name, :apex_class_type => options[:apex_class_type])
@@ -271,45 +270,27 @@ module MavensMate
   #compiles selected file(s) or active file
   def self.save(active_file=false) 
     validate [:internet, :mm_project]
+    result = nil
     begin
+      puts '<div id="mm_logger">'
       compiling_what = (!active_file) ? "Selected Metadata" : File.basename(ENV['TM_FILEPATH'])
-      result = nil
       TextMate.call_with_progress( 
         :title => "MavensMate", 
         :message => "Compiling #{compiling_what}",
-        :indeterminate => true,
-        :cancel => lambda { Process.kill('SIGUSR1') } ) do |dialog|        
-        
+        :indeterminate => true ) do |dialog|                
           zip_file = MavensMate::FileFactory.put_tmp_metadata(get_metadata_hash(active_file))     
           client = MavensMate::Client.new
           result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"})            
         puts result.inspect
-      end    
-        
-      
-      #puts result.inspect  
-      if ! result[:is_success]        
-        message = nil
-        begin
-          if result[:messages]
-            result[:messages].each do |m|
-              next if m[:success] == true
-              message = m
-              break 
-            end
-          end
-        rescue Exception => e
-          #ok with this exception
-        end 
-        m_arr = message[:file_name].split("/")
-        TextMate.go_to :file => "#{ENV['TM_PROJECT_DIRECTORY']}/src/#{m_arr[m_arr.length - 2]}/#{m_arr[m_arr.length - 1]}", :line => message[:line_number], :column => message[:column_number]        
-        TextMate::UI.simple_notification({:title => "MavensMate", :summary => "Compile Failed", :log => parse_error_message(result)})
       end
+      puts "</div>"    
     rescue Exception => e
       #alert e.message + "\n" + e.backtrace.join("\n")
       alert e.message
     end
-    #TextMate.exit_show_html(parse_error_message(result))
+    if ! result[:check_deploy_status_response][:result][:success]       
+      TextMate.exit_show_html(dispatch :controller => "deploy", :action => "show_compile_result", :result => result)        
+    end
   end
     
   #refreshes the selected file from the server // TODO:selected *files*
@@ -346,10 +327,7 @@ module MavensMate
         zip_file = MavensMate::FileFactory.put_delete_metadata(get_metadata_hash)     
         client = MavensMate::Client.new
         result = client.deploy({:zip_file => zip_file})
-        if ! result[:is_success]        
-          TextMate.go_to :file => ENV['TM_FILEPATH'], :line => result[:line_number], :column => result[:column_number]  
-          TextMate::UI.alert(:warning, "Delete Failed", get_error_message(result))
-        else
+        if result[:check_deploy_status_response][:result][:success]       
           get_selected_files.each do |f|
             FileUtils.rm_r f   
           end
@@ -359,43 +337,29 @@ module MavensMate
     rescue Exception => e
       alert e.message
     end
+    
+    if ! result[:check_deploy_status_response][:result][:success]       
+      TextMate.exit_show_html(dispatch :controller => "deploy", :action => "show_compile_result", :result => result)        
+    end
   end
   
   #compiles entire project
   def self.compile_project    
     validate [:internet, :mm_project]
-    
+    result = nil
     begin
-      result = nil
+      puts '<div id="mm_logger">'
       TextMate.call_with_progress( :title => 'MavensMate', :message => 'Compiling Project' ) do
         zip_file = MavensMate::FileFactory.copy_project_to_tmp 
         client = MavensMate::Client.new
         result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"}) 
-        #if ! result[:is_success]        
-        #  TextMate::UI.alert(:warning, "Compile Failed", get_error_message(result))
-        #end
       end
-      
-      if ! result[:is_success]        
-        message = nil
-        begin
-          if result[:messages]
-            result[:messages].each do |m|
-              next if m[:success] == true
-              message = m
-              break 
-            end
-          end
-        rescue Exception => e
-          #ok with this exception
-        end 
-        m_arr = message[:file_name].split("/")
-        TextMate.go_to :file => "#{ENV['TM_PROJECT_DIRECTORY']}/src/#{m_arr[m_arr.length - 2]}/#{m_arr[m_arr.length - 1]}", :line => message[:line_number], :column => message[:column_number]        
-        TextMate::UI.simple_notification({:title => "MavensMate", :summary => "Compile Failed", :log => parse_error_message(result)})
-      end
-      
+      puts "</div>"    
     rescue Exception => e
       alert e.message
+    end
+    if result[:check_deploy_status_response][:result][:success] == false       
+      TextMate.exit_show_html(dispatch :controller => "deploy", :action => "show_compile_result", :result => result)        
     end
   end
         
@@ -504,6 +468,7 @@ module MavensMate
         endpoint = MavensMate::Util.get_sfdc_endpoint(params[:server_url])
         tmp_dir = MavensMate::FileFactory.put_tmp_directory
         hash = params[:package]
+        deploy = true
         MavensMate::FileFactory.put_package(tmp_dir, binding, false)
         client = MavensMate::Client.new
         zip_file = client.retrieve({ :package => "#{tmp_dir}/package.xml" })
@@ -520,7 +485,7 @@ module MavensMate
     rescue Exception => e
       #alert e.message + "\n" + e.backtrace.join("\n")
       puts "</div>"
-      #MavensMate::FileFactory.remove_directory(tmp_dir)
+      MavensMate::FileFactory.remove_directory(tmp_dir)
       alert e.message
     end
   end
@@ -748,53 +713,7 @@ module MavensMate
     def self.get_name_no_extension(name)
       return name.split(".")[0]
     end
-    
-    #parses and returns error message in friendly format
-    def self.parse_error_message(result)
-      full_message = ""
-      return result[:message] if result[:message]
-      if result[:messages] && result[:messages].size > 0
-        result[:messages].each { |message|
-          next if message[:file_name].include? "package.xml"
-          next if message[:success] == true
-          file_name_array = message[:file_name].split('/')
-          file_name = file_name_array[file_name_array.length - 1]
-          error_message = "#{file_name}\nError: #{message[:problem]}"
-          line_message = ""
-          column_message = ""
-          if ! message[:line_number].nil?
-            line_message << "\nLine: #{message[:line_number]}"
-          end
-          if ! message[:column_number].nil?
-            column_message << "\nColumn: #{message[:column_number]}"
-          end       
-          full_message << error_message + line_message + column_message + "\n\n"
-        }
-      end
-      if result[:failures] && result[:failures].size > 0
-        result[:failures].each { |failure|
-          full_message << "#{failure[:name]}\n#{failure[:message]}\n#{failure[:stack_trace]}\n\n"
-        }
-      end
-      return full_message
-    end
-    
-    #parses and returns error message in friendly format
-    def self.get_error_message(result)
-      file_name_array = result[:file_name].split('/')
-      file_name = file_name_array[file_name_array.length - 1]
-      error_message = "#{file_name}\n#{result[:error_message]}"
-      line_message = ""
-      column_message = ""
-      if ! result[:line_number].nil?
-        line_message << "\nLine: #{result[:line_number]}"
-      end
-      if ! result[:column_number].nil?
-        column_message << "\nColumn: #{result[:column_number]}"
-      end
-      return error_message + line_message + column_message
-    end
-    
+            
     #returns metadata hash of selected files  #=> {"ApexClass" => ["aclass", "anotherclass"], "ApexTrigger" => ["atrigger", "anothertrigger"]}
     def self.get_metadata_hash(active_file=false)
       selected_files = get_selected_files(active_file)     

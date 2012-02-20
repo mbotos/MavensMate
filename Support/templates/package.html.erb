@@ -4,6 +4,9 @@
 <%- hash.each { |key, value| next if value.length == 0 -%>
 	<types>
 	<%- value.each do |f| -%>
+		<%- if ((f['name'] == 'unfiled$public' || f == 'unfiled$public') && deploy == true)  %>
+			<%- next %>
+		<%- end %>
 		<members><%= f['name'] || f %></members>
 	<%- end -%>
 		<name><%= key %></name>

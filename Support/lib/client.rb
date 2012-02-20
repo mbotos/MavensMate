@@ -133,6 +133,7 @@ module MavensMate
       end
       
       retrieve_request_hash = retrieve_response.body
+      #puts "RETRIEVE: " + retrieve_request_hash.inspect
       zip_file = retrieve_request_hash[:check_retrieve_status_response][:result][:zip_file]
     end
     
@@ -146,7 +147,7 @@ module MavensMate
           soap.header = get_soap_header
           soap.body = soapbody
         end
-        puts "<br/><br/> deploy response: " + response.inspect
+        #puts "raw deploy response: " + response.inspect
         create_hash = response.to_hash
       rescue Savon::SOAP::Fault => fault
         raise Exception.new(fault.to_s)
@@ -162,10 +163,9 @@ module MavensMate
         timer += 1
         response = self.mclient.request :check_status do |soap|
           soap.header = get_soap_header
-          soap.body = { :id => update_id  }
+          soap.body = { :id => update_id }
         end
         check_status_hash = response.to_hash
-        #puts "<br/><br/>status is: " + check_status_hash.inspect + "<br/><br/>"
         is_finished = check_status_hash[:check_status_response][:result][:done]        
 
         if timer == ENV['FM_TIMEOUT'].to_i
@@ -186,75 +186,10 @@ module MavensMate
         soap.body = { :id => update_id  }
       end
       
-      status_hash = response.to_hash
-      puts "<br/><br/>deploy result is: " + status_hash.inspect + "<br/><br/>"
-      
-      #return full response on a test run
-      if options[:deploy_options] and options[:deploy_options].include? "runTests"
-        return status_hash
-      end
-      
-      #tests have failed preventing a successful deployment
-      #if status_hash[:check_deploy_status_response][:result][:success] == false
-        failures = []
-        messages = []
-        if status_hash[:check_deploy_status_response][:result][:run_test_result][:failures]
-          if ! status_hash[:check_deploy_status_response][:result][:run_test_result][:failures].kind_of? Array
-            failures.push(status_hash[:check_deploy_status_response][:result][:run_test_result][:failures])
-          else
-            failures = status_hash[:check_deploy_status_response][:result][:run_test_result][:failures]
-          end
-        end
-        if status_hash[:check_deploy_status_response][:result][:messages]
-          if ! status_hash[:check_deploy_status_response][:result][:messages].kind_of? Array
-            messages.push(status_hash[:check_deploy_status_response][:result][:messages])
-          else
-            messages = status_hash[:check_deploy_status_response][:result][:messages]
-          end
-        end
-        return { 
-          :is_success => status_hash[:check_deploy_status_response][:result][:success],
-          :failures => failures,
-          :messages => messages
-        }
-      #end
-      
-      #deployment is "successful", but there are compile issues with the metadata
-      if status_hash[:check_deploy_status_response][:result][:messages].kind_of? Array
-        status_hash[:check_deploy_status_response][:result][:messages].each { |message| 
-          if ! message[:success]
-            return { 
-               :is_success => message[:success],
-               :line_number => message[:line_number],
-               :column_number => message[:column_number],
-               :error_message => message[:problem],
-               :file_name => message[:file_name]
-             }
-          end           
-        }
-        return { 
-          :is_success => status_hash[:check_deploy_status_response][:result][:messages][0][:success],
-          :line_number => status_hash[:check_deploy_status_response][:result][:messages][0][:line_number],
-          :column_number => status_hash[:check_deploy_status_response][:result][:messages][0][:column_number],
-          :error_message => status_hash[:check_deploy_status_response][:result][:messages][0][:problem],
-          :file_name => status_hash[:check_deploy_status_response][:result][:messages][0][:file_name]
-        }
-      else
-        if ! status_hash[:check_deploy_status_response][:result][:messages][:success]       
-          return { 
-             :is_success => status_hash[:check_deploy_status_response][:result][:messages][:success],
-             :line_number => status_hash[:check_deploy_status_response][:result][:messages][:line_number],
-             :column_number => status_hash[:check_deploy_status_response][:result][:messages][:column_number],
-             :error_message => status_hash[:check_deploy_status_response][:result][:messages][:problem],
-             :file_name => status_hash[:check_deploy_status_response][:result][:messages][:file_name]
-           }
-         else          
-           return { 
-             :is_success => true,
-             :done => true 
-           } 
-         end
-      end
+      deploy_hash = response.to_hash
+      puts "deploy result is: " + deploy_hash.inspect
+            
+      return deploy_hash            
     end
     
     #describes an org's metadata

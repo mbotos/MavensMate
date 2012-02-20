@@ -6,17 +6,19 @@
 	<string>nop</string>
 	<key>command</key>
 	<string>#!/usr/bin/env ruby -W0
+require "#{ENV['TM_BUNDLE_SUPPORT']}/lib/mavensmate"
+MavensMate.validate [:internet, :mm_project]
 require ENV['TM_BUNDLE_SUPPORT'] + '/environment.rb'
-dispatch :controller =&gt; "deploy", :action =&gt; "index"</string>
+dispatch :controller =&gt; "event_server", :action =&gt; "index"</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>
-	<string>^~@d</string>
+	<string>^~@e</string>
 	<key>name</key>
-	<string>Deploy to Server (EXPERIMENTAL)</string>
+	<string>Event Server</string>
 	<key>output</key>
 	<string>showAsHTML</string>
 	<key>uuid</key>
-	<string>4A80DF76-B8A7-4248-ABE2-71CFE0DC7313</string>
+	<string>5BCDE2B4-E0F8-48C8-BC6E-C78FED49136F</string>
 </dict>
 </plist>

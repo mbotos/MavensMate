@@ -4,10 +4,10 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 	<LI>Create & Edit Salesforce.com projects with specific package metadata
 	<LI>SVN & Git support
 	<LI>Create & compile Apex Classes, Apex Trigger, Visualforce Pages, and Visualforce Components
-	<LI>Create "changesets" for easy deployment (alpha)
-	<LI>Deploy Salesforce.com metadata to orgs (alpha)
 	<LI>Compile and retrieve other Salesforce.com metadata
 	<LI>Run Apex test methods and visualize test successes/failures & coverage
+	<LI>Setup deployment connections & deploy Salesforce.com metadata to orgs
+	<LI>Create "changesets" for easy deployment (alpha)
 	<LI>Supports code completion for SObject fields & Apex primitive methods (alpha)
 </UL> 
 
@@ -59,9 +59,13 @@ $ osascript -e 'tell app "TextMate" to reload bundles'
 
 	Control + Option + Command + C
 
+<P>Deploy to server:</P>
+
+    Control + Option + Command + D		
+
 <P>Code Completion (alpha):</P>
 
-	Shift + Tab
+	Shift + Tab (caret after dot for Sobject field completion #=> myAccount.<shift+tab here>)
 </P>
 
 <P>
@@ -85,6 +89,8 @@ $ osascript -e 'tell app "TextMate" to reload bundles'
 <P><img src="http://wearemavens.com/images/mm/metadata.png"/></P>
 <h2>Apex Test Runner</h2>
 <P><img src="http://wearemavens.com/images/mm/test2.png"/></P>
+<h2>Deployment Connections</h2>
+<P><img src="http://wearemavens.com/images/mm/deployment_connections.png"/></P>
 <h2>Changesets (alpha)</h2>
 <P><img src="http://wearemavens.com/images/mm/changesets.png"/></P>
 <h2>Code Completion (alpha)</h2>

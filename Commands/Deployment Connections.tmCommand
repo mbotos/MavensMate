@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>beforeRunningCommand</key>
+	<string>nop</string>
+	<key>command</key>
+	<string>#!/usr/bin/env ruby -W0
+require "#{ENV['TM_BUNDLE_SUPPORT']}/lib/mavensmate"
+MavensMate.validate [:internet, :mm_project]
+require ENV['TM_BUNDLE_SUPPORT'] + '/environment.rb'
+dispatch :controller =&gt; "org_connection", :action =&gt; "index"</string>
+	<key>input</key>
+	<string>none</string>
+	<key>keyEquivalent</key>
+	<string>^~@m</string>
+	<key>name</key>
+	<string>Deployment Connections</string>
+	<key>output</key>
+	<string>showAsHTML</string>
+	<key>uuid</key>
+	<string>FA359A6B-89E0-4B2D-9B2E-F35C9C3B4A2A</string>
+</dict>
+</plist>

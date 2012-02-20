@@ -254,7 +254,6 @@ module MavensMate
       def put_package(where, binding, delete=false)
         Dir.mkdir(where) unless File.exists?(where)
         Dir.chdir(where)
-        #File.delete("#{ENV['TM_PROJECT_DIRECTORY']}/src/package.xml")
         file_name = delete ? "destructiveChanges.xml" : "package.xml"
         template = ERB.new File.new("#{ENV['TM_BUNDLE_SUPPORT']}/templates/package.html.erb").read, nil, "-"
         erb = template.result(binding)        

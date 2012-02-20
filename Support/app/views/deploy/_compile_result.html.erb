@@ -1,25 +1,29 @@
-<div id="result" style="padding:10px;">
-	<% if result[:is_success] %>
-		<div class="alert-message success">
-			<% deploy_type = (is_check_only == "1") ? "validation" : "deployment"  %>
-			<% further_instruction = (is_check_only == "1") ? " Click \"Deploy to Server\" to complete deployment." : ""  %>
-			<p><strong>Success!</strong> Your <%= deploy_type %> completed successfully.<%= further_instruction%></p>
-			<script>
-				$("#check_only").attr('checked', false);
-				$("#btnDeploy").val('Deploy to Server');
-			</script>
-		</div>
-	<% end %>
+<style>
+	.bordered-table, .bordered-table td {
+		-webkit-border-radius: 0px !important;
+		border-radius: 0px !important;
+	}
+	
+	.bordered-table {
+		border-bottom:2px solid #ccc;
+	}
+	
+	.table_wrapper table:last-child {
+		border-bottom:1px solid #ddd !important;
+	}
+   
+</style>
+<div id="result" style="padding:5px 10px;">   
 	<% if ! result[:is_success] %>
-		<div id="error_message" class="alert-message error">
-			<p><strong>Deployment Failed!</strong></p>
+		<div id="error_message" class="alert-message error" style="margin-bottom: 10px;">
+			<p><strong>Compile Failed!</strong></p>
 		</div> 
 	<% end %>
 	
-		<div id="result_table_wrapper" style="-webkit-border-radius: 4px 4px 4px 4px;overflow-y:auto;padding:0px;border:2px solid #ccc;">
+		<div id="result_table_wrapper" class="table_wrapper" style="-webkit-border-radius: 4px 4px 4px 4px;overflow-y:auto;padding:0px;border:2px solid #ccc;">
 			
 			<% if result[:messages].size > 0 %>
-			<div style="padding:5px 10px;background-color:#f2f2f2;border-bottom:2px solid #ccc;cursor:pointer;" onclick="$('#result_table').toggle();">Deploy Messages</div>			
+			<div style="padding:5px 10px;background-color:#f2f2f2;border-bottom:2px solid #ccc;cursor:pointer;" onclick="$('#result_table').toggle();">Compile Messages</div>			
 			<table id="result_table" class="bordered-table test_result" style="-webkit-border-radius: 4px 4px 4px 4px;border:none;margin-bottom:0px;border-bottom:1px solid #ddd">
 				<thead>
 					<tr>
@@ -33,11 +37,14 @@
 						<%
 							file_name = message[:file_name]
 							fns = message[:file_name].split("/")
-							file_name = fns[fns.length - 1]
+							file_name = fns[fns.length - 1]   			         	
+							full_path =  "#{ENV['TM_PROJECT_DIRECTORY']}/src/#{message[:file_name]}"
+							full_path.gsub!(/unpackaged\//, '')
+							full_path = e_url full_path							
 							#next if file_name == "package.xml"   					
 						%>
 						<tr>
-							<td style="width:210px;"><%= file_name %></td>
+							<td style="width:210px;"><a href="txmt://open?url=file://<%= full_path %>&line=<%= message[:line_number] %>"><%= file_name %></a></td>
 							<td style="width:45px;">
 								<% if ! message[:success] %>
 									<span class="label important">Failed</span>
@@ -46,7 +53,7 @@
 								<% end %>
 							</td>
 							<td>
-								<%- if ! message[:success] %><%= message[:problem] %> <%- if message[:line_number] %>[Line: <%= message[:line_number] %>, Column: <%= message[:column_number] %>]<%- end %><%- end %>
+								<%- if ! message[:success] %><%= message[:problem] %> <%- if message[:line_number] %><br/>[Line: <%= message[:line_number] %>, Column: <%= message[:column_number] %>]<%- end %><%- end %>
 							</td>
 						</tr>
 					<% end %>
@@ -138,4 +145,35 @@
 
 		</div>
 				 
-</div>
+</div> 
+
+<form class="form-stacked" id="action_buttons" style="padding-left:12px;">
+	<fieldset style="padding-top:0px;">
+		<div class="actions">					
+			<input id="btnClose" type="button" class="btn primary" value="Close Window"  onclick='window.close()'>
+		</div>
+	</fieldset>
+</form>
+
+<script>
+
+var resizeHeight = $("#result").height();
+
+window.resizeTo(650, resizeHeight+155);
+try {
+	$("#deploy_output").height(height);
+} catch(e) { }	
+window.moveTo((screen.width-650)/2,(screen.height-document.getElementById('wrapper').offsetHeight-400)/2);
+
+$(function() {
+	//remove exit code
+	var str = $("body").html();
+	var newStr = str.substring(0, str.length-1);
+	$("body").html(newStr);
+	
+	$(window).resize(function() {
+        $("#result_table_wrapper").height($(window).height() - 175)
+    });
+})
+
+</script>
