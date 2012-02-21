@@ -807,7 +807,11 @@ module MavensMate
     def self.has_internet
       require 'socket' 
       begin 
-        TCPSocket.new 'google.com', 80 
+        if ENV["http_proxy"]
+          TCPSocket.new URI.parse(ENV["http_proxy"]).host, URI.parse(ENV["http_proxy"]).port 
+        else
+          TCPSocket.new 'google.com', 80 
+        end   
       rescue SocketError 
         return false 
       end

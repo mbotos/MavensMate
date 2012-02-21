@@ -511,8 +511,9 @@ module MavensMate
       
       #returns partner connection
       def get_partner_client
-        client = Savon::Client.new do
+        client = Savon::Client.new do |wsdl, http|
           wsdl.document = File.expand_path(ENV['TM_BUNDLE_SUPPORT']+"/wsdl/partner.xml", __FILE__)
+          http.proxy = ENV["http_proxy"] if ENV["http_proxy"]
         end
         client.wsdl.endpoint = self.endpoint        
         return client
@@ -520,8 +521,9 @@ module MavensMate
       
       #returns metadata connection
       def get_metadata_client
-        client = Savon::Client.new do
+        client = Savon::Client.new do |wsdl, http|
           wsdl.document = File.expand_path(ENV['TM_BUNDLE_SUPPORT']+"/wsdl/metadata.xml", __FILE__)
+          http.proxy = ENV["http_proxy"] if ENV["http_proxy"]
         end
         client.wsdl.endpoint = self.metadata_server_url
         return client
