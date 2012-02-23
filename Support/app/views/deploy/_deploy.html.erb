@@ -70,14 +70,28 @@
 				</fieldset>
 			</form>
 		</div>
+		
+		
+		<style>
+			#filter {
+				background-color:#f7f7f7;
+				padding:5px;
+				border-bottom:1px solid #ccc;
+				margin-bottom:10px;
+				position:relative;
+			}
+		</style>
 				
 		<div id="metadata">
 			<div id="project_wrapper">
-				<!--
+				
 				<div id="filter">
-					<input type="text" id="txtFilter"/>
+					<input type="text" id="txtFilter" style="width:200px" />
+					<a href="#" id="btnClearFilter" onclick="clearFilter();" class="btn small error" style="visibility:invisible;opacity:0;font-weight:bold;position:relative;top:1px;right:30px;padding:4px 7px 4px;">X</a>
+					<a href="#" id="btnSelectAll" class="btn small" style="font-weight:normal;padding:4px 7px 4px;">all</a>
+                    <a href="#" id="btnDeselectAll" class="btn small" style="font-weight:normal;padding:4px 7px 4px;">none</a>
 				</div>
-				-->
+				
 				<div id="treewrapper">
 					<div id="tree">
 						<ul>
@@ -154,7 +168,7 @@
     <%- connections.each do |c| -%>
     surl_def['<%= c[:un] %>'] = '<%= c[:server_url] %>';
    	<%- end -%>
-	
+		
 	function isValidateOnly() {
 	    if ($("#check_only").is(":checked")) {
 	        return "1";
@@ -253,29 +267,97 @@
 	    $("#txtFilter")
 	    .change(function() {
 	        var filter = $(this).val();
-	        if (filter) {
-	            // this finds all links in a list that contain the input,
-	            // and hide the ones not containing the input while showing the ones that do
-	            $(".custom1").find("a:not(:Contains(" + filter + "))").parent().parent().hide();
-	            $(".custom1").find("a:Contains(" + filter + ")").parent().parent().show();
-	            $(".custom1").parent().parent().prev().each(function() {
-	                var node = $.ui.dynatree.getNode(this);
-	                console.log(node);
-	            });
-	        } else {
-	            $(".custom1").parent().show();
-	        }
+	        // if (filter) {
+	        //     // this finds all links in a list that contain the input,
+	        //     // and hide the ones not containing the input while showing the ones that do
+	        //     $(".dynatree-node").find("a:not(:Contains(" + filter + "))").parent().parent().hide();
+	        //     $(".dynatree-node").find("a:Contains(" + filter + ")").parent().parent().show();
+	        //     $(".dynatree-node").parent().parent().prev().each(function() {
+	        //         var node = $.ui.dynatree.getNode(this);
+	        //         console.log(node);
+	        //     });
+	        // } else {
+	        //     $(".dynatree-node").parent().show();
+	        // }
+    		if (filter) {
+				$("#btnClearFilter").css({opacity: 1.0, visibility: "visible"})
+				expandAll();        	
+				filter_tree(filter);				
+			} else {
+		    	$("#btnClearFilter").css({opacity: 0.0, visibility: "invisible"})
+				clearFilter();
+			}
 	        return false;
 	    })
 	    .keyup(function() {
-	        // fire the above change event after every letter
-	        $(this).change();
+	        // fire the above change event after every letter	
+			$(this).change();
 	    });
-
+	
 	    $("#tree").dynatree("getRoot").visit(function(node) {
 	        node.expand(false);
-	    });
-
-
+	    });  
+		
+		function filter_tree(searchTerm) {
+			searchTerm = searchTerm.toLowerCase();
+			//var startNode = targetNode ||  $("#tree").dynatree("getRoot");
+			var startNode = $("#tree").dynatree("getRoot");
+			startNode.visit(function(node) {          
+				if (node.isVisible() && node.data.title) {              
+					// Filter currently visible non-root nodes.              
+					nodeTitleLower = node.data.title.toLowerCase();
+					nodeTitle = node.data.title;
+					if (nodeTitle.indexOf(searchTerm) >= 0 || nodeTitleLower.indexOf(searchTerm) >= 0) {                 
+						 // Make sure we and all our parents are visible                  
+						node.visitParents(function(node) {                      
+							$(node.li).show();                      
+							return (node.parent != null);                  
+						}, true); 
+			            // Terminate the traversal of this branch since the node matches
+						return 'skip';              
+					} else {                  
+						// Hide the node.                  
+						$(node.li).hide();              
+					}
+				}
+			});
+		}
+	});
+	
+	function expandAll() {
+		$("#tree").dynatree("getRoot").visit(function(node){
+		    node.expand(true);
+		});
+	}
+	
+	function collapseAll() {
+		$("#tree").dynatree("getRoot").visit(function(node){
+		    node.expand(false);
+		});
+	}
+	
+	function clearFilter() {
+		$('#txtFilter').val('');
+		$("#btnClearFilter").css({opacity: 0.0, visibility: "visible"});
+		collapseAll();
+		$(".dynatree-container li").show(); 
+		$('#txtFilter').focus();
+	}
+	
+	$("#btnDeselectAll").click(function(){
+		$("#tree").dynatree("getRoot").visit(function(node){   		
+			if ($(node.li).css('display') != 'none') { 
+				node.select(false);
+			}
+		});
+		return false;
+	});
+	$("#btnSelectAll").click(function(){
+		$("#tree").dynatree("getRoot").visit(function(node){
+			if ($(node.li).css('display') != 'none') {
+				node.select(true); 
+			}   		
+		});
+		return false;
 	});   		 						
 </script>
