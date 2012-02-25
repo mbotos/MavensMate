@@ -657,6 +657,11 @@ module MavensMate
     Process.detach(pid)
   end
   
+  #adds salesforce.com creds to the keychain
+  def self.add_to_keychain(project_name, pw)
+    %x{security add-generic-password -a '#{project_name}-mm' -s \"MavensMate: #{project_name}\" -w #{pw} -U}
+  end
+  
   private
     
     #returns a list of apex methods based on the object and method type supplied    
@@ -784,12 +789,7 @@ module MavensMate
         end
       end
     end
-        
-    #adds salesforce.com creds to the keychain
-    def self.add_to_keychain(project_name, pw)
-      %x{security add-generic-password -a '#{project_name}-mm' -s \"MavensMate: #{project_name}\" -w #{pw} -U}
-    end
-    
+            
     #opens project in textmate
     def self.open_project(project_name)
       project_folder = get_project_folder

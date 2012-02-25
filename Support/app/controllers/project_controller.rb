@@ -118,10 +118,36 @@ class ProjectController < ApplicationController
     
   #updates current project
   def update
-    begin
+    begin     
       tree = eval(params[:tree])  
       result = MavensMate.clean_project({ :update_sobjects => false, :update_package => true, :package => tree })
       render "_project_edit_result", :locals => { :message => result[:message], :success => result[:success] }
+    rescue Exception => e
+      TextMate::UI.alert(:warning, "MavensMate", e.message)
+    end
+  end
+  
+  #update project creds
+  def update_creds
+    begin
+      un = params[:un]
+      pw = params[:pw]
+      server_url = params[:server_url]
+
+      TextMate.call_with_progress( :title => "MavensMate", :message => "Validating Salesforce.com Credentials" ) do
+        client = MavensMate::Client.new({ :username => params[:un], :password => params[:pw], :endpoint => params[:server_url] })
+      end
+      
+      TextMate.call_with_progress( :title => "MavensMate", :message => "Updating project configuration" ) do
+        environment = (server_url.include? "test") ? "sandbox" : "production"
+        require 'yaml'
+        yml = YAML::load(File.open("#{ENV['TM_PROJECT_DIRECTORY']}/config/settings.yaml")) 
+        project_name = yml['project_name']
+        yml['username'] = un
+        yml['environment'] = environment 
+        File.open("#{ENV['TM_PROJECT_DIRECTORY']}/config/settings.yaml", 'w') { |f| YAML.dump(yml, f) }
+        MavensMate.add_to_keychain(project_name, pw) 
+      end 
     rescue Exception => e
       TextMate::UI.alert(:warning, "MavensMate", e.message)
     end
@@ -243,7 +269,7 @@ class ProjectController < ApplicationController
         opts.push({:url => vc_url+"/"+node.text, :title => node.text})
       end 
     elsif vc_type == "git"
-      response = %x{git ls-remote '#{vc_url}'}         
+      response = %x{git ls-remote '#{vc_url}'} 
       response.split("\n").each do |branch|
         branch_name = branch.split("\t")[1]
         opts.push({ :url => branch_name, :title => branch_name })

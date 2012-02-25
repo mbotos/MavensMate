@@ -31,6 +31,9 @@
 							<option>https://www.salesforce.com</option>
 							<option>https://test.salesforce.com</option>
 						</select>
+					</div>
+					<div class="clearfix" style="margin-top:20px;">
+						<input type="button" class="btn primary" value="Update Credentials" onclick="updateProjectCreds();">
 					</div> 												
 				</fieldset>
 			</form>
@@ -85,18 +88,28 @@
 <form class="form-stacked" id="action_buttons">
 	<fieldset style="padding-top:0px;">
 		<div class="actions">					
-			<input type="button" id="btnSubmit" class="btn primary" value="Update Project"  onclick="updateProject();">
+			<input type="button" id="btnSubmit" class="btn primary" value="Update Project Metadata"  onclick="updateProject();">
 			&nbsp;
 			<button type="reset" class="btn" onclick="window.close();">Cancel</button>
 		</div>
 	</fieldset>
 </form>   
 	
-	<script>
+	<script type="text/javascript">
 		var child_def = {}
         <% child_metadata_definition.each do |child| %>
         	child_def['<%= child[:tag_name] %>'] = '<%= child[:xml_name] %>';
 	   	<% end %>  
+		
+		function updateProjectCreds() {
+			dispatch({
+			    controller: "project",
+			    action: "update_creds",
+			    un: $("#un").val(),
+			    pw: $("#pw").val(),
+			    server_url: $("#server_url").val() 
+			}) 
+		}
 			
 		$(function() {		   
 			//instantiate tabs
@@ -116,9 +129,9 @@
 			$("#server_url").val(server_url);
 			
 			$("#pn").prop('disabled', true);  
-			$("#un").prop('disabled', true);  
-			$("#pw").prop('disabled', true);  
-			$("#server_url").prop('disabled', true);  
+			//$("#un").prop('disabled', true);  
+			//$("#pw").prop('disabled', true);  
+			//$("#server_url").prop('disabled', true);  
 							
 			//resize elements
 			$("#project_wrapper").height($(window).height() - 175)
