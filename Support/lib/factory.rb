@@ -172,9 +172,8 @@ module MavensMate
         FileUtils.rm_rf("#{tmp_dir}/mmzip")
         Dir.mkdir("#{tmp_dir}/mmzip")
         Dir.mkdir("#{tmp_dir}/mmzip/unpackaged")
-        Dir.chdir("#{ENV['TM_PROJECT_DIRECTORY']}/src")
         unpackaged_dir = "#{tmp_dir}/mmzip/unpackaged"
-        %x{cp -r * '#{unpackaged_dir}'}
+        %x{cp -R '#{ENV['TM_PROJECT_DIRECTORY']}/src/' '#{unpackaged_dir}'}      
         return zip_tmp_directory
       end 
        
@@ -337,14 +336,14 @@ module MavensMate
       
         def zip_tmp_directory
           tmp_dir = Dir.tmpdir
-          Dir.chdir("#{tmp_dir}/mmzip")
-          Zip::ZipFile.open("deploy.zip", 'w') do |zipfile|
+          #Dir.chdir("#{tmp_dir}/mmzip")
+          Zip::ZipFile.open("#{tmp_dir}/mmzip/deploy.zip", 'w') do |zipfile|
             Dir["#{tmp_dir}/mmzip/**/**"].each do |file|
               zipfile.add(file.sub("#{tmp_dir}/mmzip/",""),file)
             end
           end
-          Dir.chdir("#{tmp_dir}/mmzip")
-          file_contents = File.read("deploy.zip")
+          #Dir.chdir("#{tmp_dir}/mmzip")
+          file_contents = File.read("#{tmp_dir}/mmzip/deploy.zip")
           return Base64.encode64(file_contents)
         end
         
