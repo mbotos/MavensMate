@@ -23,11 +23,13 @@ TextMate.min_support 10895
 module MavensMate
   
   #>>TODO
+  #-use metadata filter ui in create project/changeset
   #-move all temporary processing to .org.mavens.mavensmate.random format
   #-refresh selected files from server   
   #-modify package.xml when new metadata is created from MavensMate    
   #-create project from package 
   #-changeset -> deploy
+  #-deploy -> save as changeset
   #-list sobjects in picklist when creating trigger
   #-quick panel (html/css/js) to replace native textmate dialog to run MavensMate commands
 
@@ -146,8 +148,8 @@ module MavensMate
     rescue Exception => e
       puts "</div>"
       FileUtils.rm_rf("#{project_folder}#{project_name}")
-      #return { :is_success => false, :error_message => e.message + "\n" + e.backtrace.join("\n"), :project_name => project_name } 
-      return { :is_success => false, :error_message => e.message, :project_name => project_name } 
+      return { :is_success => false, :error_message => e.message + "\n" + e.backtrace.join("\n"), :project_name => project_name } 
+      #return { :is_success => false, :error_message => e.message, :project_name => project_name } 
     end
     puts "</div>"
     return { :is_success => true, :error_message => "", :project_name => project_name }
@@ -344,23 +346,23 @@ module MavensMate
   end
   
   #compiles entire project
-  def self.compile_project    
+  def self.compile_project
     validate [:internet, :mm_project]
     result = nil
     begin
       puts '<div id="mm_logger">'
-      TextMate.call_with_progress( :title => 'MavensMate', :message => 'Compiling Project' ) do
-        zip_file = MavensMate::FileFactory.copy_project_to_tmp 
-        client = MavensMate::Client.new
+      TextMate.call_with_progress( :title => 'MavensMate', :message => 'Compiling Project' ) do            
+        zip_file = MavensMate::FileFactory.copy_project_to_tmp     
+        client = MavensMate::Client.new  
         result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"}) 
       end
-      puts "</div>"    
+      puts "</div>"
     rescue Exception => e
       alert e.message
     end
     if result[:check_deploy_status_response][:result][:success] == false       
       TextMate.exit_show_html(dispatch :controller => "deploy", :action => "show_compile_result", :result => result)        
-    end
+    end    
   end
         
   #wipes local project and rewrites with server copies based on current project's package.xml, preserves svn/git      
