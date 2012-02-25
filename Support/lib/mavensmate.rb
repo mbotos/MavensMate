@@ -463,8 +463,7 @@ module MavensMate
     validate [:internet, :mm_project]
 
     begin
-      puts '<div id="mm_logger">'
-      TextMate.call_with_progress( :title => "MavensMate", :message => "Deploying to the server") do
+      if params[:mode] == "async"
         endpoint = MavensMate::Util.get_sfdc_endpoint(params[:server_url])
         tmp_dir = MavensMate::FileFactory.put_tmp_directory
         hash = params[:package]
@@ -472,15 +471,34 @@ module MavensMate
         MavensMate::FileFactory.put_package(tmp_dir, binding, false)
         client = MavensMate::Client.new
         zip_file = client.retrieve({ :package => "#{tmp_dir}/package.xml" })
-                          
+                        
         client = MavensMate::Client.new({ :username => params[:un], :password => params[:pw], :endpoint => endpoint })
         result = client.deploy({
           :zip_file => zip_file,
           :deploy_options => "<checkOnly>#{params[:check_only]}</checkOnly><rollbackOnError>true</rollbackOnError>"
         })
         MavensMate::FileFactory.remove_directory(tmp_dir)
-        puts "</div>"
         return result
+      else
+        puts '<div id="mm_logger">'
+        TextMate.call_with_progress( :title => "MavensMate", :message => "Deploying to the server") do
+          endpoint = MavensMate::Util.get_sfdc_endpoint(params[:server_url])
+          tmp_dir = MavensMate::FileFactory.put_tmp_directory
+          hash = params[:package]
+          deploy = true
+          MavensMate::FileFactory.put_package(tmp_dir, binding, false)
+          client = MavensMate::Client.new
+          zip_file = client.retrieve({ :package => "#{tmp_dir}/package.xml" })
+                          
+          client = MavensMate::Client.new({ :username => params[:un], :password => params[:pw], :endpoint => endpoint })
+          result = client.deploy({
+            :zip_file => zip_file,
+            :deploy_options => "<checkOnly>#{params[:check_only]}</checkOnly><rollbackOnError>true</rollbackOnError>"
+          })
+          MavensMate::FileFactory.remove_directory(tmp_dir)
+          puts "</div>"
+          return result
+        end  
       end
     rescue Exception => e
       #alert e.message + "\n" + e.backtrace.join("\n")
@@ -651,6 +669,16 @@ module MavensMate
     pid = fork do
       Thread.new do
         script_path = "#{ENV['TM_BUNDLE_SUPPORT']}/osx/closewindows.scpt"
+        %x{osascript &>/dev/null '#{script_path}'}
+      end
+    end
+    Process.detach(pid)
+  end
+  
+  def self.close_deploy_window
+    pid = fork do
+      Thread.new do
+        script_path = "#{ENV['TM_BUNDLE_SUPPORT']}/osx/closedeploywindow.scpt"
         %x{osascript &>/dev/null '#{script_path}'}
       end
     end

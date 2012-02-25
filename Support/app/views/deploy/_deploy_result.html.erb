@@ -4,7 +4,7 @@
 			<% deploy_type = (is_check_only == "1") ? "validation" : "deployment"  %>
 			<% further_instruction = (is_check_only == "1") ? " Click \"Deploy to Server\" to complete deployment." : ""  %>
 			<p><strong>Success!</strong> Your <%= deploy_type %> completed successfully.<%= further_instruction%></p>
-			<script>
+			<script type="text/javascript">
 				$("#check_only").attr('checked', false);
 				$("#btnDeploy").val('Deploy to Server');
 			</script>

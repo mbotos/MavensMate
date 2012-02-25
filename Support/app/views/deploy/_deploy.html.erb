@@ -21,7 +21,7 @@
 	</div>
 	
 	<ul class="tabs">
-		<li class="active"><a href="#form">Destination</a></li>
+		<li class="active"><a href="#form">Deploy Options</a></li>
 		<li><a href="#metadata">Metadata</a></li>
 		<li><a href="#result" id="result_tab">Result</a></li>
 	</ul>
@@ -59,14 +59,57 @@
 					</div>				
 				</fieldset>
 			</form>
+			<style>
+				.deploy_options .clearfix {
+					margin-left: 20px;
+					margin-bottom:0px;
+				}
+				.deploy_options input[type="checkbox"] {
+					margin: 0px;
+					width: 32px;
+					float: left;
+				}
+				.deploy_options .clearfix label {
+					width:auto;
+				}
+				.deploy_options .clearfix label > div {
+					float: left;
+					width: auto;
+					font-weight: bold;
+					height: 30px;
+					padding-top: 5px;
+					cursor: pointer;
+				}
+				
+			</style>
 			<form>
-				<fieldset style="margin:0;padding-top:0px;">
+				<fieldset class="deploy_options" style="margin:0;padding-top:0px;">
 					<div class="clearfix">
-						<label for="check_only" id="check_only_label" style="width:100px;font-weight:bold;">Validate Only</label> 
-						<div class="input" style="margin-left: 120px;">
-							<input type="checkbox" id="check_only" style="margin:0px;width:32px;"/>
-						</div>
+						<label>
+							<input type="checkbox" id="check_only" style="margin:0px;width:32px;"/>						
+							<div id="check_only_label">Validate Only</div>
+						</label> 
 					</div>
+					<!-- <div class="clearfix">
+						<label>
+							<input type="checkbox" id="save_changeset" style="margin:0px;width:32px;"/>						
+							<div>Save as Changeset</div>
+						</label>						
+					</div>
+					<div class="clearfix" id="changeset_name_wrapper" style="display:none;margin-bottom:10px;">
+						<label for="cname" style="font-weight:bold;">Changeset Name</label> 
+						<input class="xlarge" size="100" type="text" id="cname">
+					</div>     -->
+					<div class="clearfix">
+						<label>
+							<input type="checkbox" id="set_and_forget" style="margin:0px;width:32px;"/>						
+							<div>Set and Forget</div>
+						</label>   					
+					</div>
+					<div id="deploy_info" style="display:none;" class="alert-message block-message info">
+			        	<p><strong>This deployment will run in async mode.</strong></p>
+			      	</div>
+					
 				</fieldset>
 			</form>
 		</div>
@@ -145,15 +188,36 @@
 <form class="form-stacked" id="action_buttons">
 	<fieldset style="padding-top:0px;">
 		<div class="actions">					
-			<input id="btnDeploy" type="button" class="btn primary" value="Deploy to Server"  onclick='insertChangeset()'>
+			<input id="btnDeploy" type="button" class="btn primary" value="Deploy to Server"  onclick='deploy()'>
 			&nbsp;
 			<button type="reset" class="btn" onclick="window.close();">Cancel</button>
 		</div>
 	</fieldset>
-</form>
+</form> 
+
+<div class="twipsy deploy_loading">
+	<div class="loading_indicator"></div>                                        	
+</div>
+<div class="deploy_wait_description">
+	Deploying to <span id="where"></span>.<br/><br/>
+	Do not close or minimize this window. 
+</div>
 
 
-<script>
+<style>
+	.deploy_loading {
+		width: 100%;
+		height: 100%;
+		background-color: #333;
+		top: 0;
+		right: 0;
+		display:none;
+	}
+	
+</style>
+<script type="text/javascript">
+	document.title = "Deploy To Server";
+	
 	var child_def = {}
     <%- child_metadata_definition.each do |child| -%>
     child_def['<%= child[:tag_name] %>'] = '<%= child[:xml_name] %>';
@@ -177,7 +241,39 @@
 	    }
 	}
 	
-	function insertChangeset() {		
+	function deployMode() {
+		if ($("#set_and_forget").is(":checked")) {
+	        return "async";
+	    } else {
+	        return "";
+	    }
+	}
+	
+	$("#set_and_forget").click(function() {
+		if (this.checked) {
+			$("#deploy_info").show();			
+		} else {
+			$("#deploy_info").hide();
+		}
+	}); 
+	
+	$("#save_changeset").click(function() {
+		if (this.checked) {
+			$("#changeset_name_wrapper").show();			
+		} else {
+			$("#changeset_name_wrapper").hide();
+		}
+	});
+	
+	
+	function deploy() {		
+		deploy_mode = deployMode();
+		if (deploy_mode == "async") {
+			$("#where").html($("#un").val());
+			$(".deploy_loading").fadeIn();
+			$(".deploy_wait_description").fadeIn();
+		}
+		 
 		$("#result").html(
 			dispatch({
 			    controller: "deploy",
@@ -186,6 +282,7 @@
 			    pw: $("#pw").val(),
 			    server_url: $("#server_url").val(),
 			    check_only: isValidateOnly(),
+				mode: deploy_mode,
 			    tree: get_tree()  
 			})
 		);  
@@ -247,7 +344,7 @@
 	    $("#project_wrapper").height($(window).height() - 175)
 
 	    var resizeHeight = $("#form").height();
-	    resizeAndCenterWindowByHeight(resizeHeight + 250);
+	    resizeAndCenterWindowByHeight(resizeHeight + 150);
 
 	    $(window).resize(function() {
 	        $("#project_wrapper").height($(window).height() - 175)

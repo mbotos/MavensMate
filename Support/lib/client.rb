@@ -187,7 +187,7 @@ module MavensMate
       end
       
       deploy_hash = response.to_hash
-      puts "deploy result is: " + deploy_hash.inspect
+      #puts "deploy result is: " + deploy_hash.inspect
             
       return deploy_hash            
     end

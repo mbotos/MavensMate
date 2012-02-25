@@ -43,15 +43,45 @@ class DeployController < ApplicationController
   end
   
   #deploys metadata to selected server
-  def deploy_metadata  
-    begin
-      tree = eval(params[:tree])      
-      params[:package] = tree
-      result = MavensMate.deploy_to_server(params)
-      result = MavensMate::Util.parse_deploy_response(result)
-      render "_deploy_result", :locals => { :result => result, :is_check_only => params[:check_only] }
-    rescue Exception => e
-      TextMate::UI.alert(:warning, "MavensMate", e.message + "\n" + e.backtrace.join("\n"))  
+  def deploy_metadata      
+    if params[:mode] == "async"      
+      exit if fork            # Parent exits, child continues.
+      Process.setsid          # Become session leader.
+      exit if fork            # Zap session leader.   
+      pid = fork do
+        begin
+          tree = eval(params[:tree])      
+          params[:package] = tree
+          destination = params[:un]
+          is_check_only = params[:check_only]          
+          result = MavensMate.deploy_to_server(params)
+          result = MavensMate::Util.parse_deploy_response(result)
+          `osascript '#{ENV['TM_BUNDLE_SUPPORT']}/osx/growl.scpt' 'Deploy complete'`
+                    
+          require 'erb'
+          template = ERB.new File.new("#{ENV['TM_BUNDLE_SUPPORT']}/app/views/deploy/_async_deploy_result.html.erb").read, nil, "-"
+          erb = template.result(binding)        
+          src = File.new("#{ENV['TM_PROJECT_DIRECTORY']}/config/.async_deploy_result", "w")
+          src.puts(erb)
+          src.close
+          MavensMate.close_deploy_window          
+          `open "#{ENV['TM_PROJECT_DIRECTORY']}/config/.async_deploy_result"`        
+        rescue Exception => e
+          TextMate::UI.alert(:warning, "MavensMate", e.message + "\n" + e.backtrace.join("\n"))  
+        end  
+      end
+      Process.detach(pid)
+    else
+      begin
+        tree = eval(params[:tree])      
+        params[:package] = tree
+        result = MavensMate.deploy_to_server(params)
+        result = MavensMate::Util.parse_deploy_response(result)
+        render "_deploy_result", :locals => { :result => result, :is_check_only => params[:check_only] }
+        `osascript '#{ENV['TM_BUNDLE_SUPPORT']}/osx/growl.scpt' 'Deploy complete'`
+      rescue Exception => e
+        TextMate::UI.alert(:warning, "MavensMate", e.message + "\n" + e.backtrace.join("\n"))  
+      end
     end
   end
   
