@@ -7,7 +7,7 @@
     	<%= script_tag %>
   	<% end %>
 		<%= style_tag %>
-	<script>
+	<script type="text/javascript">
 		<% support = ENV['TM_BUNDLE_SUPPORT'] %>
 		var TM_BUNDLE_SUPPORT = '<%= support %>';
 		window.onload=function() {
@@ -51,7 +51,7 @@
   	<div id='wrapper'>
 			<% yield %>
 		</div>
-		<script>
+		<script type="text/javascript">
 			//window.resizeTo(document.getElementById('wrapper').offsetWidth, document.getElementById('wrapper').offsetHeight+22);
 			//window.resizeTo(325, document.getElementById('wrapper').offsetHeight+22);
 			window.resizeTo(325, document.getElementById('wrapper').offsetHeight+72);

@@ -118,7 +118,7 @@
 </form>
 
 
-	<script>
+	<script type="text/javascript">
 		var user_action = "<%= user_action %>";
 		
 		var child_def = {}
@@ -360,8 +360,10 @@
 		
 		function get_vc_list() {
 			$("#tree_loader").fadeIn();
-			$.get(  
-	            "http://127.0.0.1:7125",  
+			//console.log($("#vc_url").val());
+			//console.log($("#vc_type").val());
+			$.get(  	            
+				"http://127.0.0.1:7125",  
 				{ vc_url: $("#vc_url").val(), vc_type: $("#vc_type").val(), svn_un: $('#svn_un').val(), svn_pw: $('#svn_pw').val() },  
 	            function(data) {  
 	                console.log(data)
