@@ -444,15 +444,25 @@
 	$("#btnDeselectAll").click(function(){
 		$("#tree").dynatree("getRoot").visit(function(node){   		
 			if ($(node.li).css('display') != 'none') { 
-				node.select(false);
+				try {
+					if (node.data.level > 1)
+						node.select(false);
+				} catch(e) {
+					node.select(false);   				
+				}
 			}
 		});
 		return false;
 	});
 	$("#btnSelectAll").click(function(){
-		$("#tree").dynatree("getRoot").visit(function(node){
+		$("#tree").dynatree("getRoot").visit(function(node){		   			
 			if ($(node.li).css('display') != 'none') {
-				node.select(true); 
+				try {
+					if (node.data.level > 1)
+						node.select(true);
+				} catch(e) {
+					node.select(true);   				
+				}
 			}   		
 		});
 		return false;
