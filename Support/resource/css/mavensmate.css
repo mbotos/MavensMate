@@ -1,3 +1,7 @@
+.topbar-inner {
+	background: url('../images/header_bkgd.gif') 0 0 repeat;
+}
+
 body {
 	margin-top:50px; 
 	padding-top:0px;
@@ -11,6 +15,14 @@ input {
 	margin-bottom:10px !important;
 }
 
+#logo {
+	background-image: url("../images/logo.png"); 
+	background-repeat:no-repeat;
+	background-position:0px 3px;
+	width:155px;
+	height:21px;
+}
+
 #mm_logger {
 	display:none;
 	height:200px;
@@ -21,7 +33,7 @@ input {
 
 .container {
 	width: 100%;
-	margin-left: 15px;
+	margin-left: 10px;
 }
 
 #component_wrapper {
