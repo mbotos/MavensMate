@@ -45,7 +45,7 @@
 .ms-container .ms-selection li.ms-elem-selected{
   border-bottom: 1px #eee solid;
   padding: 5px 10px;
-padding-left: 22px;
+  padding-left: 12px;
   color: #101010;
 }
 
@@ -73,5 +73,5 @@ padding-left: 22px;
 }
 
 .ms-container .ms-selection li:hover{
-  background: #eee url('../images/delete.png') no-repeat 3px 5px;
+  background: #eee url('../images/delete.png') no-repeat 267px 5px;
 }

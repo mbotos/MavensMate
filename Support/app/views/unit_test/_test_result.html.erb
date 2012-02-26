@@ -1,6 +1,20 @@
 <%
-	trigger_start_element = false
-
+	warnings = []
+	general_warnings = []
+	if result[:check_deploy_status_response][:result][:run_test_result][:code_coverage_warnings]
+		if result[:check_deploy_status_response][:result][:run_test_result][:code_coverage_warnings].kind_of? Array
+			warnings = result[:check_deploy_status_response][:result][:run_test_result][:code_coverage_warnings]
+		else
+			warnings.push(result[:check_deploy_status_response][:result][:run_test_result][:code_coverage_warnings])	
+		end
+	end
+	warnings.each do |w|
+		if w[:name].nil?
+			general_warnings.push(w)
+		end
+	end
+	
+	
 	failures = []
 	if result[:check_deploy_status_response][:result][:run_test_result][:failures]
 		if result[:check_deploy_status_response][:result][:run_test_result][:failures].kind_of? Array
@@ -24,7 +38,39 @@
 		code_coverage_result = result[:check_deploy_status_response][:result][:run_test_result][:code_coverage]
 	else
 		code_coverage_result.push(result[:check_deploy_status_response][:result][:run_test_result][:code_coverage])	
-	end	
+	end
+	
+	class_coverage = []
+	trigger_coverage = []
+	
+    code_coverage_result.each do |r|
+		if r[:type] == "Trigger"
+			trigger_coverage.push(r)
+		else
+			class_coverage.push(r)
+		end	
+	end
+	
+	if class_coverage.size > 1	
+		begin
+			class_coverage.sort! { |a,b| 
+				a_coverage = 100 * ((a[:num_locations].to_f - a[:num_locations_not_covered].to_f) / a[:num_locations].to_f)
+				b_coverage = 100 * ((b[:num_locations].to_f - b[:num_locations_not_covered].to_f) / b[:num_locations].to_f)
+				b_coverage <=> a_coverage
+			}
+	 	rescue
+		end
+	end
+	if trigger_coverage.size > 1	
+		begin
+			trigger_coverage.sort! { |a,b| 
+				a_coverage = 100 * ((a[:num_locations].to_f - a[:num_locations_not_covered].to_f) / a[:num_locations].to_f)
+				b_coverage = 100 * ((b[:num_locations].to_f - b[:num_locations_not_covered].to_f) / b[:num_locations].to_f)
+				b_coverage <=> a_coverage
+			}  
+		rescue
+		end 
+	end   
 	
 	results_normal = {}
 	#{"foo"=>[{:name = "foobar"}{:name = "something else"}], "bar"=>[]}
@@ -50,7 +96,13 @@
       results_normal[failure[:name]] = arr #replace the key
     end
 	end
-%>
+%> 
+
+<% general_warnings.each do |w| %>
+	<div class="alert-message block-message error">
+		<p><strong><%= w[:message] %></strong></p>
+	</div>
+<% end %>
 
 <% results_normal.each do |cls, tests| %>
 	
@@ -63,7 +115,7 @@
 	<div class="alert-message block-message-custom" style="margin-bottom:0px;padding: 5px;-webkit-border-radius: 4px 4px 0px 0px;">
 			<p style="float:left;"><strong><%= cls %>.cls</strong></p>
 			<p style="float:right;"><strong><%= passing_tests %>/<%= total_tests %> tests passed</strong></p>
-		<div style="clear:both;"/>	
+		<div style="clear:both;"></div>	
 	</div>
 	<table class="bordered-table test_result" style="-webkit-border-radius: 0px 0px 4px 4px;">
 		<thead>
@@ -108,107 +160,209 @@
 			<% end %>
 		</tbody>
 	</table>
-<% end %>
-
-
-<% code_coverage_result.each_with_index do |r, i| %>
-<% next if ! r[:num_locations] %>
-<% next if r[:num_locations].to_i == 0 %>
-<% coverage = 100 * ((r[:num_locations].to_f - r[:num_locations_not_covered].to_f) / r[:num_locations].to_f) %>
-<% 
-	locations_not_covered_result = []
-	if ! r[:locations_not_covered].nil?
-		if r[:locations_not_covered].kind_of? Array
-			locations_not_covered_result = r[:locations_not_covered]
-		else
-			locations_not_covered_result.push(r[:locations_not_covered])	
-		end
-	end
-	
-	coverage_class = "" 
-	case coverage.to_i
-	when 0..40
-	  coverage_class = "low"
-	when 41..74
-	  coverage_class = "medium"
-	when 75..100
-	  coverage_class = ""
-	else
-	  coverage_class = ""
-	end
-	
-	# passing_tests = successes.count {|test| test[:name] == result[:name]} || 0
-	# failing_tests = failures.count {|test| test[:name] == result[:name]} || 0
-	# total_tests = passing_tests + failing_tests
-	display = coverage.to_i == 0 ? "none" : "block"
-%>
-
-<% if r[:type] == "Trigger" and !trigger_start_element %>
-	<a class="btn success" style="margin-bottom:10px;padding: 3px 5px;" href="javascript:void(0);" onclick="toggleTriggers(this);">Show Trigger Coverage &raquo;</a>
-	<div id="trigger_wrapper" style="display:none;">
-	<% trigger_start_element = true %>
 <% end %> 
 
-<% extension = r[:type] == "Class" ? "cls" : "trigger"  %>
-<% directory = r[:type] == "Class" ? "classes" : "triggers"  %>
-
-
-<div class="alert-message block-message-custom " style="padding: 0px 5px 5px 5px;">
-  <div style="margin-bottom:10px;">
-		<p style="float:left;"><strong><%= r[:name] %>.<%= extension %></strong></p>
-		<p style="float:right;"><strong></strong></p>
+<div id="warnings_wrapper">
+	<!-- PROCESS WARNINGS -->
+	<div class="alert-message block-message-custom" style="margin-bottom:0px;padding: 5px;-webkit-border-radius: 4px 4px 0px 0px;">
+			<p style="float:left;"><strong>Test Coverage Warnings</strong></p>
+		<div style="clear:both;"></div>	
 	</div>
-	<div style="clear:both;"/>
-	<p style="margin-bottom:10px;">
-		<div id="progress_bar" class="ui-progress-bar ui-container" style="-webkit-border-radius: 8px;height: 22px;">
-      <div class="ui-progress <%= coverage_class %>" style="-webkit-border-radius:8px;height:20px;width: <%= coverage %>%; display: <%= display %>; ">
-        <span style="font-size: 1.1em;line-height: 21px;" class="ui-label <%= coverage_class %>"><%= coverage.to_i %>%</span>
-      </div>
-    </div>
-	</p>
-  <div class="alert-actions">
-    <a href="#" class="btn primary" data-toggle="toggle" 
-			onclick="toggleSourceButton(this, <%= i + 1 %>)" style="padding: 3px 5px;font-size: .9em;">View Coverage</a>
-  </div>
+	<table class="bordered-table test_result" style="-webkit-border-radius: 0px 0px 4px 4px;">
+		<thead>
+			<tr>
+				<th>Metadata</th>
+				<th>Message</th>
+			</tr>
+		</thead>
+		<tbody>
+			<% warnings.each do |w| %>
+				<% if ! w[:name].nil? %>
+					<tr>
+						<td><%= w[:name] %></td>					
+						<td><%= w[:message] %></td>					
+					</tr>   
+				<% end %>
+			<% end %>
+		</tbody>
+	</table>  
+	<!-- END PROCESS WARNINGS -->
 </div>
 
-	<% if File.exist? "#{ENV['TM_PROJECT_DIRECTORY']}/src/#{directory}/#{r[:name]}.#{extension}" %>
-		<table class='code' id="code_result_<%= i + 1 %>">
-			<tbody>
-				<% 
-					File.open("#{ENV['TM_PROJECT_DIRECTORY']}/src/#{directory}/#{r[:name]}.#{extension}").each_with_index do |line, index| 
-						td_class = locations_not_covered_result.detect {|loc| loc[:line].to_i == index + 1 } ? "not_covered" : "covered" 
-				%>
-				<tr>
-			    <td class="line_numbers"><%= index + 1 %></td>
-			    <td class="code <%= td_class %>"><%= htmlize(line) %></td>
-				</tr>
-			<% end%>
-			</tbody>
-		</table>
-	<% end%>
+
+<div id="class_wrapper">
+	<!-- START CLASS PROCESSING -->
+	<% class_coverage.each_with_index do |r, i| %>
+		<% next if ! r[:num_locations] %>
+		<% next if r[:num_locations].to_i == 0 %>
+		<% coverage = 100 * ((r[:num_locations].to_f - r[:num_locations_not_covered].to_f) / r[:num_locations].to_f) %>
+		<% 
+			locations_not_covered_result = []
+			if ! r[:locations_not_covered].nil?
+				if r[:locations_not_covered].kind_of? Array
+					locations_not_covered_result = r[:locations_not_covered]
+				else
+					locations_not_covered_result.push(r[:locations_not_covered])	
+				end
+			end
 	
-<% end %>
+			coverage_class = "" 
+			case coverage.to_i
+			when 0..40
+			  coverage_class = "low"
+			when 41..74
+			  coverage_class = "medium"
+			when 75..100
+			  coverage_class = ""
+			else
+			  coverage_class = ""
+			end
+	
+			# passing_tests = successes.count {|test| test[:name] == result[:name]} || 0
+			# failing_tests = failures.count {|test| test[:name] == result[:name]} || 0
+			# total_tests = passing_tests + failing_tests
+			display = coverage.to_i == 0 ? "none" : "block"  
+		%>
+
+		<% extension = "cls"  %>
+		<% directory = "classes" %>
+
+	<div class="alert-message block-message-custom " style="padding: 0px 5px 5px 5px;">
+	  	<div style="margin-bottom:10px;">
+			<p style="float:left;"><strong><%= r[:name] %>.<%= extension %></strong></p>
+			<p style="float:right;"><strong></strong></p>
+		</div>
+		<div style="clear:both;"></div>
+		<p style="margin-bottom:10px;">
+			<div id="progress_bar" class="ui-progress-bar ui-container" style="-webkit-border-radius: 8px;height: 22px;">
+	      		<div class="ui-progress <%= coverage_class %>" style="-webkit-border-radius:8px;height:20px;width: <%= coverage %>%; display: <%= display %>; ">
+	        		<span style="font-size: 1.1em;line-height: 21px;" class="ui-label <%= coverage_class %>"><%= coverage.to_i %>%</span>
+	      		</div>
+	    	</div>
+		</p>
+	  	<div class="alert-actions">
+	    	<a href="#" class="btn primary" data-toggle="toggle" 
+				onclick="toggleSourceButton(this, <%= i + 1 %>, 'class')" style="padding: 3px 5px;font-size: .9em;">View Coverage</a>
+		</div>
+	</div>
+
+		<% if File.exist? "#{ENV['TM_PROJECT_DIRECTORY']}/src/#{directory}/#{r[:name]}.#{extension}" %>
+			<table class='code' id="class_code_result_<%= i + 1 %>">
+				<tbody>
+					<% 
+						File.open("#{ENV['TM_PROJECT_DIRECTORY']}/src/#{directory}/#{r[:name]}.#{extension}").each_with_index do |line, index| 
+							td_class = locations_not_covered_result.detect {|loc| loc[:line].to_i == index + 1 } ? "not_covered" : "covered" 
+					%>
+					<tr>
+				    <td class="line_numbers"><%= index + 1 %></td>
+				    <td class="code <%= td_class %>"><%= htmlize(line) %></td>
+					</tr>
+				<% end%>
+				</tbody>
+			</table>
+		<% end%>
+	
+	<% end %> 
+	<!-- END CLASS PROCESSING --> 
 </div>
+
+<div id="trigger_wrapper">
+	<!-- START TRIGGER PROCESSING -->
+	<% trigger_coverage.each_with_index do |r, i| %>
+		<% next if ! r[:num_locations] %>
+		<% next if r[:num_locations].to_i == 0 %>
+		<% coverage = 100 * ((r[:num_locations].to_f - r[:num_locations_not_covered].to_f) / r[:num_locations].to_f) %>
+	<% 
+		locations_not_covered_result = []
+		if ! r[:locations_not_covered].nil?
+			if r[:locations_not_covered].kind_of? Array
+				locations_not_covered_result = r[:locations_not_covered]
+			else
+				locations_not_covered_result.push(r[:locations_not_covered])	
+			end
+		end
+	
+		coverage_class = "" 
+		case coverage.to_i
+		when 0..40
+		  coverage_class = "low"
+		when 41..74
+		  coverage_class = "medium"
+		when 75..100
+		  coverage_class = ""
+		else
+		  coverage_class = ""
+		end
+	
+		# passing_tests = successes.count {|test| test[:name] == result[:name]} || 0
+		# failing_tests = failures.count {|test| test[:name] == result[:name]} || 0
+		# total_tests = passing_tests + failing_tests
+		display = coverage.to_i == 0 ? "none" : "block"
+	%>
+
+	<% extension = "trigger"  %>
+	<% directory = "triggers" %>
+
+	<div class="alert-message block-message-custom " style="padding: 0px 5px 5px 5px;">
+	  	<div style="margin-bottom:10px;">
+			<p style="float:left;"><strong><%= r[:name] %>.<%= extension %></strong></p>
+			<p style="float:right;"><strong></strong></p>
+		</div>
+		<div style="clear:both;"></div>
+		<p style="margin-bottom:10px;">
+			<div id="progress_bar" class="ui-progress-bar ui-container" style="-webkit-border-radius: 8px;height: 22px;">
+	      		<div class="ui-progress <%= coverage_class %>" style="-webkit-border-radius:8px;height:20px;width: <%= coverage %>%; display: <%= display %>; ">
+	        		<span style="font-size: 1.1em;line-height: 21px;" class="ui-label <%= coverage_class %>"><%= coverage.to_i %>%</span>
+	      		</div>
+	    	</div>
+		</p>
+	  	<div class="alert-actions">
+	    	<a href="#" class="btn primary" data-toggle="toggle" 
+				onclick="toggleSourceButton(this, <%= i + 1 %>, 'trigger')" style="padding: 3px 5px;font-size: .9em;">View Coverage</a>
+		</div>
+	</div>
+
+		<% if File.exist? "#{ENV['TM_PROJECT_DIRECTORY']}/src/#{directory}/#{r[:name]}.#{extension}" %>
+			<table class='code' id="trigger_code_result_<%= i + 1 %>">
+				<tbody>
+					<% 
+						File.open("#{ENV['TM_PROJECT_DIRECTORY']}/src/#{directory}/#{r[:name]}.#{extension}").each_with_index do |line, index| 
+							td_class = locations_not_covered_result.detect {|loc| loc[:line].to_i == index + 1 } ? "not_covered" : "covered" 
+					%>
+					<tr>
+				    <td class="line_numbers"><%= index + 1 %></td>
+				    <td class="code <%= td_class %>"><%= htmlize(line) %></td>
+					</tr>
+				<% end%>
+				</tbody>
+			</table>
+		<% end%>
+	
+	<% end %>
+	<!-- END TRIGGER PROCESSING -->
+</div>
+
+
+<!-- </div>  -->
+
 <script type="text/javascript">
-	$("#a_result").click();
-	resize();
-	
-	function toggleTriggers(el) {
-		if ($(el).html().indexOf("Show Trigger Coverage") != -1) {
-			$(el).html("Hide Trigger Coverage").removeClass("success");
-		} else {
-			$(el).html("Show Trigger Coverage &raquo;").addClass("success");
-		}
-		$('#trigger_wrapper').toggle();
-		resize();
+	//move class/trigger html into appropriate tabs
+	$("#class_coverage_wrapper").html(
+		$("#class_wrapper").html()
+	)
+	$("#trigger_coverage_wrapper").html(
+		$("#trigger_wrapper").html()
+	)
+	$("#warnings_coverage_wrapper").html(
+		$("#warnings_wrapper").html()
+	)
+	$("#class_wrapper").remove()
+	$("#trigger_wrapper").remove()
+	$("#warnings_wrapper").remove()
 
-		if ($(el).html().indexOf("Hide Trigger Coverage") != -1) {
-			$("html, body").animate({
-		      scrollTop: $(el).offset().top - 50
-		  }, 400);
-		}
-	}
+	$(".results_hidden").show();
+	$("#a_result").click();
+	window.resizeTo(740, document.getElementById('result_wrapper').scrollHeight+175);	
 </script>
 <style>
 	table.test_result {

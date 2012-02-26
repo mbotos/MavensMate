@@ -3,7 +3,7 @@ require ENV['TM_BUNDLE_SUPPORT'] + '/lib/mavensmate.rb'
 
 class UnitTestController < ApplicationController
     
-  layout "unittest", :only => [:index]
+  layout "base", :only => [:index]
             
   def index
     render "_index", :locals => { :classes => class_list }
