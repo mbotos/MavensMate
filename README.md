@@ -35,8 +35,58 @@ $ osascript -e 'tell app "TextMate" to reload bundles'
 <P>*FM_PROJECT_FOLDER is the only TextMate shell variable required by MavensMate*</P>
 <P><img src="http://wearemavens.com/images/mm/path3.png"/></P>
 
+<h3>RUBY GUIDE</h3>
+<h4>System Ruby (1.8.7)</h4>
+<p>To make MavensMate utilize your system Ruby, install the required gems directly into /Library/Ruby/Gems/1.8:</p>
+```
+$ sudo gem install rails -i /Library/Ruby/Gems/1.8
+$ sudo gem install builder -i /Library/Ruby/Gems/1.8
+$ sudo gem install savon -i /Library/Ruby/Gems/1.8
+$ sudo gem install rubyzip -i /Library/Ruby/Gems/1.8
+```
+
+<h4>RVM - Ruby 1.8.7</h4>
+```
+$ gem install rails
+$ gem install builder
+$ gem install savon
+$ gem install rubyzip
+```
+<p>Your TextMate PATH shell variable should be enabled and should look something like this:</p>
+```
+/Users/your_username/.rvm/rubies/ruby-1.8.7-p352/bin:/usr/bin:/usr/sbin
+```
+<p>Create a TextMate shell variable named GEM_PATH with the value:</p>
+```
+/Users/your_username/.rvm/gems/ruby-1.8.7-p352/
+```
+
+
+<h4>RVM - Ruby 1.9+</h4>
+```
+$ gem install rails
+$ gem install builder
+$ gem install savon
+$ gem install rubyzip
+```
+<p>Your TextMate PATH shell variable should be enabled and should look something like this:</p>
+```
+/Users/your_username/.rvm/rubies/ruby-1.9.2-p290/bin:/usr/bin:/usr/sbin
+```
+<p>Create a TextMate shell variable named GEM_PATH with the value:</p>
+```
+/Users/your_username/.rvm/gems/ruby-1.9.2-p290/
+```
+<p>TextMate is not equipped to run Ruby 1.9 out of box, so if you're committed to using Ruby 1.9, you'll need to make a slight modification to TextMate's plist.bundle:</p>
+```
+$ git clone git://github.com/kballard/osx-plist.git
+$ cd osx-plist/ext/plist
+$ ruby extconf.rb && make
+$ cp plist.bundle /Applications/TextMate.app/Contents/SharedSupport/Support/lib/osx/
+```
+
 <h3>IMPORTANT</h3>
-<P>If you get a ruby "constantize" exception when trying to create or checkout a project, it's likely a gem dependency issue. Ensure you've installed rails, builder, savon, and rubyzip.</P>
+<P>If you get a ruby "constantize" exception when running a MavensMate command, it's likely a gem dependency issue. Ensure you've installed rails, builder, savon, and rubyzip.</P>
 
 <h2>Update</h2>
 <p></p>
