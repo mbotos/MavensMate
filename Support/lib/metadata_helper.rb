@@ -1,6 +1,6 @@
 module MetadataHelper
   
-  MM_API_VERSION = ENV['MM_API_VERSION'] || "23.0" 
+  MM_API_VERSION = ENV['MM_API_VERSION'] || "24.0" 
   META_DICTIONARY = eval(File.read("#{ENV['TM_BUNDLE_SUPPORT']}/conf/metadata_dictionary"))
   CHILD_META_DICTIONARY = eval(File.read("#{ENV['TM_BUNDLE_SUPPORT']}/conf/metadata_children_dictionary"))
   
