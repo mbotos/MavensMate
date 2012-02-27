@@ -89,6 +89,17 @@ class DeployController < ApplicationController
   def show_compile_result  
     begin
       result = MavensMate::Util.parse_deploy_response(params[:result])
+      begin
+        message = result[:messages][0]
+        file_name = message[:file_name]
+				fns = message[:file_name].split("/")
+				file_name = fns[fns.length - 1]   			         	
+				full_path =  "#{ENV['TM_PROJECT_DIRECTORY']}/src/#{message[:file_name]}"
+				full_path.gsub!(/unpackaged\//, '')
+        TextMate.go_to(:file => full_path, :line => message[:line_number], :column => message[:column_number])        
+      rescue
+        #TODO: for now we're ok with this
+      end
       render "_compile_result", :locals => { :result => result, :is_check_only => false }
     rescue Exception => e
       TextMate::UI.alert(:warning, "MavensMate", e.message + "\n" + e.backtrace.join("\n"))  
