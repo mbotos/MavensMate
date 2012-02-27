@@ -29,8 +29,9 @@ class CreateController < ApplicationController
       :api_name => params[:api_name], 
       :object_api_name => params[:object_api_name],
       :apex_class_type => params[:apex_class_type]
-    })
-    render "_create_result", :locals => { :messages => result[:messages], :success => result[:is_success] }
+    }) 
+    result = MavensMate::Util.parse_deploy_response(result)
+    render "_create_result", :locals => { :result => result }
   end
   
 end
