@@ -17,7 +17,7 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 ```
 $ sudo gem install rails
 $ sudo gem install builder
-$ sudo gem install savon
+$ sudo gem install savon --version 0.9.7
 $ sudo gem install rubyzip
 ```
 <p></p>
@@ -41,7 +41,7 @@ $ osascript -e 'tell app "TextMate" to reload bundles'
 ```
 $ sudo gem install rails -i /Library/Ruby/Gems/1.8
 $ sudo gem install builder -i /Library/Ruby/Gems/1.8
-$ sudo gem install savon -i /Library/Ruby/Gems/1.8
+$ sudo gem install savon --version 0.9.7 -i /Library/Ruby/Gems/1.8
 $ sudo gem install rubyzip -i /Library/Ruby/Gems/1.8
 ```
 
@@ -49,7 +49,7 @@ $ sudo gem install rubyzip -i /Library/Ruby/Gems/1.8
 ```
 $ gem install rails
 $ gem install builder
-$ gem install savon
+$ gem install savon --version 0.9.7
 $ gem install rubyzip
 ```
 <p>Your TextMate PATH shell variable should be enabled and should look something like this:</p>
@@ -66,7 +66,7 @@ $ gem install rubyzip
 ```
 $ gem install rails
 $ gem install builder
-$ gem install savon
+$ gem install savon --version 0.9.7
 $ gem install rubyzip
 ```
 <p>Your TextMate PATH shell variable should be enabled and should look something like this:</p>
