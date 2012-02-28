@@ -138,9 +138,7 @@ module MavensMate
          meta_type_no_ext = meta_type_ext.gsub(".","")
          mt = get_meta_type_by_suffix(meta_type_no_ext)
          copy_to_dir = "#{ENV['TM_PROJECT_DIRECTORY']}/src/#{mt[:directory_name]}" #=> "/Users/username/Projects/myproject/src/classes"
-         TextMate::Process.run("cp -r '#{Dir.getwd}/#{mt[:directory_name]}/' '#{copy_to_dir}'", :interactive_input => false) do |str|
-           STDOUT << htmlize(str, :no_newline_after_br => true)          
-         end
+         %x{cp -r '#{Dir.getwd}/#{mt[:directory_name]}/' '#{copy_to_dir}'}
          Dir.chdir("#{ENV['TM_PROJECT_DIRECTORY']}")
          FileUtils.rm_r "#{ENV['TM_PROJECT_DIRECTORY']}/unpackaged"
          FileUtils.rm_r "#{ENV['TM_PROJECT_DIRECTORY']}/metadata.zip"
