@@ -13,6 +13,7 @@ MavensMate is a TextMate bundle that aims to replicate the functionality of the 
 
 <P>
 <h2>Clean Install</h2>
+<p>(If you have installed XCode 4 via the App Store, you will need to install the <a href="https://github.com/kennethreitz/osx-gcc-installer">GCC development tools</a> before proceeding.)</p>
 <p></p>
 ```
 $ sudo gem install rails
